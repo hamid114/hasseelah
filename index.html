@@ -8,10 +8,10 @@
   <meta name="theme-color" content="#ffffff"/>
   <title>حصيلة - Hasseelah</title>
   <link rel="manifest" href="manifest.json"/>
-  <style>*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow-x:hidden;background:#f8f6ff}#root{height:100%}</style>
+  <style>*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow-x:hidden;background:#f7f8fc}#root{height:100%}#loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f7f8fc;font-family:sans-serif;z-index:9999}</style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="loading"><div style="font-size:56px;margin-bottom:16px">💰</div><div style="font-size:22px;font-weight:900;color:#3B82F6;margin-bottom:8px">حصيلة</div><div style="font-size:13px;color:#9ca3af">جارٍ التحميل...</div></div><div id="root"></div>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -2112,6 +2112,7 @@ function App() {
 }
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
+    const loadingEl = document.getElementById('loading'); if(loadingEl) loadingEl.remove();
     root.render(<App/>);
   </script>
   <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});}</script>
