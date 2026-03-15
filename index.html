@@ -1,0 +1,2119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="theme-color" content="#ffffff"/>
+  <title>حصيلة - Hasseelah</title>
+  <link rel="manifest" href="manifest.json"/>
+  <style>*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow-x:hidden;background:#f8f6ff}#root{height:100%}</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useRef } = React;
+
+
+// ══════════════════════════════════════════════════════
+//  LANGUAGES & CURRENCIES
+// ══════════════════════════════════════════════════════
+const LANGUAGES = [
+  { code:"ar", label:"العربية",      flag:"🇸🇦", dir:"rtl", currency:"ر.س",  currencyCode:"SAR", country:"السعودية" },
+  { code:"en", label:"English",      flag:"🇬🇧", dir:"ltr", currency:"£",    currencyCode:"GBP", country:"United Kingdom" },
+  { code:"ur", label:"اردو",         flag:"🇵🇰", dir:"rtl", currency:"₨",    currencyCode:"PKR", country:"پاکستان" },
+  { code:"hi", label:"हिन्दी",      flag:"🇮🇳", dir:"ltr", currency:"₹",    currencyCode:"INR", country:"India" },
+  { code:"zh", label:"中文",         flag:"🇨🇳", dir:"ltr", currency:"¥",    currencyCode:"CNY", country:"中国" },
+  { code:"fr", label:"Français",     flag:"🇫🇷", dir:"ltr", currency:"€",    currencyCode:"EUR", country:"France" },
+  { code:"tl", label:"Filipino",     flag:"🇵🇭", dir:"ltr", currency:"₱",    currencyCode:"PHP", country:"Philippines" },
+  { code:"id", label:"Indonesia",    flag:"🇮🇩", dir:"ltr", currency:"Rp",   currencyCode:"IDR", country:"Indonesia" },
+  { code:"bn", label:"বাংলা",        flag:"🇧🇩", dir:"ltr", currency:"৳",    currencyCode:"BDT", country:"Bangladesh" },
+  { code:"ne", label:"नेपाली",       flag:"🇳🇵", dir:"ltr", currency:"रू",   currencyCode:"NPR", country:"Nepal" },
+  { code:"si", label:"සිංහල",        flag:"🇱🇰", dir:"ltr", currency:"Rs",   currencyCode:"LKR", country:"Sri Lanka" },
+  { code:"tr", label:"Türkçe",       flag:"🇹🇷", dir:"ltr", currency:"₺",    currencyCode:"TRY", country:"Türkiye" },
+  { code:"ms", label:"Melayu",       flag:"🇲🇾", dir:"ltr", currency:"RM",   currencyCode:"MYR", country:"Malaysia" },
+  { code:"yo", label:"Yoruba",       flag:"🇳🇬", dir:"ltr", currency:"₦",    currencyCode:"NGN", country:"Nigeria" },
+  { code:"so", label:"Soomaali",     flag:"🇸🇴", dir:"ltr", currency:"Sh",   currencyCode:"SOS", country:"Somalia" },
+  { code:"am", label:"አማርኛ",        flag:"🇪🇹", dir:"ltr", currency:"Br",   currencyCode:"ETB", country:"Ethiopia" },
+];
+
+// ══════════════════════════════════════════════════════
+//  PRICING PER CURRENCY  (base = 7.5 SAR ≈ 2 USD)
+// ══════════════════════════════════════════════════════
+const PRICING = {
+  SAR: { monthly:7.5,   yearly:75,   symbol:"ر.س",  note:"" },
+  USD: { monthly:2,     yearly:20,   symbol:"$",    note:"" },
+  GBP: { monthly:1.6,   yearly:16,   symbol:"£",    note:"" },
+  EUR: { monthly:1.9,   yearly:19,   symbol:"€",    note:"" },
+  PKR: { monthly:560,   yearly:5600, symbol:"₨",    note:"" },
+  INR: { monthly:167,   yearly:1670, symbol:"₹",    note:"" },
+  CNY: { monthly:14.5,  yearly:145,  symbol:"¥",    note:"" },
+  PHP: { monthly:113,   yearly:1130, symbol:"₱",    note:"" },
+  IDR: { monthly:31500, yearly:315000,symbol:"Rp",  note:"" },
+  BDT: { monthly:220,   yearly:2200, symbol:"৳",    note:"" },
+  NPR: { monthly:268,   yearly:2680, symbol:"रू",   note:"" },
+  LKR: { monthly:595,   yearly:5950, symbol:"Rs",   note:"" },
+  TRY: { monthly:65,    yearly:650,  symbol:"₺",    note:"" },
+  MYR: { monthly:9.4,   yearly:94,   symbol:"RM",   note:"" },
+  NGN: { monthly:3200,  yearly:32000,symbol:"₦",    note:"" },
+  SOS: { monthly:1140,  yearly:11400,symbol:"Sh",   note:"" },
+  ETB: { monthly:110,   yearly:1100, symbol:"Br",   note:"" },
+  DEFAULT: { monthly:2, yearly:20,   symbol:"$",    note:"" },
+};
+const T = {
+  ar:{ appName:"حصيلة", tagline:"تتبع إنفاقك بذكاء", charts:"الرسوم البيانية", revenue:"الإيرادات", transfersLog:"سجل الحوالات", referral:"شارك واربح 🎁", addExpense:"إضافة معاملة", today:"اليوم", week:"الأسبوع", month:"الشهر", year:"السنة", totalSpent:"المصروف", income:"الدخل", balance:"الرصيد", expenses:"المعاملات", camera:"كاميرا", voice:"صوت", manual:"يدوي", itemName:"اسم السلعة / الوصف", price:"المبلغ", location:"موقع الشراء", category:"الفئة", save:"حفظ", cancel:"إلغاء", summary:"ملخص", accountsSummary:"الحسابات ملخص", allTransactions:"المعاملات - جميع", transfer:"حوالة نقدية", allReport:"تقرير-جميع الحسابات", changeTo:"التغيير إلى", noteBook:"دفتر ملاحظات", calendar:"تقويم", cashCalc:"حاسبة نقدية", backup:"النسخ الاحتياطي", settings:"إعدادات", deletedTrans:"المعاملات المحذوفة", help:"مساعدة", removeAds:"إزالة الإعلان", premium:"مميز", upgrade:"ترقية للمميز", language:"اللغة والدولة", budget:"الميزانية", setBudget:"تحديد الميزانية", remaining:"المتبقي", over:"تجاوز الميزانية", delete:"حذف", listening:"جارٍ الاستماع...", capturing:"جارٍ المسح...", previousPrice:"السابق", noExpenses:"لا توجد معاملات", premium_locked:"🔒 ميزة مميزة", addNote:"إضافة ملاحظة", transferFrom:"من حساب", transferTo:"إلى حساب", amount:"المبلغ", confirm:"تأكيد", cash:"نقدي", bank:"بنك", wallet:"محفظة", expense:"مصروف", incomeLabel:"دخل", greeting_morning:"صباح الخير", greeting_afternoon:"مساء النور", greeting_evening:"مساء الخير", cheaper:"أرخص", expensive:"أغلى", categories:["🍔 طعام","🚗 مواصلات","👕 ملابس","🎬 ترفيه","💊 صحة","📚 تعليم","🏠 سكن","💡 فواتير","📦 أخرى"], restore:"استعادة", selectLang:"اختر اللغة والعملة", accounts:"الحسابات", changeCurrency:"تغيير العملة" },
+
+  en:{ appName:"Hasseelah", tagline:"Track your spending smartly", charts:"Charts", revenue:"Revenue", transfersLog:"Transfers Log", referral:"Share & Win 🎁", addExpense:"Add Transaction", today:"Today", week:"Week", month:"Month", year:"Year", totalSpent:"Expenses", income:"Income", balance:"Balance", expenses:"Transactions", camera:"Camera", voice:"Voice", manual:"Manual", itemName:"Item / Description", price:"Amount", location:"Location", category:"Category", save:"Save", cancel:"Cancel", summary:"Summary", accountsSummary:"Accounts Summary", allTransactions:"All Transactions", transfer:"Transfer", allReport:"Full Report", changeTo:"Change To", noteBook:"Notebook", calendar:"Calendar", cashCalc:"Calculator", backup:"Backup", settings:"Settings", deletedTrans:"Deleted Transactions", help:"Help", removeAds:"Remove Ads", premium:"Premium", upgrade:"Go Premium", language:"Language & Country", budget:"Budget", setBudget:"Set Budget", remaining:"Remaining", over:"Over Budget", delete:"Delete", listening:"Listening...", capturing:"Scanning...", previousPrice:"Previous", noExpenses:"No transactions yet", premium_locked:"🔒 Premium Feature", addNote:"Add Note", transferFrom:"From Account", transferTo:"To Account", amount:"Amount", confirm:"Confirm", cash:"Cash", bank:"Bank", wallet:"Wallet", expense:"Expense", incomeLabel:"Income", greeting_morning:"Good Morning", greeting_afternoon:"Good Afternoon", greeting_evening:"Good Evening", cheaper:"Cheaper", expensive:"Pricier", categories:["🍔 Food","🚗 Transport","👕 Clothing","🎬 Entertainment","💊 Health","📚 Education","🏠 Housing","💡 Bills","📦 Other"], restore:"Restore", selectLang:"Select Language & Currency", accounts:"Accounts", changeCurrency:"Change Currency" },
+
+  ur:{ appName:"Hasseelah", tagline:"اپنے اخراجات کو ٹریک کریں", addExpense:"لین دین شامل کریں", today:"آج", week:"ہفتہ", month:"مہینہ", year:"سال", totalSpent:"اخراجات", income:"آمدنی", balance:"بیلنس", expenses:"لین دین", camera:"کیمرہ", voice:"آواز", manual:"دستی", itemName:"چیز / تفصیل", price:"رقم", location:"خریداری کی جگہ", category:"زمرہ", save:"محفوظ", cancel:"منسوخ", summary:"خلاصہ", accountsSummary:"اکاؤنٹس خلاصہ", allTransactions:"تمام لین دین", transfer:"منتقلی", allReport:"مکمل رپورٹ", changeTo:"تبدیل کریں", noteBook:"نوٹ بک", calendar:"تقویم", cashCalc:"کیلکولیٹر", backup:"بیک اپ", settings:"ترتیبات", deletedTrans:"حذف شدہ", help:"مدد", removeAds:"اشتہار ہٹائیں", premium:"پریمیم", upgrade:"پریمیم لیں", language:"زبان اور ملک", budget:"بجٹ", setBudget:"بجٹ مقرر کریں", remaining:"باقی", over:"بجٹ سے زیادہ", delete:"حذف", listening:"سن رہا ہے...", capturing:"اسکین ہو رہا ہے...", previousPrice:"پچھلی قیمت", noExpenses:"کوئی لین دین نہیں", premium_locked:"🔒 پریمیم فیچر", addNote:"نوٹ شامل کریں", transferFrom:"اکاؤنٹ سے", transferTo:"اکاؤنٹ میں", amount:"رقم", confirm:"تصدیق", cash:"نقد", bank:"بینک", wallet:"والٹ", expense:"خرچ", incomeLabel:"آمدنی", greeting_morning:"صبح بخیر", greeting_afternoon:"دوپہر بخیر", greeting_evening:"شام بخیر", cheaper:"سستا", expensive:"مہنگا", categories:["🍔 کھانا","🚗 ٹرانسپورٹ","👕 کپڑے","🎬 تفریح","💊 صحت","📚 تعلیم","🏠 رہائش","💡 بل","📦 دیگر"], restore:"بحال کریں", selectLang:"زبان اور کرنسی منتخب کریں", accounts:"اکاؤنٹس", changeCurrency:"کرنسی تبدیل کریں" },
+
+  hi:{ appName:"Hasseelah", tagline:"अपने खर्चों को स्मार्ट तरीके से ट्रैक करें", addExpense:"लेनदेन जोड़ें", today:"आज", week:"सप्ताह", month:"महीना", year:"साल", totalSpent:"खर्च", income:"आय", balance:"शेष", expenses:"लेनदेन", camera:"कैमरा", voice:"आवाज़", manual:"मैनुअल", itemName:"वस्तु / विवरण", price:"राशि", location:"खरीद की जगह", category:"श्रेणी", save:"सहेजें", cancel:"रद्द करें", summary:"सारांश", accountsSummary:"खाता सारांश", allTransactions:"सभी लेनदेन", transfer:"ट्रांसफर", allReport:"पूरी रिपोर्ट", changeTo:"बदलें", noteBook:"नोटबुक", calendar:"कैलेंडर", cashCalc:"कैलकुलेटर", backup:"बैकअप", settings:"सेटिंग्स", deletedTrans:"हटाए गए", help:"सहायता", removeAds:"विज्ञापन हटाएं", premium:"प्रीमियम", upgrade:"प्रीमियम लें", language:"भाषा और देश", budget:"बजट", setBudget:"बजट सेट करें", remaining:"शेष", over:"बजट से अधिक", delete:"हटाएं", listening:"सुन रहा है...", capturing:"स्कैन हो रहा है...", previousPrice:"पिछली कीमत", noExpenses:"कोई लेनदेन नहीं", premium_locked:"🔒 प्रीमियम फीचर", addNote:"नोट जोड़ें", transferFrom:"खाते से", transferTo:"खाते में", amount:"राशि", confirm:"पुष्टि करें", cash:"नकद", bank:"बैंक", wallet:"वॉलेट", expense:"खर्च", incomeLabel:"आय", greeting_morning:"सुप्रभात", greeting_afternoon:"नमस्ते", greeting_evening:"शुभ संध्या", cheaper:"सस्ता", expensive:"महंगा", categories:["🍔 खाना","🚗 परिवहन","👕 कपड़े","🎬 मनोरंजन","💊 स्वास्थ्य","📚 शिक्षा","🏠 आवास","💡 बिल","📦 अन्य"], restore:"पुनर्स्थापित करें", selectLang:"भाषा और मुद्रा चुनें", accounts:"खाते", changeCurrency:"मुद्रा बदलें" },
+
+  zh:{ appName:"Hasseelah", tagline:"智能追踪您的支出", addExpense:"添加交易", today:"今天", week:"本周", month:"本月", year:"本年", totalSpent:"支出", income:"收入", balance:"余额", expenses:"交易记录", camera:"相机", voice:"语音", manual:"手动", itemName:"商品 / 描述", price:"金额", location:"购买地点", category:"类别", save:"保存", cancel:"取消", summary:"摘要", accountsSummary:"账户摘要", allTransactions:"所有交易", transfer:"转账", allReport:"完整报告", changeTo:"切换到", noteBook:"笔记本", calendar:"日历", cashCalc:"计算器", backup:"备份", settings:"设置", deletedTrans:"已删除交易", help:"帮助", removeAds:"移除广告", premium:"高级版", upgrade:"升级高级版", language:"语言和国家", budget:"预算", setBudget:"设置预算", remaining:"剩余", over:"超出预算", delete:"删除", listening:"正在听...", capturing:"正在扫描...", previousPrice:"上次价格", noExpenses:"暂无交易", premium_locked:"🔒 高级功能", addNote:"添加备注", transferFrom:"从账户", transferTo:"到账户", amount:"金额", confirm:"确认", cash:"现金", bank:"银行", wallet:"钱包", expense:"支出", incomeLabel:"收入", greeting_morning:"早上好", greeting_afternoon:"下午好", greeting_evening:"晚上好", cheaper:"更便宜", expensive:"更贵", categories:["🍔 餐饮","🚗 交通","👕 服装","🎬 娱乐","💊 健康","📚 教育","🏠 住房","💡 账单","📦 其他"], restore:"恢复", selectLang:"选择语言和货币", accounts:"账户", changeCurrency:"更改货币" },
+
+  fr:{ appName:"Hasseelah", tagline:"Suivez vos dépenses intelligemment", addExpense:"Ajouter", today:"Aujourd'hui", week:"Semaine", month:"Mois", year:"Année", totalSpent:"Dépenses", income:"Revenus", balance:"Solde", expenses:"Transactions", camera:"Caméra", voice:"Voix", manual:"Manuel", itemName:"Article / Description", price:"Montant", location:"Lieu d'achat", category:"Catégorie", save:"Sauvegarder", cancel:"Annuler", summary:"Résumé", accountsSummary:"Résumé comptes", allTransactions:"Toutes transactions", transfer:"Virement", allReport:"Rapport complet", changeTo:"Changer", noteBook:"Carnet", calendar:"Calendrier", cashCalc:"Calculatrice", backup:"Sauvegarde", settings:"Paramètres", deletedTrans:"Trans. supprimées", help:"Aide", removeAds:"Suppr. publicités", premium:"Premium", upgrade:"Passer Premium", language:"Langue et Pays", budget:"Budget", setBudget:"Définir budget", remaining:"Restant", over:"Dépassement", delete:"Supprimer", listening:"Écoute...", capturing:"Scan...", previousPrice:"Précédent", noExpenses:"Aucune transaction", premium_locked:"🔒 Fonctionnalité Premium", addNote:"Ajouter note", transferFrom:"De", transferTo:"Vers", amount:"Montant", confirm:"Confirmer", cash:"Espèces", bank:"Banque", wallet:"Portefeuille", expense:"Dépense", incomeLabel:"Revenu", greeting_morning:"Bonjour", greeting_afternoon:"Bon après-midi", greeting_evening:"Bonsoir", cheaper:"Moins cher", expensive:"Plus cher", categories:["🍔 Nourriture","🚗 Transport","👕 Vêtements","🎬 Loisirs","💊 Santé","📚 Éducation","🏠 Logement","💡 Factures","📦 Autre"], restore:"Restaurer", selectLang:"Choisir la langue", accounts:"Comptes", changeCurrency:"Changer devise" },
+
+  tl:{ appName:"Hasseelah", tagline:"Subaybayan ang iyong gastos", addExpense:"Magdagdag", today:"Ngayon", week:"Linggo", month:"Buwan", year:"Taon", totalSpent:"Gastos", income:"Kita", balance:"Balanse", expenses:"Mga Transaksyon", camera:"Camera", voice:"Boses", manual:"Manual", itemName:"Item / Paglalarawan", price:"Halaga", location:"Lugar ng Pagbili", category:"Kategorya", save:"I-save", cancel:"Kanselahin", summary:"Buod", accountsSummary:"Buod ng Account", allTransactions:"Lahat ng Transaksyon", transfer:"Transfer", allReport:"Buong Ulat", changeTo:"Baguhin", noteBook:"Notebook", calendar:"Kalendaryo", cashCalc:"Calculator", backup:"Backup", settings:"Mga Setting", deletedTrans:"Tinanggal", help:"Tulong", removeAds:"Alisin ang Ads", premium:"Premium", upgrade:"Mag-upgrade", language:"Wika at Bansa", budget:"Badyet", setBudget:"Itakda ang Badyet", remaining:"Natitira", over:"Lampas sa Badyet", delete:"Burahin", listening:"Nakikinig...", capturing:"Nag-scan...", previousPrice:"Nakaraang Presyo", noExpenses:"Walang transaksyon", premium_locked:"🔒 Premium Feature", addNote:"Magdagdag ng Note", transferFrom:"Mula sa Account", transferTo:"Sa Account", amount:"Halaga", confirm:"Kumpirmahin", cash:"Cash", bank:"Bangko", wallet:"Wallet", expense:"Gastos", incomeLabel:"Kita", greeting_morning:"Magandang Umaga", greeting_afternoon:"Magandang Tanghali", greeting_evening:"Magandang Gabi", cheaper:"Mas Mura", expensive:"Mas Mahal", categories:["🍔 Pagkain","🚗 Transportasyon","👕 Damit","🎬 Libangan","💊 Kalusugan","📚 Edukasyon","🏠 Pabahay","💡 Bayarin","📦 Iba pa"], restore:"Ibalik", selectLang:"Piliin ang Wika", accounts:"Mga Account", changeCurrency:"Baguhin ang Pera" },
+
+  id:{ appName:"Hasseelah", tagline:"Lacak pengeluaran Anda", addExpense:"Tambah Transaksi", today:"Hari Ini", week:"Minggu", month:"Bulan", year:"Tahun", totalSpent:"Pengeluaran", income:"Pendapatan", balance:"Saldo", expenses:"Transaksi", camera:"Kamera", voice:"Suara", manual:"Manual", itemName:"Item / Deskripsi", price:"Jumlah", location:"Lokasi Pembelian", category:"Kategori", save:"Simpan", cancel:"Batal", summary:"Ringkasan", accountsSummary:"Ringkasan Akun", allTransactions:"Semua Transaksi", transfer:"Transfer", allReport:"Laporan Lengkap", changeTo:"Ubah ke", noteBook:"Catatan", calendar:"Kalender", cashCalc:"Kalkulator", backup:"Cadangan", settings:"Pengaturan", deletedTrans:"Dihapus", help:"Bantuan", removeAds:"Hapus Iklan", premium:"Premium", upgrade:"Upgrade Premium", language:"Bahasa & Negara", budget:"Anggaran", setBudget:"Atur Anggaran", remaining:"Sisa", over:"Melebihi Anggaran", delete:"Hapus", listening:"Mendengarkan...", capturing:"Memindai...", previousPrice:"Harga Sebelumnya", noExpenses:"Belum ada transaksi", premium_locked:"🔒 Fitur Premium", addNote:"Tambah Catatan", transferFrom:"Dari Akun", transferTo:"Ke Akun", amount:"Jumlah", confirm:"Konfirmasi", cash:"Tunai", bank:"Bank", wallet:"Dompet", expense:"Pengeluaran", incomeLabel:"Pendapatan", greeting_morning:"Selamat Pagi", greeting_afternoon:"Selamat Siang", greeting_evening:"Selamat Malam", cheaper:"Lebih Murah", expensive:"Lebih Mahal", categories:["🍔 Makanan","🚗 Transportasi","👕 Pakaian","🎬 Hiburan","💊 Kesehatan","📚 Pendidikan","🏠 Perumahan","💡 Tagihan","📦 Lainnya"], restore:"Pulihkan", selectLang:"Pilih Bahasa", accounts:"Akun", changeCurrency:"Ganti Mata Uang" },
+
+  bn:{ appName:"Hasseelah", tagline:"স্মার্টভাবে আপনার ব্যয় ট্র্যাক করুন", addExpense:"লেনদেন যোগ করুন", today:"আজ", week:"সপ্তাহ", month:"মাস", year:"বছর", totalSpent:"ব্যয়", income:"আয়", balance:"ব্যালেন্স", expenses:"লেনদেন", camera:"ক্যামেরা", voice:"ভয়েস", manual:"ম্যানুয়াল", itemName:"আইটেম / বিবরণ", price:"পরিমাণ", location:"ক্রয়ের স্থান", category:"বিভাগ", save:"সংরক্ষণ", cancel:"বাতিল", summary:"সারসংক্ষেপ", accountsSummary:"অ্যাকাউন্ট সারসংক্ষেপ", allTransactions:"সব লেনদেন", transfer:"স্থানান্তর", allReport:"পূর্ণ রিপোর্ট", changeTo:"পরিবর্তন করুন", noteBook:"নোটবুক", calendar:"ক্যালেন্ডার", cashCalc:"ক্যালকুলেটর", backup:"ব্যাকআপ", settings:"সেটিংস", deletedTrans:"মুছে ফেলা", help:"সাহায্য", removeAds:"বিজ্ঞাপন সরান", premium:"প্রিমিয়াম", upgrade:"প্রিমিয়াম নিন", language:"ভাষা ও দেশ", budget:"বাজেট", setBudget:"বাজেট নির্ধারণ", remaining:"অবশিষ্ট", over:"বাজেট অতিক্রম", delete:"মুছুন", listening:"শুনছি...", capturing:"স্ক্যান হচ্ছে...", previousPrice:"আগের মূল্য", noExpenses:"কোন লেনদেন নেই", premium_locked:"🔒 প্রিমিয়াম ফিচার", addNote:"নোট যোগ করুন", transferFrom:"থেকে", transferTo:"তে", amount:"পরিমাণ", confirm:"নিশ্চিত করুন", cash:"নগদ", bank:"ব্যাংক", wallet:"ওয়ালেট", expense:"ব্যয়", incomeLabel:"আয়", greeting_morning:"শুভ সকাল", greeting_afternoon:"শুভ দুপুর", greeting_evening:"শুভ সন্ধ্যা", cheaper:"সস্তা", expensive:"দামি", categories:["🍔 খাবার","🚗 পরিবহন","👕 পোশাক","🎬 বিনোদন","💊 স্বাস্থ্য","📚 শিক্ষা","🏠 আবাসন","💡 বিল","📦 অন্যান্য"], restore:"পুনরুদ্ধার", selectLang:"ভাষা নির্বাচন করুন", accounts:"অ্যাকাউন্ট", changeCurrency:"মুদ্রা পরিবর্তন" },
+
+  ne:{ appName:"Hasseelah", tagline:"आफ्नो खर्च ट्र्याक गर्नुहोस्", addExpense:"लेनदेन थप्नुहोस्", today:"आज", week:"हप्ता", month:"महिना", year:"वर्ष", totalSpent:"खर्च", income:"आय", balance:"ब्यालेन्स", expenses:"लेनदेन", camera:"क्यामेरा", voice:"आवाज", manual:"म्यानुअल", itemName:"वस्तु / विवरण", price:"रकम", location:"खरिद स्थान", category:"श्रेणी", save:"सुरक्षित गर्नुहोस्", cancel:"रद्द गर्नुहोस्", summary:"सारांश", accountsSummary:"खाता सारांश", allTransactions:"सबै लेनदेन", transfer:"स्थानान्तरण", allReport:"पूर्ण रिपोर्ट", changeTo:"परिवर्तन गर्नुहोस्", noteBook:"नोटबुक", calendar:"पात्रो", cashCalc:"क्याल्कुलेटर", backup:"ब्याकअप", settings:"सेटिङ", deletedTrans:"मेटिएको", help:"सहायता", removeAds:"विज्ञापन हटाउनुहोस्", premium:"प्रिमियम", upgrade:"प्रिमियम लिनुहोस्", language:"भाषा र देश", budget:"बजेट", setBudget:"बजेट तोक्नुहोस्", remaining:"बाँकी", over:"बजेट नाघ्यो", delete:"मेटाउनुहोस्", listening:"सुन्दैछ...", capturing:"स्क्यान हुँदैछ...", previousPrice:"अघिल्लो मूल्य", noExpenses:"कुनै लेनदेन छैन", premium_locked:"🔒 प्रिमियम सुविधा", addNote:"नोट थप्नुहोस्", transferFrom:"बाट", transferTo:"मा", amount:"रकम", confirm:"पुष्टि गर्नुहोस्", cash:"नगद", bank:"बैंक", wallet:"वालेट", expense:"खर्च", incomeLabel:"आय", greeting_morning:"शुभ प्रभात", greeting_afternoon:"नमस्ते", greeting_evening:"शुभ सन्ध्या", cheaper:"सस्तो", expensive:"महँगो", categories:["🍔 खाना","🚗 यातायात","👕 लुगा","🎬 मनोरञ्जन","💊 स्वास्थ्य","📚 शिक्षा","🏠 आवास","💡 बिल","📦 अन्य"], restore:"पुनर्स्थापना गर्नुहोस्", selectLang:"भाषा छान्नुहोस्", accounts:"खाताहरू", changeCurrency:"मुद्रा परिवर्तन गर्नुहोस्" },
+
+  tr:{ appName:"Hasseelah", tagline:"Harcamalarınızı akıllıca takip edin", addExpense:"İşlem Ekle", today:"Bugün", week:"Hafta", month:"Ay", year:"Yıl", totalSpent:"Giderler", income:"Gelir", balance:"Bakiye", expenses:"İşlemler", camera:"Kamera", voice:"Ses", manual:"Manuel", itemName:"Ürün / Açıklama", price:"Tutar", location:"Satın Alma Yeri", category:"Kategori", save:"Kaydet", cancel:"İptal", summary:"Özet", accountsSummary:"Hesap Özeti", allTransactions:"Tüm İşlemler", transfer:"Transfer", allReport:"Tam Rapor", changeTo:"Değiştir", noteBook:"Not Defteri", calendar:"Takvim", cashCalc:"Hesap Makinesi", backup:"Yedek", settings:"Ayarlar", deletedTrans:"Silinenler", help:"Yardım", removeAds:"Reklamları Kaldır", premium:"Premium", upgrade:"Premium'a Geç", language:"Dil ve Ülke", budget:"Bütçe", setBudget:"Bütçe Belirle", remaining:"Kalan", over:"Bütçe Aşıldı", delete:"Sil", listening:"Dinleniyor...", capturing:"Taranıyor...", previousPrice:"Önceki Fiyat", noExpenses:"İşlem yok", premium_locked:"🔒 Premium Özellik", addNote:"Not Ekle", transferFrom:"Hesaptan", transferTo:"Hesaba", amount:"Tutar", confirm:"Onayla", cash:"Nakit", bank:"Banka", wallet:"Cüzdan", expense:"Gider", incomeLabel:"Gelir", greeting_morning:"Günaydın", greeting_afternoon:"İyi günler", greeting_evening:"İyi akşamlar", cheaper:"Daha Ucuz", expensive:"Daha Pahalı", categories:["🍔 Yiyecek","🚗 Ulaşım","👕 Giyim","🎬 Eğlence","💊 Sağlık","📚 Eğitim","🏠 Konut","💡 Faturalar","📦 Diğer"], restore:"Geri Yükle", selectLang:"Dil Seçin", accounts:"Hesaplar", changeCurrency:"Para Birimi Değiştir" },
+
+  ms:{ appName:"Hasseelah", tagline:"Jejak perbelanjaan anda", addExpense:"Tambah Transaksi", today:"Hari Ini", week:"Minggu", month:"Bulan", year:"Tahun", totalSpent:"Perbelanjaan", income:"Pendapatan", balance:"Baki", expenses:"Transaksi", camera:"Kamera", voice:"Suara", manual:"Manual", itemName:"Item / Penerangan", price:"Jumlah", location:"Lokasi Pembelian", category:"Kategori", save:"Simpan", cancel:"Batal", summary:"Ringkasan", accountsSummary:"Ringkasan Akaun", allTransactions:"Semua Transaksi", transfer:"Pindahan", allReport:"Laporan Penuh", changeTo:"Tukar kepada", noteBook:"Buku Nota", calendar:"Kalendar", cashCalc:"Kalkulator", backup:"Sandaran", settings:"Tetapan", deletedTrans:"Dipadam", help:"Bantuan", removeAds:"Buang Iklan", premium:"Premium", upgrade:"Naik taraf", language:"Bahasa & Negara", budget:"Bajet", setBudget:"Tetapkan Bajet", remaining:"Baki", over:"Melebihi Bajet", delete:"Padam", listening:"Mendengar...", capturing:"Mengimbas...", previousPrice:"Harga Sebelum", noExpenses:"Tiada transaksi", premium_locked:"🔒 Ciri Premium", addNote:"Tambah Nota", transferFrom:"Dari Akaun", transferTo:"Ke Akaun", amount:"Jumlah", confirm:"Sahkan", cash:"Tunai", bank:"Bank", wallet:"Dompet", expense:"Perbelanjaan", incomeLabel:"Pendapatan", greeting_morning:"Selamat Pagi", greeting_afternoon:"Selamat Tengah Hari", greeting_evening:"Selamat Malam", cheaper:"Lebih Murah", expensive:"Lebih Mahal", categories:["🍔 Makanan","🚗 Pengangkutan","👕 Pakaian","🎬 Hiburan","💊 Kesihatan","📚 Pendidikan","🏠 Perumahan","💡 Bil","📦 Lain-lain"], restore:"Pulihkan", selectLang:"Pilih Bahasa", accounts:"Akaun", changeCurrency:"Tukar Mata Wang" },
+};
+
+// Fallback to English for missing langs
+["yo","so","am","si"].forEach(l => { T[l] = {...T.en, appName:"SpendWise", flag: LANGUAGES.find(x=>x.code===l)?.flag }; });
+
+const CAT_COLORS = ["#FF8C69","#4DB6AC","#5C8DD6","#66BB6A","#FFA040","#BA68C8","#FF8A65","#7C7CC4","#4FC3F7"];
+
+const MENU_ITEMS = [
+  {key:"removeAds",icon:"📵",premium:true},
+  {key:"referral",icon:"🎁",premium:false},
+  {key:"charts",icon:"📊",premium:false},
+  {key:"revenue",icon:"💰",premium:false},
+  {key:"transfersLog",icon:"↔️",premium:false},
+  {key:"summary",icon:"📋",premium:false},
+  {key:"accountsSummary",icon:"📋",premium:false},
+  {key:"allTransactions",icon:"☰",premium:false},
+  {key:"accounts",icon:"👥",premium:false},
+  {key:"transfer",icon:"↔️",premium:false},
+  {key:"allReport",icon:"📄",premium:true},
+  {key:"changeTo",icon:"↔️",premium:true},
+  {key:"noteBook",icon:"📓",premium:false},
+  {key:"calendar",icon:"📅",premium:false},
+  {key:"cashCalc",icon:"🧮",premium:false},
+  {key:"backup",icon:"⬆️",premium:true},
+  {key:"settings",icon:"⚙️",premium:false},
+  {key:"deletedTrans",icon:"🗑️",premium:false},
+  {key:"help",icon:"❓",premium:false},
+];
+
+const initExpenses = [
+  {id:1,name:"غداء مطعم",amount:45,type:"expense",category:0,location:"الرياض - حي النزهة",date:new Date().toISOString(),prevAmount:40,account:"cash",note:"",paymentMethod:"cash"},
+  {id:2,name:"راتب",amount:5000,type:"income",category:8,location:"",date:new Date(Date.now()-86400000).toISOString(),prevAmount:null,account:"bank",note:"راتب مارس",paymentMethod:"bank_transfer"},
+  {id:3,name:"وقود",amount:200,type:"expense",category:1,location:"محطة أرامكو",date:new Date(Date.now()-86400000*2).toISOString(),prevAmount:180,account:"cash",note:"",paymentMethod:"card"},
+  {id:4,name:"قميص",amount:120,type:"expense",category:2,location:"سيتي ووك",date:new Date(Date.now()-86400000*3).toISOString(),prevAmount:120,account:"wallet",note:"",paymentMethod:"apple_pay"},
+  {id:5,name:"إيجار",amount:1500,type:"expense",category:6,location:"",date:new Date(Date.now()-86400000*5).toISOString(),prevAmount:1500,account:"bank",note:"شهري",paymentMethod:"bank_transfer"},
+];
+
+function App() {
+  const [langCode, setLangCode] = useState("ar");
+  const [t, setT] = useState(T.ar);
+  const [langInfo, setLangInfo] = useState(LANGUAGES[0]);
+  const [expenses, setExpenses] = useState(()=>{ try{ const d=JSON.parse(localStorage.getItem("hs_data")||"{}"); return d.expenses||initExpenses; }catch(e){return initExpenses;} });
+  const [notes, setNotes] = useState(()=>{ try{ const d=JSON.parse(localStorage.getItem("hs_data")||"{}"); return d.notes||[]; }catch(e){return [];} });
+  const [deleted, setDeleted] = useState(()=>{ try{ const d=JSON.parse(localStorage.getItem("hs_data")||"{}"); return d.deleted||[]; }catch(e){return [];} });
+  const [showOnboarding, setShowOnboarding] = useState(()=>!localStorage.getItem("hs_onboarded"));
+  const [onboardStep, setOnboardStep] = useState(0);
+  const [activeTab, setActiveTab] = useState("month");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [customDateFrom, setCustomDateFrom] = useState("");
+  const [customDateTo, setCustomDateTo] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const [screen, setScreen] = useState("home");
+  const [showMenu, setShowMenu] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [showPremium, setShowPremium] = useState(false);
+  const [showLangPicker, setShowLangPicker] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardStep, setOnboardStep] = useState(0);
+  const [inputMode, setInputMode] = useState("manual");
+  const [isListening, setIsListening] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [budget, setBudget] = useState(3000);
+  const [notif, setNotif] = useState(null);
+  const [newExp, setNewExp] = useState({name:"",amount:"",category:0,location:"",account:"cash",note:"",type:"expense",paymentMethod:"cash"});
+  const [transferData, setTransferData] = useState({from:"cash",to:"bank",amount:"",note:"",direction:"out"});
+  const [transfers, setTransfers] = useState([
+    {id:1,from:"bank",to:"cash",amount:500,note:"سحب راتب",date:new Date(Date.now()-86400000*1).toISOString(),direction:"out"},
+    {id:2,from:"cash",to:"wallet",amount:200,note:"شحن محفظة",date:new Date(Date.now()-86400000*3).toISOString(),direction:"out"},
+  ]);
+  const [calcVal, setCalcVal] = useState("0");
+  const [calcExpr, setCalcExpr] = useState("");
+  const [newNote, setNewNote] = useState("");
+  const [calDate, setCalDate] = useState(new Date());
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+
+  const isRTL = langInfo.dir === "rtl";
+  const currency = langInfo.currency;
+
+  const changeLang = (code) => {
+    const info = LANGUAGES.find(l=>l.code===code);
+    setLangCode(code);
+    setLangInfo(info);
+    setT(T[code] || T.en);
+    setShowLangPicker(false);
+    notify("✅");
+  };
+
+  const notify = (msg) => { setNotif(msg); setTimeout(()=>setNotif(null),3000); };
+
+  const filterExp = (p) => {
+    const now = new Date();
+    return expenses.filter(e=>{
+      const d=new Date(e.date);
+      if(p==="today") return d.toDateString()===now.toDateString();
+      if(p==="week") return now-d<7*86400000;
+      if(p==="month") return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+      if(p==="year") return d.getFullYear()===now.getFullYear();
+      if(p==="custom"){
+        const from=customDateFrom?new Date(customDateFrom):null;
+        const to=customDateTo?new Date(customDateTo):null;
+        if(to) to.setHours(23,59,59,999);
+        if(from&&to) return d>=from&&d<=to;
+        if(from) return d>=from;
+        if(to) return d<=to;
+        return true;
+      }
+      return true;
+    });
+  };
+
+  const sumExp=(p)=>filterExp(p).filter(e=>e.type==="expense").reduce((s,e)=>s+e.amount,0);
+  const sumInc=(p)=>filterExp(p).filter(e=>e.type==="income").reduce((s,e)=>s+e.amount,0);
+  const bal=(p)=>sumInc(p)-sumExp(p);
+  const accBal=(acc)=>{
+    const i=expenses.filter(e=>e.account===acc&&e.type==="income").reduce((s,e)=>s+e.amount,0);
+    const x=expenses.filter(e=>e.account===acc&&e.type==="expense").reduce((s,e)=>s+e.amount,0);
+    return i-x;
+  };
+
+  const startCamera = async () => {
+    setInputMode("camera"); setIsCapturing(true);
+    try {
+      const s=await navigator.mediaDevices.getUserMedia({video:true});
+      streamRef.current=s;
+      if(videoRef.current) videoRef.current.srcObject=s;
+      setTimeout(()=>{
+        if(streamRef.current) streamRef.current.getTracks().forEach(t=>t.stop());
+        setIsCapturing(false); setInputMode("manual");
+        setNewExp(p=>({...p,name:"مشروب طاقة",amount:"8"}));
+        notify("📷 "+t.capturing.replace("...",""));
+      },3000);
+    } catch { setIsCapturing(false); setInputMode("manual"); notify("⚠️"); }
+  };
+
+  // ── SMART VOICE PARSER ────────────────────────────────────
+  const parseVoiceAmount = (text) => {
+    // 1. Direct number in text (e.g. "قهوة 15.5" or "coffee 7.50")
+    const numMatch = text.match(/[\d٠-٩]+[.,٫]?[\d٠-٩]*/g);
+    if(numMatch){
+      // Convert Arabic-Indic digits to Western
+      const normalized = numMatch[numMatch.length-1]
+        .replace(/[٠١٢٣٤٥٦٧٨٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+        .replace('،','.')
+        .replace(',','.');
+      const val = parseFloat(normalized);
+      if(!isNaN(val)) return { amount: String(val), name: text.replace(numMatch[numMatch.length-1],'').trim() };
+    }
+
+    // 2. Arabic fractional words
+    const arMap = {
+      'صفر':0,'واحد':1,'اثنين':2,'اثنان':2,'ثلاثة':3,'أربعة':4,'خمسة':5,
+      'ستة':6,'سبعة':7,'ثمانية':8,'تسعة':9,'عشرة':10,'أحد عشر':11,
+      'اثنا عشر':12,'خمسة عشر':15,'عشرين':20,'خمسة وعشرين':25,
+      'ثلاثين':30,'أربعين':40,'خمسين':50,'ستين':60,'سبعين':70,
+      'ثمانين':80,'تسعين':90,'مية':100,'مئة':100,'مائة':100,
+      'مية وخمسين':150,'مئتين':200,'خمسمية':500,'ألف':1000,
+    };
+    const arFrac = {'نصف':0.5,'ربع':0.25,'ثلث':0.333,'ثلاثة أرباع':0.75};
+
+    let amount = null;
+    let cleanText = text;
+
+    // Check for fraction words
+    for(const [word, val] of Object.entries(arFrac)){
+      if(text.includes(word)){
+        // Find the integer part before it
+        for(const [intWord, intVal] of Object.entries(arMap)){
+          if(text.includes(intWord)){
+            amount = intVal + val;
+            cleanText = text.replace(intWord,'').replace(word,'').replace('و','').trim();
+            break;
+          }
+        }
+        if(amount === null){ amount = val; cleanText = text.replace(word,'').trim(); }
+        break;
+      }
+    }
+
+    // Check for pure integer words
+    if(amount === null){
+      for(const [word, val] of Object.entries(arMap)){
+        if(text.includes(word)){
+          amount = val;
+          cleanText = text.replace(word,'').trim();
+          break;
+        }
+      }
+    }
+
+    // 3. English words
+    const enMap = {
+      'zero':0,'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,
+      'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12,'thirteen':13,
+      'fourteen':14,'fifteen':15,'sixteen':16,'seventeen':17,'eighteen':18,
+      'nineteen':19,'twenty':20,'thirty':30,'forty':40,'fifty':50,'sixty':60,
+      'seventy':70,'eighty':80,'ninety':90,'hundred':100,'thousand':1000,
+    };
+    const enFrac = {'half':0.5,'quarter':0.25,'point five':0.5,'and a half':0.5};
+
+    if(amount === null){
+      const ltext = text.toLowerCase();
+      for(const [word, val] of Object.entries(enFrac)){
+        if(ltext.includes(word)){
+          for(const [intWord, intVal] of Object.entries(enMap)){
+            if(ltext.includes(intWord)){
+              amount = intVal + val;
+              cleanText = text.replace(new RegExp(intWord,'gi'),'').replace(new RegExp(word,'gi'),'').trim();
+              break;
+            }
+          }
+          if(amount === null){ amount = val; cleanText = text.replace(new RegExp(word,'gi'),'').trim(); }
+          break;
+        }
+      }
+      // "point X" pattern e.g. "twenty point five"
+      const pointMatch = ltext.match(/(\w+)\s+point\s+(\w+)/);
+      if(pointMatch && amount === null){
+        const intPart = enMap[pointMatch[1]] ?? 0;
+        const decPart = enMap[pointMatch[2]] ?? parseFloat(pointMatch[2]);
+        amount = intPart + decPart/10;
+        cleanText = text.replace(pointMatch[0],'').trim();
+      }
+    }
+
+    if(amount !== null) return { amount: String(Math.round(amount*100)/100), name: cleanText||text };
+    return null;
+  };
+
+  const startVoice = () => {
+    setInputMode("voice"); setIsListening(true);
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    const langMap={ar:"ar-SA",en:"en-US",ur:"ur-PK",hi:"hi-IN",zh:"zh-CN",fr:"fr-FR",tl:"fil-PH",id:"id-ID",bn:"bn-BD",ne:"ne-NP",tr:"tr-TR",ms:"ms-MY"};
+    if(SR){
+      const r=new SR(); r.lang=langMap[langCode]||"en-US";
+      r.onresult=e=>{
+        const transcript = e.results[0][0].transcript;
+        const parsed = parseVoiceAmount(transcript);
+        if(parsed && parsed.amount){
+          // Found amount in speech
+          setNewExp(p=>({...p,
+            name: parsed.name || transcript,
+            amount: parsed.amount
+          }));
+          notify(`🎙️ ${parsed.name||transcript} · ${parsed.amount} ${currency}`);
+        } else {
+          // No amount detected — put full text as name
+          setNewExp(p=>({...p, name: transcript}));
+          notify(`🎙️ ${isRTL?"أدخل المبلغ يدوياً":"Enter amount manually"}`);
+        }
+        setIsListening(false); setInputMode("manual");
+      };
+      r.onerror=()=>{ setIsListening(false); setInputMode("manual"); notify("⚠️"); };
+      r.start(); setTimeout(()=>{ r.stop(); setIsListening(false); setInputMode("manual"); },7000);
+    } else {
+      setTimeout(()=>{ setIsListening(false); setNewExp(p=>({...p,name:"Item",amount:"10"})); setInputMode("manual"); },2500);
+    }
+  };
+
+  // Auto-save to localStorage
+  useEffect(()=>{
+    const t=setTimeout(()=>{ try{ localStorage.setItem("hs_data",JSON.stringify({expenses,notes,deleted})); }catch(e){} },800);
+    return ()=>clearTimeout(t);
+  },[expenses,notes,deleted]);
+
+  const finishOnboarding=()=>{ localStorage.setItem("hs_onboarded","1"); setShowOnboarding(false); setOnboardStep(0); };
+
+  const saveExpense = () => {
+    if(!newExp.name||!newExp.amount) return;
+    const ex=expenses.find(e=>e.name.toLowerCase()===newExp.name.toLowerCase()&&e.type===newExp.type);
+    setExpenses(p=>[{id:Date.now(),name:newExp.name,amount:parseFloat(newExp.amount),type:newExp.type,category:newExp.category,location:newExp.location||"",date:new Date().toISOString(),prevAmount:ex?ex.amount:null,account:newExp.account,note:newExp.note,paymentMethod:newExp.paymentMethod},...p]);
+    setNewExp({name:"",amount:"",category:0,location:"",account:"cash",note:"",type:"expense",paymentMethod:"cash"});
+    setShowAdd(false); notify("✅");
+  };
+
+  const delExpense=(id)=>{ const e=expenses.find(x=>x.id===id); setDeleted(p=>[...p,{...e,deletedAt:new Date().toISOString()}]); setExpenses(p=>p.filter(x=>x.id!==id)); notify("🗑️"); };
+  const restoreExp=(id)=>{ const e=deleted.find(x=>x.id===id); setExpenses(p=>[e,...p]); setDeleted(p=>p.filter(x=>x.id!==id)); notify("↩️"); };
+
+  const doTransfer=()=>{
+    if(!transferData.amount||transferData.from===transferData.to) return;
+    const a=parseFloat(transferData.amount);
+    const newTransfer={id:Date.now(),from:transferData.from,to:transferData.to,amount:a,note:transferData.note||t.transfer,date:new Date().toISOString(),direction:"out"};
+    setTransfers(p=>[newTransfer,...p]);
+    setExpenses(p=>[
+      {id:Date.now(),name:`↗ ${isRTL?"حوالة إلى":"Transfer to"} ${t[transferData.to]}`,amount:a,type:"expense",category:8,location:"",date:new Date().toISOString(),prevAmount:null,account:transferData.from,note:transferData.note||t.transfer,transferId:newTransfer.id},
+      {id:Date.now()+1,name:`↙ ${isRTL?"حوالة من":"Transfer from"} ${t[transferData.from]}`,amount:a,type:"income",category:8,location:"",date:new Date().toISOString(),prevAmount:null,account:transferData.to,note:transferData.note||t.transfer,transferId:newTransfer.id},
+      ...p
+    ]);
+    setTransferData({from:"cash",to:"bank",amount:"",note:"",direction:"out"});
+    setScreen("home"); notify(`✅ ${a} ${currency}`);
+  };
+
+  const diffPrice=(curr,prev)=>{ if(!prev) return null; const d=curr-prev,pct=((d/prev)*100).toFixed(1); return {d,pct,type:d<0?"cheaper":d>0?"expensive":"same"}; };
+
+  const calcPress=(v)=>{
+    if(v==="="){try{setCalcVal(String(eval(calcExpr||calcVal)));setCalcExpr("");}catch{setCalcVal("Err");}}
+    else if(v==="C"){setCalcVal("0");setCalcExpr("");}
+    else if(v==="⌫"){setCalcExpr(p=>p.slice(0,-1));setCalcVal(p=>p.length>1?p.slice(0,-1):"0");}
+    else if(["+","-","×","÷"].includes(v)){const op=v==="×"?"*":v==="÷"?"/":v;setCalcExpr(p=>(p||calcVal)+op);setCalcVal(v);}
+    else{setCalcVal(p=>p==="0"||["+","-","×","÷"].includes(p)?v:p+v);setCalcExpr(p=>p+v);}
+  };
+
+  const greeting=()=>{ const h=new Date().getHours(); return h<12?t.greeting_morning:h<17?t.greeting_afternoon:t.greeting_evening; };
+
+  // Payment method helper — must be defined before searchResults
+  const PM_MAP = {
+    cash:         {icon:"💵", labelAr:"كاش",         labelEn:"Cash",          color:"#4ade80"},
+    card:         {icon:"💳", labelAr:"بطاقة",        labelEn:"Card",          color:"#60a5fa"},
+    apple_pay:    {icon:"📱", labelAr:"Apple Pay",    labelEn:"Apple Pay",     color:"#1e3a5f"},
+    stc_pay:      {icon:"🟣", labelAr:"STC Pay",      labelEn:"STC Pay",       color:"#c084fc"},
+    bank_transfer:{icon:"🏦", labelAr:"تحويل بنكي",  labelEn:"Bank Transfer", color:"#fbbf24"},
+    tabby:        {icon:"🛍️", labelAr:"تابي/تمارا",  labelEn:"Tabby/Tamara",  color:"#f472b6"},
+  };
+  const pmBadge=(pm)=>{
+    const p=PM_MAP[pm]||PM_MAP.cash;
+    return (
+      <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:6,background:`${p.color}18`,border:`1px solid ${p.color}44`,color:p.color}}>
+        {p.icon} {isRTL?p.labelAr:p.labelEn}
+      </span>
+    );
+  };
+
+  const curExps=filterExp(activeTab);
+  const searchResults = searchQuery.trim() ? expenses.filter(e=>{
+    const q=searchQuery.toLowerCase();
+    const catName=(t.categories[e.category]||"").toLowerCase();
+    const pm=PM_MAP[e.paymentMethod];
+    const pmLabel=pm?(isRTL?pm.labelAr:pm.labelEn).toLowerCase():"";
+    return (
+      e.name.toLowerCase().includes(q) ||
+      (e.location||"").toLowerCase().includes(q) ||
+      (e.note||"").toLowerCase().includes(q) ||
+      catName.includes(q) ||
+      pmLabel.includes(q) ||
+      String(e.amount).includes(q) ||
+      new Date(e.date).toLocaleDateString().includes(q)
+    );
+  }) : [];
+  const LangPicker = () => (
+    <div style={{padding:0}}>
+      <div style={{fontSize:15,fontWeight:800,color:"#1e3a5f",marginBottom:16,padding:"0 4px"}}>{t.selectLang}</div>
+
+      {/* Group by region */}
+      {[
+        { label: isRTL?"اللغات العربية والإسلامية":"Arabic & Islamic Languages", codes:["ar","ur"] },
+        { label: isRTL?"جنوب آسيا":"South Asia", codes:["hi","bn","ne","si"] },
+        { label: isRTL?"جنوب شرق آسيا":"Southeast Asia", codes:["tl","id","ms"] },
+        { label: isRTL?"شرق آسيا":"East Asia", codes:["zh"] },
+        { label: isRTL?"أوروبا وتركيا":"Europe & Turkey", codes:["en","fr","tr"] },
+        { label: isRTL?"أفريقيا":"Africa", codes:["yo","so","am"] },
+      ].map(group=>(
+        <div key={group.label} style={{marginBottom:16}}>
+          <div style={{fontSize:10,color:"#6b7280",fontWeight:600,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.05em"}}>{group.label}</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {group.codes.map(code=>{
+              const info=LANGUAGES.find(l=>l.code===code);
+              if(!info) return null;
+              const active=langCode===code;
+              return (
+                <button key={code} onClick={()=>changeLang(code)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:14,border:active?"1px solid rgba(59,130,246,0.6)":"1px solid rgba(255,255,255,0.07)",background:active?"rgba(59,130,246,0.2)":"rgba(255,255,255,0.04)",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s",textAlign:isRTL?"right":"left"}}>
+                  <span style={{fontSize:22,flexShrink:0}}>{info.flag}</span>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:600,color:active?"#BAD4FD":"#DBEAFE"}}>{info.label}</div>
+                    <div style={{fontSize:10,color:"#6b7280"}}>{info.currency} · {info.currencyCode}</div>
+                  </div>
+                  {active && <span style={{marginInlineStart:"auto",color:"#3B82F6",fontSize:16}}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // ── HOME ───────────────────────────────────────────────────
+  const HomeScreen = () => (
+    <>
+      {/* ══ BALANCE CARD ══ */}
+      <div style={{background:"#ffffff",borderRadius:24,padding:"24px 20px",marginBottom:12,boxShadow:"0 4px 24px rgba(0,0,0,0.06)",border:"1px solid #EFF6FF"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+          <div style={{fontSize:12,color:"#9ca3af",fontWeight:500}}>{t.balance} · {activeTab==="custom"?(isRTL?"مخصص":"Custom"):t[activeTab]}</div>
+          <button onClick={()=>setShowLangPicker(true)} style={{background:"#EFF6FF",border:"none",borderRadius:10,padding:"5px 10px",cursor:"pointer",display:"flex",alignItems:"center",gap:5,fontSize:13,color:"#1D4ED8",fontFamily:"inherit"}}>
+            <span>{langInfo.flag}</span><span style={{fontSize:11,fontWeight:600}}>{langInfo.currencyCode}</span>
+          </button>
+        </div>
+        <div style={{fontSize:52,fontWeight:900,color:"#1a1a2e",lineHeight:1,marginBottom:20,letterSpacing:"-2px"}}>
+          {bal(activeTab).toLocaleString()} <span style={{fontSize:18,color:"#b0b8c8",fontWeight:500}}>{currency}</span>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <div style={{background:"#f0fdf4",borderRadius:16,padding:"14px 16px",border:"1px solid #dcfce7"}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+              <div style={{width:28,height:28,borderRadius:10,background:"#22c55e",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>↓</div>
+              <span style={{fontSize:12,color:"#6b7280",fontWeight:600}}>{t.income}</span>
+            </div>
+            <div style={{fontSize:24,fontWeight:900,color:"#15803d",letterSpacing:"-0.5px"}}>{sumInc(activeTab).toLocaleString()}</div>
+            <div style={{fontSize:11,color:"#86efac",fontWeight:500}}>{currency}</div>
+          </div>
+          <div style={{background:"#fff5f5",borderRadius:16,padding:"14px 16px",border:"1px solid #fee2e2"}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+              <div style={{width:28,height:28,borderRadius:10,background:"#ef4444",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"white"}}>↑</div>
+              <span style={{fontSize:12,color:"#6b7280",fontWeight:600}}>{t.totalSpent}</span>
+            </div>
+            <div style={{fontSize:24,fontWeight:900,color:"#dc2626",letterSpacing:"-0.5px"}}>{sumExp(activeTab).toLocaleString()}</div>
+            <div style={{fontSize:11,color:"#fca5a5",fontWeight:500}}>{currency}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ══ PERIOD TABS ══ */}
+      <div style={{display:"flex",gap:4,marginBottom:12,padding:4,background:"#f3f4f6",borderRadius:14}}>
+        {["today","week","month","year"].map(p=>(
+          <button key={p} onClick={()=>setActiveTab(p)} style={{flex:1,padding:"8px 0",borderRadius:10,border:"none",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"inherit",background:activeTab===p?"#ffffff":"transparent",color:activeTab===p?"#1D4ED8":"#9ca3af",boxShadow:activeTab===p?"0 2px 8px rgba(0,0,0,0.08)":"none",transition:"all 0.2s"}}>
+            {t[p]}
+          </button>
+        ))}
+        <button onClick={()=>{setActiveTab("custom");setShowDatePicker(true);}} style={{flex:1,padding:"8px 0",borderRadius:10,border:"none",cursor:"pointer",fontSize:15,fontFamily:"inherit",background:activeTab==="custom"?"#ffffff":"transparent",color:activeTab==="custom"?"#1D4ED8":"#9ca3af",boxShadow:activeTab==="custom"?"0 2px 8px rgba(0,0,0,0.08)":"none"}}>
+          📅
+        </button>
+      </div>
+
+      {/* Custom Date Range */}
+      {activeTab==="custom"&&(
+        <div style={{marginBottom:12}}>
+          <button onClick={()=>setShowDatePicker(true)} style={{width:"100%",background:"#EFF6FF",border:"1px solid #DBEAFE",borderRadius:14,padding:"10px 14px",cursor:"pointer",fontFamily:"inherit",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              <span>📅</span>
+              <div style={{textAlign:isRTL?"right":"left"}}>
+                {customDateFrom||customDateTo?<div style={{fontSize:12,color:"#1E40AF",fontWeight:600}}>{customDateFrom?new Date(customDateFrom).toLocaleDateString():"..."} → {customDateTo?new Date(customDateTo).toLocaleDateString():isRTL?"حتى الآن":"Until now"}</div>:<div style={{fontSize:12,color:"#9ca3af"}}>{isRTL?"اختر نطاق التاريخ":"Select date range"}</div>}
+                <div style={{fontSize:10,color:"#9ca3af",marginTop:2}}>{filterExp("custom").length} {isRTL?"معاملة":"transactions"}</div>
+              </div>
+            </div>
+            <span style={{color:"#3B82F6"}}>✏️</span>
+          </button>
+          <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
+            {[{labelAr:"آخر 3 أيام",labelEn:"Last 3d",days:3},{labelAr:"آخر 30 يوم",labelEn:"Last 30d",days:30},{labelAr:"آخر 90 يوم",labelEn:"Last 90d",days:90},{labelAr:"هذا الربع",labelEn:"This quarter",quarter:true}].map((p,i)=>{
+              const ap=()=>{const now=new Date();const to=now.toISOString().split("T")[0];let from;if(p.quarter){const q=Math.floor(now.getMonth()/3);from=new Date(now.getFullYear(),q*3,1).toISOString().split("T")[0];}else{from=new Date(now-p.days*86400000).toISOString().split("T")[0];}setCustomDateFrom(from);setCustomDateTo(to);setShowDatePicker(false);};
+              return <button key={i} onClick={ap} style={{padding:"5px 12px",borderRadius:20,border:"1px solid #DBEAFE",background:"#EFF6FF",color:"#1D4ED8",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>{isRTL?p.labelAr:p.labelEn}</button>;
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ══ BUDGET CARD ══ */}
+      <div style={{background:"#ffffff",borderRadius:20,padding:"16px",marginBottom:12,boxShadow:"0 2px 12px rgba(0,0,0,0.04)",border:"1px solid #EFF6FF"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <span>🎯</span>
+            <span style={{fontSize:14,fontWeight:700,color:"#1a1a2e"}}>{t.budget}</span>
+          </div>
+          <button onClick={()=>setScreen("settings")} style={{background:"#EFF6FF",border:"none",color:"#1D4ED8",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:600}}>✏️ {isRTL?"تعديل":"Edit"}</button>
+        </div>
+        <div style={{background:"#f3f4f6",borderRadius:8,height:8,overflow:"hidden",marginBottom:8}}>
+          <div style={{height:"100%",width:`${Math.min((sumExp("month")/budget)*100,100)}%`,background:sumExp("month")>budget?"#ef4444":sumExp("month")/budget>0.7?"#f59e0b":"#1D4ED8",borderRadius:8,transition:"width 0.5s ease"}}/>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#6b7280"}}>
+          <span style={{color:sumExp("month")>budget?"#ef4444":"inherit"}}>{sumExp("month")>budget?`⚠️ ${t.over}`:`${t.remaining}: ${(budget-sumExp("month")).toLocaleString()} ${currency}`}</span>
+          <span>{Math.round((sumExp("month")/budget)*100)}% · {budget.toLocaleString()} {currency}</span>
+        </div>
+      </div>
+
+      {/* ══ ACCOUNT CARDS ══ */}
+      <div style={{display:"flex",gap:8,marginBottom:12,overflowX:"auto",paddingBottom:2}}>
+        {["cash","bank","wallet"].map(acc=>(
+          <div key={acc} style={{flex:"0 0 auto",background:"#ffffff",border:"1px solid #EFF6FF",borderRadius:16,padding:"12px 16px",minWidth:105,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+            <div style={{fontSize:22,marginBottom:4}}>{acc==="cash"?"💵":acc==="bank"?"🏦":"👜"}</div>
+            <div style={{fontSize:11,color:"#9ca3af",marginBottom:2}}>{t[acc]}</div>
+            <div style={{fontSize:15,fontWeight:800,color:accBal(acc)>=0?"#1a1a2e":"#ef4444"}}>{accBal(acc).toLocaleString()}</div>
+            <div style={{fontSize:10,color:"#9ca3af"}}>{currency}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ══ QUICK ACCESS ══ */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+        <button onClick={()=>setScreen("revenue")} style={{background:"#f0fdf4",border:"1px solid #dcfce7",borderRadius:16,padding:"14px",cursor:"pointer",fontFamily:"inherit",textAlign:isRTL?"right":"left"}}>
+          <div style={{fontSize:20,marginBottom:6}}>💰</div>
+          <div style={{fontSize:12,fontWeight:700,color:"#15803d",marginBottom:2}}>{isRTL?"الإيرادات":"Revenue"}</div>
+          <div style={{fontSize:18,fontWeight:900,color:"#1a1a2e"}}>{sumInc(activeTab).toLocaleString()}</div>
+          <div style={{fontSize:10,color:"#9ca3af"}}>{currency}</div>
+        </button>
+        <button onClick={()=>setScreen("transfersLog")} style={{background:"#EFF6FF",border:"1px solid #DBEAFE",borderRadius:16,padding:"14px",cursor:"pointer",fontFamily:"inherit",textAlign:isRTL?"right":"left"}}>
+          <div style={{fontSize:20,marginBottom:6}}>↔️</div>
+          <div style={{fontSize:12,fontWeight:700,color:"#1D4ED8",marginBottom:2}}>{isRTL?"الحوالات":"Transfers"}</div>
+          <div style={{fontSize:18,fontWeight:900,color:"#1a1a2e"}}>{transfers.length}</div>
+          <div style={{fontSize:10,color:"#9ca3af"}}>{isRTL?"عملية":"operations"}</div>
+        </button>
+      </div>
+
+      {/* ══ REFERRAL ══ */}
+      <button onClick={()=>setScreen("referral")} style={{width:"100%",marginBottom:14,background:"#fffbeb",border:"1px solid #fde68a",borderRadius:18,padding:"14px 18px",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:12,textAlign:isRTL?"right":"left"}}>
+        <div style={{fontSize:30,flexShrink:0}}>🎁</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:13,fontWeight:800,color:"#92400e",marginBottom:2}}>{isRTL?"شارك واربح جوائز قيّمة!":"Share & Win Amazing Prizes!"}</div>
+          <div style={{fontSize:11,color:"#b45309"}}>{isRTL?"أدعُ أصدقاءك وادر عجلة الحظ 🎡":"Invite friends and spin the lucky wheel 🎡"}</div>
+        </div>
+        <span style={{color:"#f59e0b",fontSize:16}}>›</span>
+      </button>
+
+      {/* ══ TRANSACTIONS HEADER ══ */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+        <div style={{fontSize:15,fontWeight:700,color:"#1a1a2e"}}>{t.expenses} <span style={{fontSize:12,color:"#9ca3af",fontWeight:400}}>({curExps.length})</span></div>
+        <div style={{display:"flex",gap:6}}>
+          <button onClick={()=>setShowSearch(v=>!v)} style={{background:"#EFF6FF",border:"none",color:"#1D4ED8",width:34,height:34,borderRadius:10,cursor:"pointer",fontSize:14}}>🔍</button>
+          <button onClick={()=>setScreen("charts")} style={{background:"#EFF6FF",border:"none",color:"#1D4ED8",width:34,height:34,borderRadius:10,cursor:"pointer",fontSize:14}}>📊</button>
+          <button onClick={()=>setShowAdd(true)} style={{background:"#1D4ED8",border:"none",color:"white",padding:"0 14px",height:34,borderRadius:10,cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>+ {t.addExpense}</button>
+        </div>
+      </div>
+
+      {/* Search Input */}
+      {showSearch&&(
+        <div style={{marginBottom:10,display:"flex",gap:8}}>
+          <div style={{flex:1,position:"relative"}}>
+            <span style={{position:"absolute",[isRTL?"right":"left"]:12,top:"50%",transform:"translateY(-50%)",fontSize:14,pointerEvents:"none",color:"#9ca3af"}}>🔍</span>
+            <input autoFocus className="inp" style={{paddingInlineStart:38,borderRadius:12}} placeholder={isRTL?"ابحث...":"Search..."} value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} />
+          </div>
+          <button onClick={()=>{setShowSearch(false);setSearchQuery("");}} style={{background:"#fee2e2",border:"none",color:"#ef4444",width:40,borderRadius:12,cursor:"pointer",fontSize:14}}>✕</button>
+        </div>
+      )}
+
+      {/* Transactions List */}
+      {(showSearch ? searchResults : curExps).length===0?(
+        <div style={{textAlign:"center",padding:"50px 20px",color:"#9ca3af"}}>
+          <div style={{fontSize:48,marginBottom:12}}>{showSearch&&searchQuery?"🔍":"💸"}</div>
+          <div>{showSearch&&searchQuery?(isRTL?`لا توجد نتائج لـ "${searchQuery}"`:`No results for "${searchQuery}"`):t.noExpenses}</div>
+        </div>
+      ):(showSearch ? searchResults : curExps).map(e=>{
+        const diff=diffPrice(e.amount,e.prevAmount);
+        const q=searchQuery.toLowerCase();
+        // Highlight helper
+        const hl=(text)=>{
+          if(!showSearch||!q||!text) return text;
+          const idx=text.toLowerCase().indexOf(q);
+          if(idx===-1) return text;
+          return <>{text.slice(0,idx)}<mark style={{background:"rgba(59,130,246,0.4)",color:"#1e3a5f",borderRadius:3,padding:"0 2px"}}>{text.slice(idx,idx+q.length)}</mark>{text.slice(idx+q.length)}</>;
+        };
+        return (
+          <div key={e.id} style={{background:"#ffffff",border:"none",borderRadius:20,padding:"16px",marginBottom:8,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div style={{display:"flex",gap:12,flex:1}}>
+                <div style={{width:50,height:50,borderRadius:16,background:`${CAT_COLORS[e.category]}18`,border:`1.5px solid ${CAT_COLORS[e.category]}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{(t.categories[e.category]||"📦").split(" ")[0]}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:700,fontSize:15,color:"#1a1a2e",marginBottom:3}}>{hl(e.name)}</div>
+                  <div style={{fontSize:11,color:"#b0b8c8",display:"flex",flexWrap:"wrap",gap:6}}>
+                    {e.location&&<span>📍 {hl(e.location)}</span>}
+                    <span>{e.account==="cash"?"💵":e.account==="bank"?"🏦":"👜"} {t[e.account]}</span>
+                    {e.note&&<span>📝 {hl(e.note)}</span>}
+                  </div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:5,marginTop:5}}>
+                    {e.paymentMethod && pmBadge(e.paymentMethod)}
+                    {diff&&<span style={{display:"inline-block",fontSize:10,fontWeight:600,padding:"2px 7px",borderRadius:5,background:diff.type==="cheaper"?"rgba(74,222,128,0.15)":diff.type==="expensive"?"rgba(239,68,68,0.15)":"rgba(156,163,175,0.1)",color:diff.type==="cheaper"?"#4ade80":diff.type==="expensive"?"#ef4444":"#9ca3af"}}>{diff.type==="cheaper"?"▼":diff.type==="expensive"?"▲":"="} {Math.abs(diff.pct)}% {diff.type==="cheaper"?t.cheaper:diff.type==="expensive"?t.expensive:""}</span>}
+                  </div>
+                </div>
+              </div>
+              <div style={{textAlign:isRTL?"left":"right",flexShrink:0}}>
+                <div style={{fontWeight:900,fontSize:20,color:e.type==="income"?"#16a34a":"#dc2626",letterSpacing:"-0.5px"}}>{e.type==="income"?"+":"-"}{e.amount.toLocaleString()}</div>
+                <div style={{fontSize:10,color:"#b0b8c8",marginBottom:6}}>{currency} · {new Date(e.date).toLocaleDateString()}</div>
+                <button onClick={()=>delExpense(e.id)} style={{background:"rgba(239,68,68,0.07)",border:"none",color:"#ef4444",borderRadius:8,padding:"3px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>{t.delete}</button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+
+  const SummaryScreen=()=>{
+    const cats=t.categories.map((c,i)=>({name:c,total:expenses.filter(e=>e.category===i&&e.type==="expense").reduce((s,e)=>s+e.amount,0),color:CAT_COLORS[i]})).filter(c=>c.total>0).sort((a,b)=>b.total-a.total);
+    const mx=Math.max(...cats.map(c=>c.total),1);
+    return (
+      <div>
+        <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>📋 {t.summary}</div>
+        {["today","week","month","year"].map(p=>(
+          <div key={p} style={{background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:14,padding:"12px 16px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{color:"#6b7280",fontSize:13}}>{t[p]}</span>
+            <div style={{textAlign:"end"}}><div style={{fontSize:14,fontWeight:700,color:"#ef4444"}}>↑ {sumExp(p).toLocaleString()} {currency}</div><div style={{fontSize:13,fontWeight:600,color:"#4ade80"}}>↓ {sumInc(p).toLocaleString()} {currency}</div></div>
+          </div>
+        ))}
+        <div style={{fontSize:14,fontWeight:700,color:"#1e3a5f",margin:"20px 0 12px"}}>📊 {t.category}</div>
+        {cats.map((c,i)=>(
+          <div key={i} style={{marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:4}}><span style={{color:"#1E40AF"}}>{c.name}</span><span style={{color:"#6b7280"}}>{c.total.toLocaleString()} {currency}</span></div>
+            <div style={{background:"#DBEAFE",borderRadius:6,height:8,overflow:"hidden"}}><div style={{height:"100%",width:`${(c.total/mx)*100}%`,background:c.color,borderRadius:6}}/></div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const AccountsSummaryScreen=()=>(
+    <div>
+      <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>📋 {t.accountsSummary}</div>
+      {["cash","bank","wallet"].map(acc=>{
+        const inc=expenses.filter(e=>e.account===acc&&e.type==="income").reduce((s,e)=>s+e.amount,0);
+        const exp=expenses.filter(e=>e.account===acc&&e.type==="expense").reduce((s,e)=>s+e.amount,0);
+        const b=inc-exp;
+        return (
+          <div key={acc} style={{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:18,padding:18,marginBottom:12}}>
+            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+              <span style={{fontSize:30}}>{acc==="cash"?"💵":acc==="bank"?"🏦":"👜"}</span>
+              <div><div style={{fontWeight:700,fontSize:15,color:"#1e3a5f"}}>{t[acc]}</div><div style={{fontSize:24,fontWeight:900,color:b>=0?"#93C5FD":"#ef4444"}}>{b.toLocaleString()} {currency}</div></div>
+            </div>
+            <div style={{display:"flex",gap:10}}>
+              <div style={{flex:1,background:"rgba(74,222,128,0.08)",borderRadius:10,padding:"8px 10px"}}><div style={{fontSize:10,color:"#4ade80"}}>↓ {t.income}</div><div style={{fontWeight:700,color:"#4ade80",fontSize:14}}>{inc.toLocaleString()}</div></div>
+              <div style={{flex:1,background:"rgba(239,68,68,0.08)",borderRadius:10,padding:"8px 10px"}}><div style={{fontSize:10,color:"#ef4444"}}>↑ {t.totalSpent}</div><div style={{fontWeight:700,color:"#ef4444",fontSize:14}}>{exp.toLocaleString()}</div></div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const AllTransactionsScreen=()=>(
+    <div>
+      <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>☰ {t.allTransactions}</div>
+      {expenses.length===0?<div style={{textAlign:"center",color:"#9ca3af",padding:40}}>{t.noExpenses}</div>:
+        expenses.map(e=>(
+          <div key={e.id} style={{background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:14,padding:"12px 14px",marginBottom:8,borderInlineStart:`3px solid ${e.type==="income"?"#4ade80":"#ef4444"}`}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div><div style={{fontWeight:600,fontSize:13,color:"#1a1a2e"}}>{e.name}</div>
+                <div style={{fontSize:11,color:"#6b7280",display:"flex",flexWrap:"wrap",gap:6,marginTop:2}}>
+                  <span>{new Date(e.date).toLocaleDateString()} · {t[e.account]}</span>
+                  {e.paymentMethod && pmBadge(e.paymentMethod)}
+                </div>
+              </div>
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <div style={{fontWeight:800,fontSize:14,color:e.type==="income"?"#4ade80":"#ef4444"}}>{e.type==="income"?"+":"-"}{e.amount} {currency}</div>
+                <button onClick={()=>delExpense(e.id)} style={{background:"transparent",border:"none",color:"#ef4444",cursor:"pointer",fontSize:18}}>×</button>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  );
+
+  const TransferScreen=()=>(
+    <div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+        <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f"}}>↔️ {t.transfer}</div>
+        <button onClick={()=>setScreen("transfersLog")} style={{background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.3)",color:"#1D4ED8",padding:"6px 12px",borderRadius:10,cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>📋 {isRTL?"السجل":"History"}</button>
+      </div>
+      <div style={{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:18,padding:20}}>
+        <div style={{marginBottom:14}}><div style={{fontSize:12,color:"#6b7280",marginBottom:6}}>{t.transferFrom}</div>
+          <select className="inp" value={transferData.from} onChange={e=>setTransferData(p=>({...p,from:e.target.value}))}>
+            <option value="cash">💵 {t.cash}</option><option value="bank">🏦 {t.bank}</option><option value="wallet">👜 {t.wallet}</option>
+          </select>
+        </div>
+        <div style={{textAlign:"center",fontSize:24,color:"#3B82F6",margin:"6px 0"}}>⬇️</div>
+        <div style={{marginBottom:14}}><div style={{fontSize:12,color:"#6b7280",marginBottom:6}}>{t.transferTo}</div>
+          <select className="inp" value={transferData.to} onChange={e=>setTransferData(p=>({...p,to:e.target.value}))}>
+            <option value="cash">💵 {t.cash}</option><option value="bank">🏦 {t.bank}</option><option value="wallet">👜 {t.wallet}</option>
+          </select>
+        </div>
+        <div style={{marginBottom:14}}><div style={{fontSize:12,color:"#6b7280",marginBottom:6}}>{t.amount} ({currency})</div>
+          <input className="inp" type="number" placeholder="0" value={transferData.amount} onChange={e=>setTransferData(p=>({...p,amount:e.target.value}))}/>
+        </div>
+        <div style={{marginBottom:20}}><div style={{fontSize:12,color:"#6b7280",marginBottom:6}}>📝 {isRTL?"ملاحظة (اختياري)":"Note (optional)"}</div>
+          <input className="inp" placeholder={isRTL?"سبب الحوالة...":"Transfer reason..."} value={transferData.note} onChange={e=>setTransferData(p=>({...p,note:e.target.value}))}/>
+        </div>
+        {/* Preview */}
+        {transferData.amount && transferData.from!==transferData.to && (
+          <div style={{background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.25)",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontSize:12,color:"#6b7280"}}>{t[transferData.from]} → {t[transferData.to]}</span>
+            <span style={{fontWeight:700,color:"#1E40AF",fontSize:14}}>{parseFloat(transferData.amount||0).toLocaleString()} {currency}</span>
+          </div>
+        )}
+        <button onClick={doTransfer} style={{width:"100%",background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"#1a1a2e",padding:14,borderRadius:14,cursor:"pointer",fontSize:15,fontWeight:700,fontFamily:"inherit"}}>{t.confirm} ↔️</button>
+      </div>
+    </div>
+  );
+
+  const NoteBookScreen=()=>(
+    <div>
+      <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>📓 {t.noteBook}</div>
+      <div style={{display:"flex",gap:8,marginBottom:16}}>
+        <input className="inp" style={{flex:1}} placeholder={t.addNote} value={newNote} onChange={e=>setNewNote(e.target.value)}/>
+        <button onClick={()=>{ if(newNote.trim()){setNotes(p=>[{id:Date.now(),text:newNote,date:new Date().toISOString()},...p]);setNewNote("");notify("✅");}}} style={{background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"#1a1a2e",padding:"10px 18px",borderRadius:12,cursor:"pointer",fontSize:18}}>+</button>
+      </div>
+      {notes.map(n=>(
+        <div key={n.id} style={{background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:14,padding:"12px 16px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div><div style={{fontSize:14,color:"#1e3a5f",marginBottom:4}}>📝 {n.text}</div><div style={{fontSize:11,color:"#6b7280"}}>{new Date(n.date).toLocaleDateString()}</div></div>
+          <button onClick={()=>setNotes(p=>p.filter(x=>x.id!==n.id))} style={{background:"transparent",border:"none",color:"#ef4444",cursor:"pointer",fontSize:18}}>×</button>
+        </div>
+      ))}
+    </div>
+  );
+
+  const CalendarScreen=()=>{
+    const y=calDate.getFullYear(),m=calDate.getMonth();
+    const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
+    const cells=[...Array(first).fill(null),...Array.from({length:days},(_,i)=>i+1)];
+    const dow=isRTL?["أح","إث","ثل","أر","خم","جم","سب"]:["Su","Mo","Tu","We","Th","Fr","Sa"];
+    return (
+      <div>
+        <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>📅 {t.calendar}</div>
+        <div style={{background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:18,padding:16}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+            <button onClick={()=>setCalDate(new Date(y,m-1,1))} style={{background:"rgba(59,130,246,0.2)",border:"none",color:"#1D4ED8",cursor:"pointer",borderRadius:8,width:32,height:32,fontSize:16}}>‹</button>
+            <div style={{fontWeight:700,fontSize:14,color:"#1e3a5f"}}>{calDate.toLocaleDateString("en-US",{month:"long",year:"numeric"})}</div>
+            <button onClick={()=>setCalDate(new Date(y,m+1,1))} style={{background:"rgba(59,130,246,0.2)",border:"none",color:"#1D4ED8",cursor:"pointer",borderRadius:8,width:32,height:32,fontSize:16}}>›</button>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,marginBottom:6}}>
+            {dow.map(d=><div key={d} style={{textAlign:"center",fontSize:10,color:"#6b7280",padding:"4px 0"}}>{d}</div>)}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4}}>
+            {cells.map((d,i)=>{
+              const has=d&&expenses.some(e=>{const dd=new Date(e.date);return dd.getDate()===d&&dd.getMonth()===m&&dd.getFullYear()===y;});
+              const today=d&&new Date().getDate()===d&&new Date().getMonth()===m&&new Date().getFullYear()===y;
+              return (
+                <div key={i} style={{aspectRatio:"1",borderRadius:8,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",background:today?"linear-gradient(135deg,#3B82F6,#2563EB)":has?"rgba(59,130,246,0.15)":"transparent",border:today?"none":has?"1px solid rgba(59,130,246,0.3)":"1px solid transparent"}}>
+                  <span style={{fontSize:12,color:today?"white":d?"#BAD4FD":"transparent",fontWeight:today?700:400}}>{d||""}</span>
+                  {has&&!today&&<div style={{width:4,height:4,borderRadius:"50%",background:"#3B82F6",position:"absolute",bottom:2}}/>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const CashCalcScreen=()=>{
+    const btns=[["÷","","⌫","C"],["×","9","8","7"],["-","6","5","4"],["+","3","2","1"],["","=","0","."]];
+    return (
+      <div>
+        <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>🧮 {t.cashCalc}</div>
+        <div style={{background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:18,padding:18}}>
+          <div style={{background:"rgba(0,0,0,0.3)",borderRadius:12,padding:"16px 18px",marginBottom:16,textAlign:"end",minHeight:80}}>
+            <div style={{fontSize:12,color:"#6b7280",marginBottom:4,minHeight:18}}>{calcExpr}</div>
+            <div style={{fontSize:34,fontWeight:700,color:"#1E40AF"}}>{calcVal}</div>
+          </div>
+          {btns.map((row,i)=>(
+            <div key={i} style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:8}}>
+              {row.map((b,j)=>b?(
+                <button key={j} onClick={()=>calcPress(b)} style={{padding:"16px 0",borderRadius:12,border:"none",cursor:"pointer",fontSize:18,fontWeight:600,fontFamily:"inherit",background:["+","-","×","÷"].includes(b)?"rgba(59,130,246,0.3)":b==="="?"linear-gradient(135deg,#3B82F6,#2563EB)":b==="C"?"rgba(239,68,68,0.2)":b==="⌫"?"rgba(245,158,11,0.2)":"rgba(255,255,255,0.06)",color:"#1e3a5f"}}>{b}</button>
+              ):<div key={j}/>)}
+            </div>
+          ))}
+          <button onClick={()=>{ if(calcVal&&!isNaN(parseFloat(calcVal))){setNewExp(p=>({...p,amount:calcVal}));setShowAdd(true);}}} style={{width:"100%",background:"rgba(74,222,128,0.1)",border:"1px solid rgba(74,222,128,0.2)",color:"#4ade80",padding:12,borderRadius:12,cursor:"pointer",fontFamily:"inherit",fontSize:13,marginTop:4}}>
+            ➕ {t.addExpense}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const DeletedTransScreen=()=>(
+    <div>
+      <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>🗑️ {t.deletedTrans}</div>
+      {deleted.length===0?<div style={{textAlign:"center",padding:50,color:"#9ca3af"}}><div style={{fontSize:40}}>🗑️</div><div style={{marginTop:8}}>{t.noExpenses}</div></div>:
+        deleted.map(e=>(
+          <div key={e.id} style={{background:"#f9f7ff",border:"1px solid #DBEAFE",borderRadius:14,padding:"12px 16px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontSize:13,color:"#6b7280"}}>{e.name}</div><div style={{fontSize:11,color:"#6b7280"}}>{new Date(e.deletedAt).toLocaleDateString()}</div></div>
+            <div style={{display:"flex",gap:10,alignItems:"center"}}>
+              <span style={{color:e.type==="income"?"#4ade80":"#ef4444",fontWeight:700,fontSize:14}}>{e.amount} {currency}</span>
+              <button onClick={()=>restoreExp(e.id)} style={{background:"rgba(74,222,128,0.1)",border:"1px solid rgba(74,222,128,0.2)",color:"#4ade80",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>↩️ {t.restore}</button>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  );
+
+  const AllReportScreen=()=>(
+    <div>
+      <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>📄 {t.allReport}</div>
+      {["today","week","month","year"].map(p=>(
+        <div key={p} style={{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:16,padding:16,marginBottom:12}}>
+          <div style={{fontWeight:700,fontSize:14,color:"#1E40AF",marginBottom:10}}>{t[p]}</div>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:12,color:"#6b7280"}}>{t.income}</span><span style={{color:"#4ade80",fontWeight:600}}>{sumInc(p).toLocaleString()} {currency}</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:12,color:"#6b7280"}}>{t.totalSpent}</span><span style={{color:"#ef4444",fontWeight:600}}>{sumExp(p).toLocaleString()} {currency}</span></div>
+          <div style={{height:1,background:"#f3f0ff",margin:"8px 0"}}/>
+          <div style={{display:"flex",justifyContent:"space-between"}}><span style={{fontSize:13,color:"#6b7280",fontWeight:600}}>{t.balance}</span><span style={{color:bal(p)>=0?"#93C5FD":"#ef4444",fontWeight:800,fontSize:15}}>{bal(p).toLocaleString()} {currency}</span></div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const BackupScreen=()=>(
+    <div>
+      <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>⬆️ {t.backup}</div>
+      <div style={{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:18,padding:24,textAlign:"center"}}>
+        <div style={{fontSize:52,marginBottom:16}}>☁️</div>
+        <div style={{color:"#1E40AF",marginBottom:6,fontWeight:600}}>Cloud Backup</div>
+        <div style={{color:"#6b7280",fontSize:12,marginBottom:20}}>{new Date().toLocaleDateString()}</div>
+        <button onClick={()=>notify("✅")} style={{width:"100%",background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"#1a1a2e",padding:14,borderRadius:14,cursor:"pointer",fontSize:14,fontWeight:700,fontFamily:"inherit",marginBottom:10}}>⬆️ {t.backup}</button>
+        <button onClick={()=>notify("✅")} style={{width:"100%",background:"#f3f0ff",border:"1px solid #d4c9ff",color:"#1E40AF",padding:14,borderRadius:14,cursor:"pointer",fontSize:14,fontFamily:"inherit"}}>⬇️ {t.restore}</button>
+      </div>
+    </div>
+  );
+
+  const SettingsScreen=()=>{
+    const [budgetInput, setBudgetInput] = useState(String(budget));
+    const [showBudgetModal, setShowBudgetModal] = useState(false);
+    const spent = sumExp("month");
+    const pct = Math.min((spent/budget)*100, 100);
+    const barColor = pct>=90?"#ef4444":pct>=70?"#f59e0b":"#3B82F6";
+
+    const quickAmounts = [500,1000,2000,3000,5000,10000];
+
+    const saveBudget = () => {
+      const v = parseFloat(budgetInput);
+      if(v>0){ setBudget(v); setShowBudgetModal(false); notify("✅ "+( isRTL?"تم حفظ الميزانية":"Budget saved")); }
+    };
+
+    return (
+    <div>
+      <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>⚙️ {t.settings}</div>
+
+      {/* Language */}
+      <div style={{marginBottom:14}}>
+        <div style={{fontSize:12,color:"#6b7280",marginBottom:8}}>{t.language}</div>
+        <button onClick={()=>setShowLangPicker(true)} style={{width:"100%",background:"#f3f0ff",border:"2px solid #DBEAFE",color:"#1e3a5f",padding:"14px 16px",borderRadius:14,cursor:"pointer",fontFamily:"inherit",fontSize:14,display:"flex",alignItems:"center",gap:10,boxShadow:"0 2px 8px rgba(59,130,246,0.08)"}}>
+          <span style={{fontSize:24}}>{langInfo.flag}</span>
+          <div style={{textAlign:isRTL?"right":"left"}}>
+            <div style={{fontWeight:600}}>{langInfo.label}</div>
+            <div style={{fontSize:11,color:"#6b7280"}}>{langInfo.currency} · {langInfo.currencyCode} · {langInfo.country}</div>
+          </div>
+          <span style={{marginInlineStart:"auto",color:"#6b7280"}}>›</span>
+        </button>
+      </div>
+
+      {/* Budget Card */}
+      <div style={{marginBottom:20}}>
+        <div style={{fontSize:12,color:"#6b7280",marginBottom:8,fontWeight:600}}>🎯 {t.setBudget}</div>
+        <div style={{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:18,padding:18}}>
+
+          {/* Current budget display */}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+            <div>
+              <div style={{fontSize:11,color:"#6b7280",marginBottom:3}}>{isRTL?"الميزانية الشهرية":"Monthly Budget"}</div>
+              <div style={{fontSize:30,fontWeight:900,color:"#1e3a5f"}}>{budget.toLocaleString()} <span style={{fontSize:13,color:"#6b7280"}}>{currency}</span></div>
+            </div>
+            <button onClick={()=>{ setBudgetInput(String(budget)); setShowBudgetModal(true); }} style={{background:"rgba(59,130,246,0.2)",border:"1px solid rgba(59,130,246,0.4)",color:"#1D4ED8",borderRadius:12,padding:"8px 14px",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
+              ✏️ {isRTL?"تعديل":"Edit"}
+            </button>
+          </div>
+
+          {/* Progress bar */}
+          <div style={{marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:6}}>
+              <span style={{color:"#6b7280"}}>{isRTL?"المصروف هذا الشهر":"Spent this month"}</span>
+              <span style={{color:barColor,fontWeight:600}}>{pct.toFixed(0)}%</span>
+            </div>
+            <div style={{background:"#e8e3ff",borderRadius:8,height:10,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${pct}%`,background:pct>=90?"linear-gradient(90deg,#ef4444,#dc2626)":pct>=70?"linear-gradient(90deg,#f59e0b,#d97706)":"linear-gradient(90deg,#3B82F6,#2563EB)",borderRadius:8,transition:"width 0.5s ease"}}/>
+            </div>
+          </div>
+
+          {/* Stats row */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+            <div style={{background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.15)",borderRadius:10,padding:"8px 10px",textAlign:"center"}}>
+              <div style={{fontSize:9,color:"#ef4444",marginBottom:2}}>{isRTL?"صُرف":"Spent"}</div>
+              <div style={{fontSize:13,fontWeight:800,color:"#ef4444"}}>{spent.toLocaleString()}</div>
+            </div>
+            <div style={{background:spent>budget?"rgba(239,68,68,0.08)":"rgba(74,222,128,0.08)",border:`1px solid ${spent>budget?"rgba(239,68,68,0.15)":"rgba(74,222,128,0.15)"}`,borderRadius:10,padding:"8px 10px",textAlign:"center"}}>
+              <div style={{fontSize:9,color:spent>budget?"#ef4444":"#4ade80",marginBottom:2}}>{spent>budget?(isRTL?"تجاوز":"Over"):(isRTL?"متبقي":"Left")}</div>
+              <div style={{fontSize:13,fontWeight:800,color:spent>budget?"#ef4444":"#4ade80"}}>{Math.abs(budget-spent).toLocaleString()}</div>
+            </div>
+            <div style={{background:"rgba(59,130,246,0.08)",border:"1px solid rgba(59,130,246,0.15)",borderRadius:10,padding:"8px 10px",textAlign:"center"}}>
+              <div style={{fontSize:9,color:"#1D4ED8",marginBottom:2}}>{isRTL?"الميزانية":"Budget"}</div>
+              <div style={{fontSize:13,fontWeight:800,color:"#1D4ED8"}}>{budget.toLocaleString()}</div>
+            </div>
+          </div>
+
+          {/* Alert */}
+          {pct>=90&&(
+            <div style={{marginTop:12,background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.3)",borderRadius:10,padding:"10px 12px",display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:18}}>🚨</span>
+              <span style={{fontSize:12,color:"#ef4444",fontWeight:600}}>{isRTL?"تحذير: وصلت لـ 90% من ميزانيتك!":"Warning: You've reached 90% of your budget!"}</span>
+            </div>
+          )}
+          {pct>=70&&pct<90&&(
+            <div style={{marginTop:12,background:"rgba(245,158,11,0.12)",border:"1px solid rgba(245,158,11,0.3)",borderRadius:10,padding:"10px 12px",display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:18}}>⚠️</span>
+              <span style={{fontSize:12,color:"#f59e0b",fontWeight:600}}>{isRTL?"تنبيه: تجاوزت 70% من ميزانيتك":"Notice: You've used over 70% of your budget"}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Budget Modal */}
+      {showBudgetModal&&(
+        <div className="overlay" onClick={e=>e.target===e.currentTarget&&setShowBudgetModal(false)}>
+          <div className="sheet" dir={isRTL?"rtl":"ltr"}>
+            <div style={{width:36,height:4,background:"#DBEAFE",borderRadius:2,margin:"0 auto 18px"}}/>
+            <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:4}}>🎯 {t.setBudget}</div>
+            <div style={{fontSize:12,color:"#6b7280",marginBottom:20}}>{isRTL?"حدد ميزانيتك الشهرية بحسب رغبتك":"Set your monthly budget as you wish"}</div>
+
+            {/* Input */}
+            <div style={{position:"relative",marginBottom:16}}>
+              <input
+                className="inp"
+                type="number"
+                inputMode="numeric"
+                placeholder={isRTL?"أدخل المبلغ...":"Enter amount..."}
+                value={budgetInput}
+                onChange={e=>setBudgetInput(e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&saveBudget()}
+                style={{fontSize:22,fontWeight:700,paddingInlineEnd:60,color:"#1e3a5f"}}
+                autoFocus
+              />
+              <span style={{position:"absolute",[isRTL?"left":"right"]:14,top:"50%",transform:"translateY(-50%)",fontSize:13,color:"#6b7280",fontWeight:600}}>{currency}</span>
+            </div>
+
+            {/* Quick amounts */}
+            <div style={{fontSize:11,color:"#6b7280",marginBottom:10}}>{isRTL?"اختيار سريع:":"Quick select:"}</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
+              {quickAmounts.map(a=>(
+                <button key={a} onClick={()=>setBudgetInput(String(a))} style={{padding:"10px 6px",borderRadius:12,border:budgetInput===String(a)?"1px solid rgba(59,130,246,0.6)":"1px solid rgba(255,255,255,0.08)",background:budgetInput===String(a)?"rgba(59,130,246,0.25)":"rgba(255,255,255,0.04)",color:budgetInput===String(a)?"#BAD4FD":"#888",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",textAlign:"center"}}>
+                  {a>=1000?`${a/1000}k`:a}
+                  <div style={{fontSize:9,color:"#6b7280",marginTop:2}}>{currency}</div>
+                </button>
+              ))}
+            </div>
+
+            {/* Preview */}
+            {budgetInput&&parseFloat(budgetInput)>0&&(
+              <div style={{background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.25)",borderRadius:12,padding:"12px 14px",marginBottom:16,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:12,color:"#6b7280"}}>{isRTL?"يومياً تقريباً:":"Daily approx:"}</span>
+                <span style={{fontSize:16,fontWeight:800,color:"#1D4ED8"}}>{(parseFloat(budgetInput)/30).toFixed(1)} {currency}</span>
+              </div>
+            )}
+
+            <div style={{display:"flex",gap:10}}>
+              <button onClick={()=>setShowBudgetModal(false)} style={{flex:1,background:"#f3f0ff",border:"1px solid #d4c9ff",color:"#1E40AF",padding:12,borderRadius:12,cursor:"pointer",fontFamily:"inherit",fontSize:13}}>{t.cancel}</button>
+              <button onClick={saveBudget} disabled={!budgetInput||parseFloat(budgetInput)<=0} style={{flex:2,background:budgetInput&&parseFloat(budgetInput)>0?"linear-gradient(135deg,#3B82F6,#2563EB)":"rgba(255,255,255,0.05)",border:"none",color:budgetInput&&parseFloat(budgetInput)>0?"white":"#444",padding:12,borderRadius:12,cursor:"pointer",fontFamily:"inherit",fontSize:14,fontWeight:700}}>✅ {t.save}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!isPremium&&<button onClick={()=>setShowPremium(true)} style={{width:"100%",background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",color:"#1a0a00",padding:14,borderRadius:14,cursor:"pointer",fontSize:14,fontWeight:700,fontFamily:"inherit",marginBottom:10}}>💎 {t.upgrade}</button>}
+
+      <button onClick={()=>{ localStorage.removeItem("hs_onboarded"); setOnboardStep(0); setShowOnboarding(true); }} style={{width:"100%",background:"#EFF6FF",border:"1px solid #DBEAFE",color:"#1D4ED8",padding:14,borderRadius:14,cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"inherit"}}>
+        📖 {isRTL?"إعادة عرض دليل الاستخدام":"Replay User Guide"}
+      </button>
+    </div>
+    );
+  };
+
+  const HelpScreen=()=>(
+    <div>
+      <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>❓ {t.help}</div>
+      {[
+        {q:"?",a:"Press + button or use camera/voice"},
+        {q:"?",a:"Go to Settings → Set Budget"},
+        {q:"?",a:"Remove ads, full reports, cloud backup"},
+      ].map((item,i)=>(
+        <div key={i} style={{background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:14,padding:"14px 16px",marginBottom:10}}>
+          <div style={{fontWeight:600,fontSize:13,color:"#1E40AF",marginBottom:6}}>❓ {["How to add expense?","How to set budget?","What are premium features?"][i]}</div>
+          <div style={{fontSize:12,color:"#6b7280",lineHeight:1.6}}>{item.a}</div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // ── CHARTS ────────────────────────────────────────────────
+  const ChartsScreen=()=>{
+    const [chartPeriod, setChartPeriod] = useState("week");
+    const [chartType, setChartType] = useState("bar"); // bar | line | donut
+
+    // ── DATA BUILDERS ────────────────────────────────────────
+    const getWeekData=()=>{
+      const days=["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+      const daysEn=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      return Array.from({length:7},(_,i)=>{
+        const d=new Date(); d.setDate(d.getDate()-6+i);
+        const exp=expenses.filter(e=>{ const dd=new Date(e.date); return dd.toDateString()===d.toDateString()&&e.type==="expense"; }).reduce((s,e)=>s+e.amount,0);
+        const inc=expenses.filter(e=>{ const dd=new Date(e.date); return dd.toDateString()===d.toDateString()&&e.type==="income"; }).reduce((s,e)=>s+e.amount,0);
+        return {label:isRTL?days[d.getDay()]:daysEn[d.getDay()], exp, inc};
+      });
+    };
+
+    const getMonthData=()=>{
+      const now=new Date(); const weeks=4;
+      return Array.from({length:weeks},(_,i)=>{
+        const start=new Date(now.getFullYear(),now.getMonth(),1+(i*7));
+        const end=new Date(now.getFullYear(),now.getMonth(),Math.min(7+(i*7),new Date(now.getFullYear(),now.getMonth()+1,0).getDate()));
+        const exp=expenses.filter(e=>{ const d=new Date(e.date); return d>=start&&d<=end&&e.type==="expense"; }).reduce((s,e)=>s+e.amount,0);
+        const inc=expenses.filter(e=>{ const d=new Date(e.date); return d>=start&&d<=end&&e.type==="income"; }).reduce((s,e)=>s+e.amount,0);
+        return {label:`${isRTL?"أ":"W"}${i+1}`, exp, inc};
+      });
+    };
+
+    const getYearData=()=>{
+      const monthsAr=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+      const monthsEn=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      const y=new Date().getFullYear();
+      return Array.from({length:12},(_,i)=>{
+        const exp=expenses.filter(e=>{ const d=new Date(e.date); return d.getMonth()===i&&d.getFullYear()===y&&e.type==="expense"; }).reduce((s,e)=>s+e.amount,0);
+        const inc=expenses.filter(e=>{ const d=new Date(e.date); return d.getMonth()===i&&d.getFullYear()===y&&e.type==="income"; }).reduce((s,e)=>s+e.amount,0);
+        return {label:isRTL?monthsAr[i]:monthsEn[i], exp, inc};
+      });
+    };
+
+    const data = chartPeriod==="week"?getWeekData():chartPeriod==="month"?getMonthData():getYearData();
+    const maxVal = Math.max(...data.map(d=>Math.max(d.exp,d.inc)),1);
+    const totalExp = data.reduce((s,d)=>s+d.exp,0);
+    const totalInc = data.reduce((s,d)=>s+d.inc,0);
+
+    // Donut data by category
+    const catData = t.categories.map((c,i)=>{
+      const now=new Date();
+      const total=expenses.filter(e=>{
+        const d=new Date(e.date);
+        if(chartPeriod==="week") return (now-d)<7*86400000&&e.type==="expense"&&e.category===i;
+        if(chartPeriod==="month") return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&e.type==="expense"&&e.category===i;
+        return d.getFullYear()===now.getFullYear()&&e.type==="expense"&&e.category===i;
+      }).reduce((s,e)=>s+e.amount,0);
+      return {name:c, total, color:CAT_COLORS[i]};
+    }).filter(c=>c.total>0).sort((a,b)=>b.total-a.total);
+    const catTotal=catData.reduce((s,c)=>s+c.total,0)||1;
+
+    // SVG Bar/Line chart
+    const W=340, H=140, PAD=30;
+    const chartW=W-PAD*2, chartH=H-20;
+    const barW=Math.min(18, chartW/data.length/2.5);
+    const gap=chartW/data.length;
+
+    const barPath=(vals,color)=>vals.map((v,i)=>{
+      const x=PAD+i*gap+gap/2;
+      const h=(v/maxVal)*chartH;
+      const y=H-h;
+      return <rect key={i} x={x-barW/2} y={y} width={barW} height={h} rx={4} fill={color} opacity={0.85}/>;
+    });
+
+    const linePath=(vals,color,fill)=>{
+      if(vals.every(v=>v===0)) return null;
+      const pts=vals.map((v,i)=>{ const x=PAD+i*gap+gap/2; const y=H-(v/maxVal)*chartH; return `${x},${y}`; });
+      const areaBot=`${PAD+gap/2},${H} ${pts.join(" ")} ${PAD+(vals.length-1)*gap+gap/2},${H}`;
+      return (
+        <>
+          <defs><linearGradient id={`lg${color.replace("#","")}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.3"/><stop offset="100%" stopColor={color} stopOpacity="0"/></linearGradient></defs>
+          <polygon points={areaBot} fill={`url(#lg${color.replace("#","")})`}/>
+          <polyline points={pts.join(" ")} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"/>
+          {pts.map((pt,i)=>{ const[x,y]=pt.split(","); return <circle key={i} cx={x} cy={y} r="3.5" fill={color} stroke="#0d1120" strokeWidth="1.5"/>; })}
+        </>
+      );
+    };
+
+    // Donut SVG
+    const DonutChart=()=>{
+      const R=60, cx=90, cy=80, stroke=22;
+      let angle=-90;
+      const slices=catData.slice(0,6).map(c=>{
+        const pct=c.total/catTotal;
+        const a=pct*360;
+        const r=(Math.PI/180);
+        const x1=cx+R*Math.cos(angle*r), y1=cy+R*Math.sin(angle*r);
+        angle+=a;
+        const x2=cx+R*Math.cos(angle*r), y2=cy+R*Math.sin(angle*r);
+        const large=a>180?1:0;
+        return {path:`M${cx},${cy} L${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2} Z`, color:c.color, pct:(pct*100).toFixed(1), name:c.name, total:c.total};
+      });
+      return (
+        <div style={{display:"flex",alignItems:"center",gap:16}}>
+          <svg width={180} height={160} style={{flexShrink:0}}>
+            {slices.map((s,i)=><path key={i} d={s.path} fill={s.color} opacity={0.9} stroke="#0d1120" strokeWidth="1.5"/>)}
+            <circle cx={cx} cy={cy} r={R-stroke} fill="#0d1120"/>
+            <text x={cx} y={cy-6} textAnchor="middle" fill="#BAD4FD" fontSize="11" fontWeight="bold">{isRTL?"المصروف":"Expenses"}</text>
+            <text x={cx} y={cy+10} textAnchor="middle" fill="white" fontSize="13" fontWeight="bold">{totalExp.toLocaleString()}</text>
+            <text x={cx} y={cy+24} textAnchor="middle" fill="#666" fontSize="10">{currency}</text>
+          </svg>
+          <div style={{flex:1,display:"flex",flexDirection:"column",gap:6}}>
+            {slices.map((s,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:7}}>
+                <div style={{width:10,height:10,borderRadius:3,background:s.color,flexShrink:0}}/>
+                <div style={{flex:1,fontSize:11,color:"#aaa",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.name.split(" ").slice(1).join(" ")||s.name}</div>
+                <div style={{fontSize:11,fontWeight:600,color:"#1E40AF",flexShrink:0}}>{s.pct}%</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div>
+        <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>📊 {isRTL?"الرسوم البيانية":"Charts"}</div>
+
+        {/* Period selector */}
+        <div style={{display:"flex",gap:6,marginBottom:14,background:"#f9f7ff",padding:5,borderRadius:14,border:"1px solid #DBEAFE"}}>
+          {["week","month","year"].map(p=>(
+            <button key={p} onClick={()=>setChartPeriod(p)} style={{flex:1,padding:"8px 0",borderRadius:10,border:"none",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"inherit",background:chartPeriod===p?"linear-gradient(135deg,#3B82F6,#2563EB)":"transparent",color:chartPeriod===p?"white":"#555"}}>
+              {t[p]}
+            </button>
+          ))}
+        </div>
+
+        {/* Chart type selector */}
+        <div style={{display:"flex",gap:8,marginBottom:16}}>
+          {[{k:"bar",icon:"▊",label:isRTL?"أعمدة":"Bars"},{k:"line",icon:"↗",label:isRTL?"خطي":"Line"},{k:"donut",icon:"◕",label:isRTL?"دائري":"Donut"}].map(ct=>(
+            <button key={ct.k} onClick={()=>setChartType(ct.k)} style={{flex:1,padding:"9px 6px",borderRadius:12,border:chartType===ct.k?"1px solid rgba(59,130,246,0.5)":"1px solid rgba(255,255,255,0.07)",background:chartType===ct.k?"rgba(59,130,246,0.2)":"rgba(255,255,255,0.04)",cursor:"pointer",color:chartType===ct.k?"#BAD4FD":"#555",fontSize:13,fontFamily:"inherit",fontWeight:600}}>
+              {ct.icon} {ct.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Summary strip */}
+        <div style={{display:"flex",gap:10,marginBottom:16}}>
+          <div style={{flex:1,background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:14,padding:"12px 14px"}}>
+            <div style={{fontSize:10,color:"#ef4444",marginBottom:3}}>↑ {t.totalSpent}</div>
+            <div style={{fontSize:18,fontWeight:800,color:"#ef4444"}}>{totalExp.toLocaleString()}</div>
+            <div style={{fontSize:10,color:"#6b7280"}}>{currency}</div>
+          </div>
+          <div style={{flex:1,background:"rgba(74,222,128,0.1)",border:"1px solid rgba(74,222,128,0.2)",borderRadius:14,padding:"12px 14px"}}>
+            <div style={{fontSize:10,color:"#4ade80",marginBottom:3}}>↓ {t.income}</div>
+            <div style={{fontSize:18,fontWeight:800,color:"#4ade80"}}>{totalInc.toLocaleString()}</div>
+            <div style={{fontSize:10,color:"#6b7280"}}>{currency}</div>
+          </div>
+          <div style={{flex:1,background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:14,padding:"12px 14px"}}>
+            <div style={{fontSize:10,color:"#1D4ED8",marginBottom:3}}>{t.balance}</div>
+            <div style={{fontSize:18,fontWeight:800,color:totalInc-totalExp>=0?"#93C5FD":"#ef4444"}}>{(totalInc-totalExp).toLocaleString()}</div>
+            <div style={{fontSize:10,color:"#6b7280"}}>{currency}</div>
+          </div>
+        </div>
+
+        {/* MAIN CHART */}
+        <div style={{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:18,padding:"18px 12px 12px",marginBottom:16}}>
+          {chartType==="donut" ? <DonutChart/> : (
+            <>
+              <svg width="100%" viewBox={`0 0 ${W} ${H+20}`} style={{overflow:"visible"}}>
+                {/* Grid lines */}
+                {[0.25,0.5,0.75,1].map(f=>(
+                  <g key={f}>
+                    <line x1={PAD} y1={H-f*chartH} x2={W-PAD} y2={H-f*chartH} stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="3,3"/>
+                    <text x={PAD-4} y={H-f*chartH+4} textAnchor="end" fill="#444" fontSize="9">{Math.round(maxVal*f).toLocaleString()}</text>
+                  </g>
+                ))}
+                {/* X labels */}
+                {data.map((d,i)=>(
+                  <text key={i} x={PAD+i*gap+gap/2} y={H+14} textAnchor="middle" fill="#555" fontSize={chartPeriod==="year"?"8":"9"}>{d.label}</text>
+                ))}
+                {/* Baseline */}
+                <line x1={PAD} y1={H} x2={W-PAD} y2={H} stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
+
+                {chartType==="bar" && (
+                  <>
+                    {data.map((d,i)=>{
+                      const x=PAD+i*gap+gap/2;
+                      const hE=(d.exp/maxVal)*chartH, hI=(d.inc/maxVal)*chartH;
+                      return (
+                        <g key={i}>
+                          <rect x={x-barW-2} y={H-hI} width={barW} height={hI} rx={3} fill="#4ade80" opacity={0.8}/>
+                          <rect x={x+2} y={H-hE} width={barW} height={hE} rx={3} fill="#ef4444" opacity={0.8}/>
+                        </g>
+                      );
+                    })}
+                  </>
+                )}
+                {chartType==="line" && (
+                  <>
+                    {linePath(data.map(d=>d.inc),"#4ade80")}
+                    {linePath(data.map(d=>d.exp),"#ef4444")}
+                  </>
+                )}
+              </svg>
+
+              {/* Legend */}
+              <div style={{display:"flex",justifyContent:"center",gap:20,marginTop:8}}>
+                <div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:12,height:12,borderRadius:3,background:"#4ade80"}}/><span style={{fontSize:11,color:"#6b7280"}}>{t.income}</span></div>
+                <div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:12,height:12,borderRadius:3,background:"#ef4444"}}/><span style={{fontSize:11,color:"#6b7280"}}>{t.totalSpent}</span></div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Category breakdown bars */}
+        {chartType!=="donut" && catData.length>0 && (
+          <div style={{background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:18,padding:16}}>
+            <div style={{fontSize:13,fontWeight:700,color:"#1e3a5f",marginBottom:14}}>{isRTL?"توزيع الإنفاق":"Spending Breakdown"}</div>
+            {catData.slice(0,6).map((c,i)=>(
+              <div key={i} style={{marginBottom:10}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <div style={{width:8,height:8,borderRadius:2,background:c.color}}/>
+                    <span style={{fontSize:12,color:"#bbb"}}>{c.name.split(" ").slice(1).join(" ")||c.name}</span>
+                  </div>
+                  <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                    <span style={{fontSize:11,color:"#6b7280"}}>{((c.total/catTotal)*100).toFixed(0)}%</span>
+                    <span style={{fontSize:12,fontWeight:700,color:c.color}}>{c.total.toLocaleString()} {currency}</span>
+                  </div>
+                </div>
+                <div style={{background:"#DBEAFE",borderRadius:6,height:7,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:`${(c.total/catTotal)*100}%`,background:`linear-gradient(90deg,${c.color}99,${c.color})`,borderRadius:6,transition:"width 0.6s ease"}}/>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Top expenses */}
+        <div style={{background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:18,padding:16,marginTop:14}}>
+          <div style={{fontSize:13,fontWeight:700,color:"#1e3a5f",marginBottom:12}}>{isRTL?"أكبر المصروفات":"Top Expenses"}</div>
+          {expenses.filter(e=>e.type==="expense").sort((a,b)=>b.amount-a.amount).slice(0,5).map((e,i)=>(
+            <div key={e.id} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+              <div style={{width:24,height:24,borderRadius:8,background:`${CAT_COLORS[e.category]}33`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,flexShrink:0}}>{(t.categories[e.category]||"📦").split(" ")[0]}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,color:"#1e3a5f",fontWeight:500}}>{e.name}</div>
+                <div style={{fontSize:10,color:"#6b7280"}}>{new Date(e.date).toLocaleDateString()}</div>
+              </div>
+              <div style={{fontWeight:700,fontSize:14,color:"#ef4444"}}>{e.amount.toLocaleString()} <span style={{fontSize:10,color:"#6b7280"}}>{currency}</span></div>
+              <div style={{fontSize:11,color:"#6b7280",minWidth:24,textAlign:"center"}}>#{i+1}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ── REVENUE SCREEN ────────────────────────────────────────
+  const RevenueScreen=()=>{
+    const incomes = expenses.filter(e=>e.type==="income").sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const totalAll = incomes.reduce((s,e)=>s+e.amount,0);
+    const totalMonth = incomes.filter(e=>{ const d=new Date(e.date),n=new Date(); return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear(); }).reduce((s,e)=>s+e.amount,0);
+    const totalWeek = incomes.filter(e=>new Date()-new Date(e.date)<7*86400000).reduce((s,e)=>s+e.amount,0);
+    const [showAddIncome, setShowAddIncome] = useState(false);
+    const [newInc, setNewInc] = useState({name:"",amount:"",account:"bank",note:"",category:8});
+
+    const saveIncome=()=>{
+      if(!newInc.name||!newInc.amount) return;
+      setExpenses(p=>[{id:Date.now(),name:newInc.name,amount:parseFloat(newInc.amount),type:"income",category:newInc.category,location:"",date:new Date().toISOString(),prevAmount:null,account:newInc.account,note:newInc.note},...p]);
+      setNewInc({name:"",amount:"",account:"bank",note:"",category:8});
+      setShowAddIncome(false); notify("✅");
+    };
+
+    const incCats=[
+      {icon:"💼",label:isRTL?"راتب":"Salary"},
+      {icon:"🏪",label:isRTL?"تجارة":"Business"},
+      {icon:"📈",label:isRTL?"استثمار":"Investment"},
+      {icon:"🎁",label:isRTL?"هدية":"Gift"},
+      {icon:"🏠",label:isRTL?"إيجار":"Rent"},
+      {icon:"💰",label:isRTL?"أخرى":"Other"},
+    ];
+
+    return (
+      <div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f"}}>💰 {isRTL?"الإيرادات":"Revenue"}</div>
+          <button onClick={()=>setShowAddIncome(true)} style={{background:"linear-gradient(135deg,#059669,#10b981)",border:"none",color:"#1a1a2e",padding:"8px 16px",borderRadius:12,cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>+ {isRTL?"إضافة إيراد":"Add Income"}</button>
+        </div>
+
+        {/* Stats */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:16}}>
+          {[
+            {label:isRTL?"هذا الأسبوع":"This Week",val:totalWeek,icon:"📅"},
+            {label:isRTL?"هذا الشهر":"This Month",val:totalMonth,icon:"🗓️"},
+            {label:isRTL?"الإجمالي":"Total",val:totalAll,icon:"💎"},
+          ].map((s,i)=>(
+            <div key={i} style={{background:"rgba(74,222,128,0.08)",border:"1px solid rgba(74,222,128,0.2)",borderRadius:14,padding:"12px 10px",textAlign:"center"}}>
+              <div style={{fontSize:18,marginBottom:4}}>{s.icon}</div>
+              <div style={{fontSize:14,fontWeight:800,color:"#4ade80"}}>{s.val.toLocaleString()}</div>
+              <div style={{fontSize:10,color:"#6b7280"}}>{s.label}</div>
+              <div style={{fontSize:9,color:"#9ca3af"}}>{currency}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Income categories quick add */}
+        <div style={{background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:16,padding:"12px 14px",marginBottom:14}}>
+          <div style={{fontSize:12,color:"#6b7280",marginBottom:10}}>{isRTL?"أنواع الإيرادات":"Income Types"}</div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {incCats.map((c,i)=>(
+              <button key={i} onClick={()=>{ setNewInc(p=>({...p,name:c.label})); setShowAddIncome(true); }} style={{display:"flex",alignItems:"center",gap:6,padding:"7px 12px",borderRadius:10,border:"1px solid rgba(74,222,128,0.2)",background:"rgba(74,222,128,0.08)",cursor:"pointer",color:"#4ade80",fontSize:12,fontFamily:"inherit"}}>
+                {c.icon} {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Incomes list */}
+        {incomes.length===0?(
+          <div style={{textAlign:"center",padding:"40px 20px",color:"#9ca3af"}}><div style={{fontSize:48}}>💰</div><div style={{marginTop:8}}>{t.noExpenses}</div></div>
+        ):incomes.map(e=>(
+          <div key={e.id} style={{background:"rgba(74,222,128,0.05)",border:"1px solid rgba(74,222,128,0.15)",borderRadius:16,padding:"14px 16px",marginBottom:8,borderInlineStart:"3px solid #4ade80"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div style={{display:"flex",gap:10,flex:1}}>
+                <div style={{width:40,height:40,borderRadius:12,background:"rgba(74,222,128,0.15)",border:"1px solid rgba(74,222,128,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
+                  {e.account==="bank"?"🏦":e.account==="wallet"?"👜":"💵"}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:600,fontSize:14,color:"#1a1a2e",marginBottom:3}}>{e.name}</div>
+                  <div style={{fontSize:11,color:"#6b7280",display:"flex",flexWrap:"wrap",gap:6}}>
+                    <span>{t[e.account]}</span>
+                    {e.note&&<span>📝 {e.note}</span>}
+                  </div>
+                </div>
+              </div>
+              <div style={{textAlign:isRTL?"left":"right",flexShrink:0}}>
+                <div style={{fontWeight:800,fontSize:16,color:"#4ade80"}}>+{e.amount.toLocaleString()} <span style={{fontSize:10,color:"#9ca3af"}}>{currency}</span></div>
+                <div style={{fontSize:10,color:"#9ca3af",marginBottom:4}}>{new Date(e.date).toLocaleDateString()}</div>
+                <button onClick={()=>delExpense(e.id)} style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.2)",color:"#ef4444",borderRadius:8,padding:"3px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>{t.delete}</button>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Add income modal */}
+        {showAddIncome&&(
+          <div className="overlay" onClick={e=>e.target===e.currentTarget&&setShowAddIncome(false)}>
+            <div className="sheet" dir={isRTL?"rtl":"ltr"}>
+              <div style={{width:36,height:4,background:"#DBEAFE",borderRadius:2,margin:"0 auto 18px"}}/>
+              <div style={{fontSize:16,fontWeight:800,color:"#4ade80",marginBottom:16}}>↓ {isRTL?"إضافة إيراد":"Add Income"}</div>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                <input className="inp" placeholder={isRTL?"مصدر الإيراد":"Income source"} value={newInc.name} onChange={e=>setNewInc(p=>({...p,name:e.target.value}))}/>
+                <input className="inp" type="number" placeholder={`${t.price} (${currency})`} value={newInc.amount} onChange={e=>setNewInc(p=>({...p,amount:e.target.value}))}/>
+                <select className="inp" value={newInc.account} onChange={e=>setNewInc(p=>({...p,account:e.target.value}))}>
+                  <option value="bank">🏦 {t.bank}</option>
+                  <option value="cash">💵 {t.cash}</option>
+                  <option value="wallet">👜 {t.wallet}</option>
+                </select>
+                <input className="inp" placeholder={`📝 ${t.note||"Note"}`} value={newInc.note} onChange={e=>setNewInc(p=>({...p,note:e.target.value}))}/>
+              </div>
+              <div style={{display:"flex",gap:10,marginTop:18}}>
+                <button onClick={()=>setShowAddIncome(false)} style={{flex:1,background:"#f3f0ff",border:"1px solid #d4c9ff",color:"#1E40AF",padding:12,borderRadius:12,cursor:"pointer",fontFamily:"inherit",fontSize:13}}>{t.cancel}</button>
+                <button onClick={saveIncome} style={{flex:2,background:"linear-gradient(135deg,#059669,#10b981)",border:"none",color:"#1a1a2e",padding:12,borderRadius:12,cursor:"pointer",fontFamily:"inherit",fontSize:14,fontWeight:700}}>{t.save}</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ── TRANSFERS SCREEN ──────────────────────────────────────
+  const TransfersLogScreen=()=>{
+    const outgoing = transfers.filter(tr=>true); // all transfers
+    const totalOut = transfers.reduce((s,tr)=>s+tr.amount,0);
+
+    return (
+      <div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f"}}>↔️ {isRTL?"الحوالات النقدية":"Cash Transfers"}</div>
+          <button onClick={()=>setScreen("transfer")} style={{background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"#1a1a2e",padding:"8px 14px",borderRadius:12,cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}>+ {isRTL?"حوالة جديدة":"New Transfer"}</button>
+        </div>
+
+        {/* Stats */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+          <div style={{background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:14,padding:"14px",textAlign:"center"}}>
+            <div style={{fontSize:22,marginBottom:4}}>↗️</div>
+            <div style={{fontSize:11,color:"#ef4444",marginBottom:4}}>{isRTL?"إجمالي المحوّل":"Total Transferred"}</div>
+            <div style={{fontSize:18,fontWeight:800,color:"#ef4444"}}>{totalOut.toLocaleString()}</div>
+            <div style={{fontSize:10,color:"#6b7280"}}>{currency}</div>
+          </div>
+          <div style={{background:"rgba(59,130,246,0.08)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:14,padding:"14px",textAlign:"center"}}>
+            <div style={{fontSize:22,marginBottom:4}}>🔄</div>
+            <div style={{fontSize:11,color:"#1D4ED8",marginBottom:4}}>{isRTL?"عدد الحوالات":"Total Transfers"}</div>
+            <div style={{fontSize:18,fontWeight:800,color:"#1D4ED8"}}>{transfers.length}</div>
+            <div style={{fontSize:10,color:"#6b7280"}}>{isRTL?"عملية":"operations"}</div>
+          </div>
+        </div>
+
+        {/* Filter tabs */}
+        {/* Transfers list */}
+        {transfers.length===0?(
+          <div style={{textAlign:"center",padding:"40px 20px",color:"#9ca3af"}}><div style={{fontSize:48}}>↔️</div><div style={{marginTop:8}}>{t.noExpenses}</div></div>
+        ):transfers.map(tr=>(
+          <div key={tr.id} style={{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:16,padding:"14px 16px",marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+              <div style={{fontWeight:600,fontSize:14,color:"#1e3a5f"}}>{tr.note||t.transfer}</div>
+              <div style={{fontWeight:800,fontSize:16,color:"#1D4ED8"}}>{tr.amount.toLocaleString()} <span style={{fontSize:10,color:"#6b7280"}}>{currency}</span></div>
+            </div>
+            {/* From → To visual */}
+            <div style={{display:"flex",alignItems:"center",gap:8,background:"#f9f7ff",borderRadius:10,padding:"8px 12px",marginBottom:6}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,flex:1}}>
+                <span style={{fontSize:20}}>{tr.from==="bank"?"🏦":tr.from==="wallet"?"👜":"💵"}</span>
+                <div>
+                  <div style={{fontSize:10,color:"#6b7280"}}>{isRTL?"من":"From"}</div>
+                  <div style={{fontSize:13,fontWeight:600,color:"#ef4444"}}>{t[tr.from]}</div>
+                </div>
+              </div>
+              <div style={{fontSize:20,color:"#3B82F6"}}>→</div>
+              <div style={{display:"flex",alignItems:"center",gap:6,flex:1,justifyContent:"flex-end"}}>
+                <div style={{textAlign:"end"}}>
+                  <div style={{fontSize:10,color:"#6b7280"}}>{isRTL?"إلى":"To"}</div>
+                  <div style={{fontSize:13,fontWeight:600,color:"#4ade80"}}>{t[tr.to]}</div>
+                </div>
+                <span style={{fontSize:20}}>{tr.to==="bank"?"🏦":tr.to==="wallet"?"👜":"💵"}</span>
+              </div>
+            </div>
+            <div style={{fontSize:11,color:"#9ca3af"}}>{new Date(tr.date).toLocaleDateString()} {new Date(tr.date).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // ── REFERRAL / GIVEAWAY SCREEN ───────────────────────────
+  const ReferralScreen=()=>{
+    const [copied, setCopied] = useState(false);
+    const [spinDone, setSpinDone] = useState(false);
+    const [spinning, setSpinning] = useState(false);
+    const [spinAngle, setSpinAngle] = useState(0);
+    const [prizeIdx, setPrizeIdx] = useState(null);
+    const [showWin, setShowWin] = useState(false);
+
+    const referralCode = "HSSL-" + (langInfo.currencyCode) + "-2026";
+    const shareLink = `https://hasseelah.com/join?ref=${referralCode}`;
+
+    const copyCode = () => {
+      navigator.clipboard?.writeText(shareLink).catch(()=>{});
+      setCopied(true);
+      setTimeout(()=>setCopied(false), 2500);
+      notify(isRTL?"✅ تم نسخ الرابط!":"✅ Link copied!");
+    };
+
+    const shareApps = [
+      {
+        name:"WhatsApp", color:"#25d366",
+        url:`https://wa.me/?text=${encodeURIComponent((isRTL?"جرّب تطبيق حصيلة لتتبع مصروفاتك 💰 ":"Try Hasseelah expense tracker 💰 ")+shareLink)}`,
+        svg:<svg viewBox="0 0 24 24" width="32" height="32" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      },
+      {
+        name:"Telegram", color:"#2AABEE",
+        url:`https://t.me/share/url?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent(isRTL?"تطبيق حصيلة":"Hasseelah App")}`,
+        svg:<svg viewBox="0 0 24 24" width="32" height="32" fill="#2AABEE"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      },
+      {
+        name:"X / Twitter", color:"#000000",
+        url:`https://twitter.com/intent/tweet?text=${encodeURIComponent((isRTL?"جرّب حصيلة! ":"Try Hasseelah! ")+shareLink)}`,
+        svg:<svg viewBox="0 0 24 24" width="32" height="32" fill="#000000"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.259 5.631 5.905-5.631zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      },
+      {
+        name:"Facebook", color:"#1877f2",
+        url:`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`,
+        svg:<svg viewBox="0 0 24 24" width="32" height="32" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      },
+      {
+        name:"Instagram", color:"#E1306C",
+        url:"#",
+        svg:<svg viewBox="0 0 24 24" width="32" height="32"><defs><radialGradient id="ig" r="150%" cx="30%" cy="107%"><stop stopColor="#fdf497" offset="0"/><stop stopColor="#fdf497" offset="0.05"/><stop stopColor="#fd5949" offset="0.45"/><stop stopColor="#d6249f" offset="0.6"/><stop stopColor="#285AEB" offset="0.9"/></radialGradient></defs><path fill="url(#ig)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      },
+      {
+        name:isRTL?"نسخ الرابط":"Copy Link", color:"#3B82F6", fn: copyCode,
+        svg:<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      },
+    ];
+
+    const prizes = [
+      {icon:"🎁", labelAr:"اشتراك مجاني شهر",   labelEn:"1 Month Free",    color:"#f59e0b"},
+      {icon:"💎", labelAr:"3 أشهر مجانية",        labelEn:"3 Months Free",   color:"#1D4ED8"},
+      {icon:"⭐", labelAr:"خصم 20%",               labelEn:"20% Discount",    color:"#4ade80"},
+      {icon:"🏆", labelAr:"سنة مجانية!",           labelEn:"1 Year Free!",    color:"#ef4444"},
+      {icon:"🎀", labelAr:`بطاقة هدية ${PRICING[langInfo?.currencyCode]?.symbol||"$"}50`,    labelEn:`Gift Card 50 ${PRICING[langInfo?.currencyCode]?.symbol||"$"}`, color:"#60a5fa"},
+      {icon:"🌟", labelAr:"خصم 50%",               labelEn:"50% Discount",    color:"#fbbf24"},
+      {icon:"🎊", labelAr:"شهرين مجانيين",         labelEn:"2 Months Free",   color:"#f472b6"},
+      {icon:"💫", labelAr:"حظاً أوفر!",            labelEn:"Try Again!",      color:"#6b7280"},
+    ];
+
+    const SLICE = 360 / prizes.length;
+
+    const doSpin = () => {
+      if(spinning||spinDone) return;
+      setSpinning(true);
+      const winner = Math.floor(Math.random() * prizes.length);
+      const targetAngle = 360*5 + (360 - winner*SLICE - SLICE/2);
+      setSpinAngle(targetAngle);
+      setTimeout(()=>{
+        setSpinning(false);
+        setSpinDone(true);
+        setPrizeIdx(winner);
+        setTimeout(()=>setShowWin(true), 400);
+      }, 4000);
+    };
+
+    // Draw wheel slices with SVG
+    const WheelSVG = () => {
+      const R=120, cx=130, cy=130;
+      return (
+        <svg width={260} height={260} style={{filter:"drop-shadow(0 8px 32px rgba(59,130,246,0.4))"}}>
+          {prizes.map((p,i)=>{
+            const startA=(i*SLICE-90)*(Math.PI/180);
+            const endA=((i+1)*SLICE-90)*(Math.PI/180);
+            const x1=cx+R*Math.cos(startA), y1=cy+R*Math.sin(startA);
+            const x2=cx+R*Math.cos(endA),   y2=cy+R*Math.sin(endA);
+            const mx=cx+(R*0.65)*Math.cos((startA+endA)/2);
+            const my=cy+(R*0.65)*Math.sin((startA+endA)/2);
+            return (
+              <g key={i}>
+                <path d={`M${cx},${cy} L${x1},${y1} A${R},${R} 0 0,1 ${x2},${y2} Z`}
+                  fill={p.color} opacity={0.9} stroke="#0d1120" strokeWidth="2"/>
+                <text x={mx} y={my} textAnchor="middle" dominantBaseline="middle"
+                  fontSize="18" style={{userSelect:"none"}}>{p.icon}</text>
+              </g>
+            );
+          })}
+          {/* Center circle */}
+          <circle cx={cx} cy={cy} r={28} fill="#0d1120" stroke="rgba(59,130,246,0.5)" strokeWidth="3"/>
+          <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle" fontSize="20">🎯</text>
+        </svg>
+      );
+    };
+
+    return (
+      <div>
+        {/* Header */}
+        <div style={{textAlign:"center",marginBottom:20}}>
+          <div style={{fontSize:40,marginBottom:8}}>🎁</div>
+          <div style={{fontSize:19,fontWeight:900,background:"linear-gradient(135deg,#f59e0b,#fbbf24,#f472b6)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:6}}>
+            {isRTL?"شارك واربح!":"Share & Win!"}
+          </div>
+          <div style={{fontSize:13,color:"#6b7280",lineHeight:1.6}}>
+            {isRTL?"شارك التطبيق مع أصدقائك واحصل على فرصة في السحب على جوائز قيّمة":"Share the app with friends for a chance to win amazing prizes"}
+          </div>
+        </div>
+
+        {/* Steps */}
+        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
+          {[
+            {n:"1", ar:"شارك التطبيق مع صديق",       en:"Share with a friend",      icon:"📤"},
+            {n:"2", ar:"ينضم صديقك للتطبيق",           en:"Friend joins the app",     icon:"👤"},
+            {n:"3", ar:"تحصل على دورة في عجلة الحظ",   en:"You spin the lucky wheel", icon:"🎡"},
+          ].map((s,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:14,background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:14,padding:"12px 16px"}}>
+              <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,#3B82F6,#2563EB)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:14,color:"#1a1a2e",flexShrink:0}}>{s.n}</div>
+              <span style={{fontSize:22}}>{s.icon}</span>
+              <span style={{fontSize:13,color:"#1E40AF",fontWeight:500}}>{isRTL?s.ar:s.en}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Referral Code Box */}
+        <div style={{background:"linear-gradient(135deg,rgba(245,158,11,0.12),rgba(251,191,36,0.08))",border:"1px solid rgba(245,158,11,0.3)",borderRadius:18,padding:"16px 18px",marginBottom:20}}>
+          <div style={{fontSize:11,color:"#f59e0b",marginBottom:8,fontWeight:600}}>{isRTL?"رمز الإحالة الخاص بك":"Your Referral Code"}</div>
+          <div style={{display:"flex",gap:10,alignItems:"center"}}>
+            <div style={{flex:1,background:"rgba(0,0,0,0.3)",borderRadius:10,padding:"10px 14px"}}>
+              <div style={{fontSize:15,fontWeight:800,color:"#fbbf24",letterSpacing:"1px"}}>{referralCode}</div>
+              <div style={{fontSize:10,color:"#6b7280",marginTop:2}}>{shareLink}</div>
+            </div>
+            <button onClick={copyCode} style={{background:copied?"rgba(74,222,128,0.2)":"rgba(245,158,11,0.2)",border:`1px solid ${copied?"rgba(74,222,128,0.4)":"rgba(245,158,11,0.4)"}`,color:copied?"#4ade80":"#f59e0b",borderRadius:12,padding:"10px 14px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700,flexShrink:0,transition:"all 0.3s"}}>
+              {copied?"✅":"📋"}
+            </button>
+          </div>
+        </div>
+
+        {/* Share Buttons */}
+        <div style={{fontSize:12,color:"#6b7280",marginBottom:12,fontWeight:600}}>{isRTL?"شارك عبر":"Share via"}</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:24}}>
+          {shareApps.map((app,i)=>(
+            <button key={i}
+              onClick={()=>{ if(app.fn) app.fn(); else window.open(app.url,"_blank"); }}
+              style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,padding:"14px 8px",borderRadius:14,border:`1px solid ${app.color}33`,background:`${app.color}11`,cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
+              <div style={{width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center"}}>{app.svg}</div>
+              <span style={{fontSize:10,fontWeight:600,color:app.color}}>{app.name}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Lucky Wheel */}
+        <div style={{background:"#f9f7ff",border:"1px solid #DBEAFE",borderRadius:22,padding:"22px 16px",textAlign:"center"}}>
+          <div style={{fontSize:15,fontWeight:800,color:"#1e3a5f",marginBottom:4}}>
+            🎡 {isRTL?"عجلة الحظ":"Lucky Wheel"}
+          </div>
+          <div style={{fontSize:11,color:"#6b7280",marginBottom:18}}>
+            {isRTL?"كل مشاركة تمنحك دورة واحدة":"Each referral earns one spin"}
+          </div>
+
+          {/* Wheel container */}
+          <div style={{position:"relative",display:"inline-block",marginBottom:16}}>
+            {/* Arrow pointer */}
+            <div style={{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",fontSize:24,zIndex:10,filter:"drop-shadow(0 2px 4px rgba(0,0,0,0.5))"}}>▼</div>
+            <div style={{
+              transform:`rotate(${spinAngle}deg)`,
+              transition:spinning?"transform 4s cubic-bezier(0.17,0.67,0.12,0.99)":"transform 0.3s ease",
+              display:"inline-block",borderRadius:"50%",overflow:"hidden"
+            }}>
+              <WheelSVG/>
+            </div>
+          </div>
+
+          {/* Spin button */}
+          <div>
+            {!spinDone ? (
+              <button onClick={doSpin} disabled={spinning} style={{background:spinning?"rgba(59,130,246,0.3)":"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"#1a1a2e",padding:"14px 40px",borderRadius:16,cursor:spinning?"not-allowed":"pointer",fontSize:15,fontWeight:800,fontFamily:"inherit",boxShadow:"0 4px 20px rgba(59,130,246,0.4)",opacity:spinning?0.7:1}}>
+                {spinning?(isRTL?"جاري الدوران...":"Spinning..."):(isRTL?"ادر العجلة 🎯":"Spin the Wheel 🎯")}
+              </button>
+            ) : (
+              <div style={{background:"rgba(74,222,128,0.1)",border:"1px solid rgba(74,222,128,0.3)",borderRadius:14,padding:"12px 20px"}}>
+                <div style={{fontSize:11,color:"#4ade80",marginBottom:4}}>{isRTL?"لقد ربحت!":"You won!"}</div>
+                <div style={{fontSize:16,fontWeight:800,color:"#1a1a2e"}}>{prizes[prizeIdx]?.icon} {isRTL?prizes[prizeIdx]?.labelAr:prizes[prizeIdx]?.labelEn}</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Win Modal */}
+        {showWin && prizeIdx!==null && prizes[prizeIdx]?.labelAr!=="حظاً أوفر!" && (
+          <div className="overlay" onClick={()=>setShowWin(false)}>
+            <div className="sheet" style={{textAlign:"center"}} dir={isRTL?"rtl":"ltr"}>
+              <div style={{fontSize:80,marginBottom:8,animation:"su 0.5s ease"}}>{prizes[prizeIdx]?.icon}</div>
+              <div style={{fontSize:22,fontWeight:900,background:`linear-gradient(135deg,${prizes[prizeIdx]?.color},#fff)`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:8}}>
+                {isRTL?"🎉 مبروك!":"🎉 Congratulations!"}
+              </div>
+              <div style={{fontSize:18,fontWeight:700,color:"#1a1a2e",marginBottom:6}}>{isRTL?prizes[prizeIdx]?.labelAr:prizes[prizeIdx]?.labelEn}</div>
+              <div style={{fontSize:12,color:"#6b7280",marginBottom:24}}>{isRTL?"سيتم التواصل معك خلال 24 ساعة":"We'll contact you within 24 hours"}</div>
+              <button onClick={()=>setShowWin(false)} style={{width:"100%",background:`linear-gradient(135deg,${prizes[prizeIdx]?.color},#3B82F6)`,border:"none",color:"#1a1a2e",padding:14,borderRadius:14,cursor:"pointer",fontSize:15,fontWeight:700,fontFamily:"inherit"}}>
+                🎊 {isRTL?"رائع، شكراً!":"Awesome, Thanks!"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const LockedScreen=()=>(
+    <div style={{textAlign:"center",padding:"60px 20px"}}>
+      <div style={{fontSize:60,marginBottom:16}}>🔒</div>
+      <div style={{fontSize:18,fontWeight:700,color:"#1e3a5f",marginBottom:8}}>{t.premium_locked}</div>
+      <div style={{fontSize:13,color:"#6b7280",marginBottom:24}}>Premium subscribers only</div>
+      <button onClick={()=>setShowPremium(true)} style={{background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",color:"#1a0a00",padding:"12px 28px",borderRadius:14,cursor:"pointer",fontWeight:700,fontFamily:"inherit",fontSize:14}}>✨ {t.upgrade}</button>
+    </div>
+  );
+
+  const screenMap={home:<HomeScreen/>,referral:<ReferralScreen/>,charts:<ChartsScreen/>,revenue:<RevenueScreen/>,transfersLog:<TransfersLogScreen/>,summary:<SummaryScreen/>,accountsSummary:<AccountsSummaryScreen/>,accounts:<AccountsSummaryScreen/>,allTransactions:<AllTransactionsScreen/>,transfer:<TransferScreen/>,allReport:isPremium?<AllReportScreen/>:<LockedScreen/>,changeTo:isPremium?<AllReportScreen/>:<LockedScreen/>,noteBook:<NoteBookScreen/>,calendar:<CalendarScreen/>,cashCalc:<CashCalcScreen/>,backup:isPremium?<BackupScreen/>:<LockedScreen/>,settings:<SettingsScreen/>,deletedTrans:<DeletedTransScreen/>,help:<HelpScreen/>};
+
+  // ─── ONBOARDING STEPS ───
+  const STEPS = [
+    { icon:"👋", title: isRTL?"أهلاً في حصيلة!":"Welcome to Hasseelah!", desc: isRTL?"تطبيقك الذكي لتتبع المصاريف والدخل بسهولة تامة":"Your smart app to track expenses and income easily", color:"#3B82F6" },
+    { icon:"➕", title: isRTL?"أضف معاملة":"Add a Transaction", desc: isRTL?"اضغط زر «إضافة معاملة» في أعلى الشاشة لتسجيل أي مصروف أو دخل فوراً":"Tap «Add Transaction» at the top to record any expense or income instantly", color:"#10B981" },
+    { icon:"📊", title: isRTL?"تتبع رصيدك":"Track Your Balance", desc: isRTL?"بطاقة الرصيد تعرض إجمالي دخلك ومصروفك لليوم أو الأسبوع أو الشهر أو السنة":"The balance card shows total income & expenses by day, week, month, or year", color:"#F59E0B" },
+    { icon:"☰", title: isRTL?"القائمة الجانبية":"Side Menu", desc: isRTL?"اضغط أيقونة القائمة ☰ في أعلى اليمين للوصول لكل الأقسام: الرسوم البيانية، التقارير، الحاسبة، الملاحظات وأكثر":"Tap ☰ top-right to access all sections: Charts, Reports, Calculator, Notes & more", color:"#8B5CF6" },
+    { icon:"💰", title: isRTL?"الميزانية الشهرية":"Monthly Budget", desc: isRTL?"حدد ميزانيتك الشهرية من الإعدادات وسيتابع التطبيق تلقائياً كم أنفقت وكم تبقى لك":"Set your monthly budget in Settings — the app automatically tracks how much you've spent", color:"#EF4444" },
+    { icon:"✅", title: isRTL?"كل شيء جاهز!":"You're All Set!", desc: isRTL?"بياناتك تُحفظ تلقائياً حتى بدون إنترنت. ابدأ الآن بتسجيل أول معاملة!":"Your data saves automatically even offline. Start by recording your first transaction!", color:"#3B82F6" },
+  ];
+
+  if (showOnboarding) {
+    const step = STEPS[onboardStep];
+    const isLast = onboardStep === STEPS.length - 1;
+    return (
+      <div dir={isRTL?"rtl":"ltr"} style={{minHeight:"100vh",background:"#f7f8fc",fontFamily:isRTL?"'Noto Sans Arabic','Tajawal',sans-serif":"'DM Sans',sans-serif",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px"}}>
+        {/* Progress dots */}
+        <div style={{display:"flex",gap:8,marginBottom:40}}>
+          {STEPS.map((_,i)=>(
+            <div key={i} style={{width:i===onboardStep?24:8,height:8,borderRadius:4,background:i===onboardStep?step.color:"#e2e8f0",transition:"all 0.3s"}}/>
+          ))}
+        </div>
+        {/* Card */}
+        <div style={{background:"#fff",borderRadius:28,padding:"40px 32px",maxWidth:360,width:"100%",textAlign:"center",boxShadow:"0 8px 32px rgba(0,0,0,0.08)"}}>
+          <div style={{fontSize:72,marginBottom:20,lineHeight:1}}>{step.icon}</div>
+          <div style={{fontSize:22,fontWeight:900,color:"#1a1a2e",marginBottom:12}}>{step.title}</div>
+          <div style={{fontSize:15,color:"#6b7280",lineHeight:1.7,marginBottom:32}}>{step.desc}</div>
+          <button onClick={()=>isLast?finishOnboarding():setOnboardStep(s=>s+1)}
+            style={{width:"100%",background:step.color,border:"none",color:"white",padding:"16px",borderRadius:16,cursor:"pointer",fontSize:16,fontWeight:700,fontFamily:"inherit",marginBottom:12}}>
+            {isLast?(isRTL?"ابدأ الآن 🚀":"Start Now 🚀"):(isRTL?"التالي ←":"Next →")}
+          </button>
+          {onboardStep > 0 && (
+            <button onClick={()=>setOnboardStep(s=>s-1)} style={{background:"none",border:"none",color:"#9ca3af",fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>
+              {isRTL?"← السابق":"← Back"}
+            </button>
+          )}
+        </div>
+        {/* Skip */}
+        <button onClick={finishOnboarding} style={{marginTop:24,background:"none",border:"none",color:"#9ca3af",fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>
+          {isRTL?"تخطي":"Skip"}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div dir={isRTL?"rtl":"ltr"} style={{minHeight:"100vh",background:"#f7f8fc",fontFamily:isRTL?"'Noto Sans Arabic','Tajawal',sans-serif":"'DM Sans',sans-serif",color:"#1a1a2e",position:"relative",overflow:"hidden"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;700;900&family=Tajawal:wght@400;700;900&family=DM+Sans:wght@300;400;500;700&family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0;}
+        ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#BAD4FD;border-radius:4px}
+        .inp{width:100%;background:#f8f6ff;border:1px solid #DBEAFE;color:#1a1a2e;padding:12px 14px;border-radius:12px;font-size:14px;font-family:inherit;outline:none;transition:border 0.3s;}
+        .inp:focus{border-color:#3B82F6}.inp::placeholder{color:#9ca3af}
+        select.inp option{background:#ffffff;color:#1a1a2e}
+        .overlay{position:fixed;inset:0;background:rgba(100,80,180,0.3);backdrop-filter:blur(12px);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+        .sheet{background:linear-gradient(180deg,#faf8ff,#f0ebff);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;border-top:1px solid #DBEAFE;animation:su 0.3s ease}
+        @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+        .side{position:fixed;inset:0;z-index:200;display:flex}
+        .sbk{flex:1;background:rgba(100,80,180,0.2);backdrop-filter:blur(8px)}
+        .spanel{width:272px;background:#ffffff;border-inline-end:1px solid #e5e0ff;overflow-y:auto;padding:52px 0 32px;animation:si 0.28s ease;box-shadow:4px 0 24px rgba(59,130,246,0.12)}
+        @keyframes si{from{transform:translateX(${isRTL?"-100%":"100%"})}to{transform:translateX(0)}}
+        .mi{display:flex;align-items:center;gap:14px;padding:13px 20px;cursor:pointer;transition:background 0.2s;color:#1f2937;font-size:14px;font-weight:500}.mi:hover{background:#EFF6FF}
+        .pulse{animation:pl 1.5s infinite}@keyframes pl{0%,100%{opacity:1}50%{opacity:0.4}}
+        .notif{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:999;background:linear-gradient(135deg,#3B82F6,#2563EB);color:white;padding:10px 22px;border-radius:50px;font-size:13px;font-weight:500;box-shadow:0 8px 30px rgba(59,130,246,0.4);white-space:nowrap;animation:nd 0.3s ease}
+        @keyframes nd{from{transform:translateX(-50%) translateY(-14px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+        .modeBtn{flex:1;padding:11px 6px;border-radius:14px;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:all 0.3s;font-family:inherit}
+        .mA{background:rgba(59,130,246,0.25);border:1px solid rgba(59,130,246,0.5)}.mI{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07)}
+        .ml{font-size:10px;color:#888;font-weight:500}
+      `}</style>
+
+      {notif&&<div className="notif">{notif}</div>}
+      <div style={{position:"absolute",width:350,height:350,borderRadius:"50%",top:-80,right:-80,border:"1px solid rgba(59,130,246,0.1)",pointerEvents:"none"}}/>
+      <div style={{position:"absolute",width:250,height:250,borderRadius:"50%",bottom:80,left:-60,border:"1px solid rgba(59,130,246,0.08)",pointerEvents:"none"}}/>
+
+      {/* Header */}
+      <div style={{position:"sticky",top:0,zIndex:50,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,0.05)",padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <button onClick={()=>setShowMenu(true)} style={{background:"#DBEAFE",border:"1px solid #DBEAFE",borderRadius:10,width:36,height:36,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",color:"#1E40AF"}}>☰</button>
+        <div style={{textAlign:"center"}}>
+          {screen==="home"?(
+            <><div style={{fontSize:10,color:"#60A5FA"}}>{greeting()} {langInfo.flag}</div><div style={{fontSize:18,fontWeight:900,background:"linear-gradient(135deg,#DBEAFE,#93C5FD)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:langCode==="ar"?"0":"-0.5px"}}>{langCode==="ar"||langCode==="ur"?"حصيلة":"Hasseelah"}</div></>
+          ):(
+            <button onClick={()=>setScreen("home")} style={{background:"transparent",border:"none",color:"#1D4ED8",cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>← {langCode==="ar"||langCode==="ur"?"حصيلة":"Hasseelah"}</button>
+          )}
+        </div>
+        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+          {isPremium?<span style={{fontSize:16}}>💎</span>:(
+            <button onClick={()=>setShowPremium(true)} style={{background:"rgba(245,158,11,0.15)",border:"1px solid rgba(245,158,11,0.3)",color:"#f59e0b",borderRadius:10,padding:"4px 10px",cursor:"pointer",fontSize:10,fontWeight:700,fontFamily:"inherit"}}>✨ PRO</button>
+          )}
+        </div>
+      </div>
+
+      <div style={{maxWidth:480,margin:"0 auto",padding:"16px 16px 100px",position:"relative",zIndex:1}}>
+        {screenMap[screen]||<HomeScreen/>}
+      </div>
+
+      {/* Side Menu */}
+      {showMenu&&(
+        <div className="side">
+          <div className="sbk" onClick={()=>setShowMenu(false)}/>
+          <div className="spanel" style={{[isRTL?"right":"left"]:0}}>
+            <div style={{padding:"0 20px 18px",borderBottom:"1px solid #DBEAFE",marginBottom:6}}>
+              <div style={{fontSize:20,fontWeight:900,background:"linear-gradient(135deg,#DBEAFE,#93C5FD)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{langCode==="ar"||langCode==="ur"?"حصيلة":"Hasseelah"}</div>
+              <div style={{fontSize:11,color:"#6b7280",marginTop:2,display:"flex",alignItems:"center",gap:6}}><span>{langInfo.flag}</span><span>{langInfo.label} · {langInfo.currencyCode}</span></div>
+            </div>
+            {MENU_ITEMS.map(item=>(
+              <div key={item.key} className="mi" onClick={()=>{
+                if(item.key==="removeAds"){if(!isPremium)setShowPremium(true);else notify("✅");setShowMenu(false);return;}
+                setScreen(item.key);setShowMenu(false);
+              }}>
+                <span style={{fontSize:18}}>{item.icon}</span>
+                <span>{t[item.key]||item.key}</span>
+                {item.premium&&!isPremium&&<span style={{marginInlineStart:"auto",background:"linear-gradient(135deg,#f59e0b,#d97706)",color:"#1a0a00",fontSize:9,padding:"2px 6px",borderRadius:4,fontWeight:700}}>PRO</span>}
+              </div>
+            ))}
+            <div style={{padding:"16px 20px 0",borderTop:"1px solid #DBEAFE",marginTop:8}}>
+              <button onClick={()=>{setShowLangPicker(true);setShowMenu(false);}} style={{width:"100%",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.3)",color:"#1E40AF",padding:"10px 14px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",fontSize:13,display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:20}}>{langInfo.flag}</span><span>{t.language}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Language Picker Sheet */}
+      {showLangPicker&&(
+        <div className="overlay" onClick={e=>e.target===e.currentTarget&&setShowLangPicker(false)}>
+          <div className="sheet" dir={isRTL?"rtl":"ltr"}>
+            <div style={{width:36,height:4,background:"#DBEAFE",borderRadius:2,margin:"0 auto 18px"}}/>
+            <LangPicker/>
+          </div>
+        </div>
+      )}
+
+      {/* Add Expense Sheet */}
+      {showAdd&&(
+        <div className="overlay" onClick={e=>e.target===e.currentTarget&&setShowAdd(false)}>
+          <div className="sheet" dir={isRTL?"rtl":"ltr"}>
+            <div style={{width:36,height:4,background:"#DBEAFE",borderRadius:2,margin:"0 auto 18px"}}/>
+            <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}>+ {t.addExpense}</div>
+            <div style={{display:"flex",gap:6,marginBottom:16,background:"#f9f7ff",padding:4,borderRadius:12}}>
+              {["expense","income"].map(type=>(
+                <button key={type} onClick={()=>setNewExp(p=>({...p,type}))} style={{flex:1,padding:9,borderRadius:10,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",background:newExp.type===type?(type==="income"?"linear-gradient(135deg,#059669,#10b981)":"linear-gradient(135deg,#dc2626,#ef4444)"):"transparent",color:newExp.type===type?"white":"#555"}}>
+                  {type==="income"?`↓ ${t.incomeLabel}`:`↑ ${t.expense}`}
+                </button>
+              ))}
+            </div>
+            <div style={{display:"flex",gap:8,marginBottom:16}}>
+              <button className={`modeBtn ${inputMode==="manual"?"mA":"mI"}`} onClick={()=>setInputMode("manual")}><span style={{fontSize:20}}>⌨️</span><span className="ml">{t.manual}</span></button>
+              <button className={`modeBtn ${isCapturing?"mA":"mI"}`} onClick={startCamera}><span style={{fontSize:20}}>📷</span><span className="ml">{t.camera}</span></button>
+              <button className={`modeBtn ${isListening?"mA":"mI"}`} onClick={startVoice}><span style={{fontSize:20}}>🎙️</span><span className="ml">{t.voice}</span></button>
+            </div>
+            {isCapturing&&(<div style={{marginBottom:14,borderRadius:14,overflow:"hidden",position:"relative",background:"#000",height:150}}><video ref={videoRef} autoPlay playsInline muted style={{width:"100%",height:"100%",objectFit:"cover"}}/><div className="pulse" style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.5)"}}><span style={{color:"#1D4ED8",fontWeight:600}}>📷 {t.capturing}</span></div></div>)}
+            {isListening&&(<div style={{marginBottom:14,padding:18,textAlign:"center",background:"rgba(59,130,246,0.1)",borderRadius:14,border:"1px solid rgba(59,130,246,0.3)"}}><div style={{fontSize:28,marginBottom:6}} className="pulse">🎙️</div><div style={{color:"#1D4ED8",fontWeight:600,fontSize:13}}>{t.listening}</div></div>)}
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <input className="inp" placeholder={t.itemName} value={newExp.name} onChange={e=>setNewExp(p=>({...p,name:e.target.value}))}/>
+              <input className="inp" type="number" placeholder={`${t.price} (${currency})`} value={newExp.amount} onChange={e=>setNewExp(p=>({...p,amount:e.target.value}))}/>
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <input className="inp" style={{flex:1}} placeholder={`📍 ${t.location}`} value={newExp.location} onChange={e=>setNewExp(p=>({...p,location:e.target.value}))}/>
+                <button
+                  type="button"
+                  onClick={()=>{
+                    if(!navigator.geolocation){ notify("❌ "+(isRTL?"الجهاز لا يدعم GPS":"GPS not supported")); return; }
+                    notify(isRTL?"📍 جاري تحديد موقعك...":"📍 Getting location...");
+                    navigator.geolocation.getCurrentPosition(
+                      pos=>{
+                        const {latitude:lat,longitude:lng}=pos.coords;
+                        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=${langCode}`)
+                          .then(r=>r.json())
+                          .then(d=>{
+                            const addr=d.address;
+                            const loc=[addr.road||addr.suburb,addr.city||addr.town||addr.village,addr.country].filter(Boolean).join(", ");
+                            setNewExp(p=>({...p,location:loc}));
+                            notify("✅ "+(isRTL?"تم تحديد الموقع":"Location detected"));
+                          })
+                          .catch(()=>{
+                            setNewExp(p=>({...p,location:`${lat.toFixed(4)}, ${lng.toFixed(4)}`}));
+                            notify("📍 "+lat.toFixed(4)+", "+lng.toFixed(4));
+                          });
+                      },
+                      ()=>notify("❌ "+(isRTL?"تعذّر الوصول للموقع":"Location access denied")),
+                      {timeout:8000}
+                    );
+                  }}
+                  style={{background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"white",padding:"11px 14px",borderRadius:12,cursor:"pointer",fontSize:18,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}
+                  title={isRTL?"تحديد الموقع تلقائياً":"Auto-detect location"}
+                >📍</button>
+              </div>
+              <select className="inp" value={newExp.category} onChange={e=>setNewExp(p=>({...p,category:parseInt(e.target.value)}))}>
+                {t.categories.map((c,i)=><option key={i} value={i}>{c}</option>)}
+              </select>
+              <select className="inp" value={newExp.account} onChange={e=>setNewExp(p=>({...p,account:e.target.value}))}>
+                <option value="cash">💵 {t.cash}</option><option value="bank">🏦 {t.bank}</option><option value="wallet">👜 {t.wallet}</option>
+              </select>
+
+              {/* Payment Method */}
+              <div>
+                <div style={{fontSize:12,color:"#6b7280",marginBottom:8}}>{isRTL?"طريقة الدفع":"Payment Method"}</div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7}}>
+                  {[
+                    {key:"cash",      icon:"💵", labelAr:"كاش",         labelEn:"Cash"},
+                    {key:"card",      icon:"💳", labelAr:"بطاقة",        labelEn:"Card"},
+                    {key:"apple_pay", icon:"📱", labelAr:"Apple Pay",    labelEn:"Apple Pay"},
+                    {key:"stc_pay",   icon:"🟣", labelAr:"STC Pay",      labelEn:"STC Pay"},
+                    {key:"bank_transfer",icon:"🏦",labelAr:"تحويل بنكي", labelEn:"Bank Transfer"},
+                    {key:"tabby",     icon:"🛍️", labelAr:"تابي/تمارا",  labelEn:"Tabby/Tamara"},
+                  ].map(pm=>{
+                    const active = newExp.paymentMethod===pm.key;
+                    return (
+                      <button key={pm.key} onClick={()=>setNewExp(p=>({...p,paymentMethod:pm.key}))} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"10px 6px",borderRadius:12,border:active?"1px solid rgba(59,130,246,0.6)":"1px solid #e5e0ff",background:active?"rgba(59,130,246,0.15)":"#f9f7ff",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
+                        <span style={{fontSize:20}}>{pm.icon}</span>
+                        <span style={{fontSize:10,fontWeight:600,color:active?"#1D4ED8":"#6b7280",textAlign:"center",lineHeight:1.2}}>{isRTL?pm.labelAr:pm.labelEn}</span>
+                        {active && <div style={{width:6,height:6,borderRadius:"50%",background:"#3B82F6"}}/>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <input className="inp" placeholder={`📝 ${t.note||"Note"}`} value={newExp.note} onChange={e=>setNewExp(p=>({...p,note:e.target.value}))}/>
+            </div>
+            <div style={{display:"flex",gap:10,marginTop:18}}>
+              <button onClick={()=>setShowAdd(false)} style={{flex:1,background:"#f3f0ff",border:"1px solid #d4c9ff",color:"#1E40AF",padding:12,borderRadius:12,cursor:"pointer",fontFamily:"inherit",fontSize:13}}>{t.cancel}</button>
+              <button onClick={saveExpense} style={{flex:2,background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"white",padding:12,borderRadius:12,cursor:"pointer",fontFamily:"inherit",fontSize:14,fontWeight:700}}>{t.save}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Date Picker Sheet */}
+      {showDatePicker&&(
+        <div className="overlay" onClick={e=>e.target===e.currentTarget&&setShowDatePicker(false)}>
+          <div className="sheet" dir={isRTL?"rtl":"ltr"}>
+            <div style={{width:36,height:4,background:"#DBEAFE",borderRadius:2,margin:"0 auto 18px"}}/>
+            <div style={{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:6}}>📅 {isRTL?"اختر نطاق التاريخ":"Select Date Range"}</div>
+            <div style={{fontSize:12,color:"#6b7280",marginBottom:20}}>{isRTL?"حدد تاريخ البداية والنهاية لعرض المعاملات":"Set start and end date to filter transactions"}</div>
+
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
+              <div>
+                <div style={{fontSize:12,color:"#6b7280",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{color:"#3B82F6"}}>●</span> {isRTL?"من تاريخ":"From"}
+                </div>
+                <input
+                  type="date"
+                  className="inp"
+                  value={customDateFrom}
+                  max={customDateTo||new Date().toISOString().split("T")[0]}
+                  onChange={e=>setCustomDateFrom(e.target.value)}
+                  style={{colorScheme:"dark"}}
+                />
+              </div>
+              <div>
+                <div style={{fontSize:12,color:"#6b7280",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{color:"#4ade80"}}>●</span> {isRTL?"إلى تاريخ":"To"}
+                </div>
+                <input
+                  type="date"
+                  className="inp"
+                  value={customDateTo}
+                  min={customDateFrom}
+                  max={new Date().toISOString().split("T")[0]}
+                  onChange={e=>setCustomDateTo(e.target.value)}
+                  style={{colorScheme:"dark"}}
+                />
+              </div>
+            </div>
+
+            {/* Quick Presets */}
+            <div style={{fontSize:12,color:"#6b7280",marginBottom:10}}>{isRTL?"اختصارات سريعة":"Quick Presets"}</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:20}}>
+              {[
+                {ar:"أمس",          en:"Yesterday",     fn:()=>{ const d=new Date(Date.now()-86400000).toISOString().split("T")[0]; setCustomDateFrom(d);setCustomDateTo(d); }},
+                {ar:"آخر 7 أيام",   en:"Last 7 days",   fn:()=>{ setCustomDateFrom(new Date(Date.now()-6*86400000).toISOString().split("T")[0]); setCustomDateTo(new Date().toISOString().split("T")[0]); }},
+                {ar:"آخر 30 يوم",   en:"Last 30 days",  fn:()=>{ setCustomDateFrom(new Date(Date.now()-29*86400000).toISOString().split("T")[0]); setCustomDateTo(new Date().toISOString().split("T")[0]); }},
+                {ar:"آخر 90 يوم",   en:"Last 90 days",  fn:()=>{ setCustomDateFrom(new Date(Date.now()-89*86400000).toISOString().split("T")[0]); setCustomDateTo(new Date().toISOString().split("T")[0]); }},
+                {ar:"هذا الشهر",    en:"This Month",    fn:()=>{ const n=new Date(); setCustomDateFrom(new Date(n.getFullYear(),n.getMonth(),1).toISOString().split("T")[0]); setCustomDateTo(n.toISOString().split("T")[0]); }},
+                {ar:"الشهر الماضي", en:"Last Month",    fn:()=>{ const n=new Date(); const f=new Date(n.getFullYear(),n.getMonth()-1,1); const l=new Date(n.getFullYear(),n.getMonth(),0); setCustomDateFrom(f.toISOString().split("T")[0]); setCustomDateTo(l.toISOString().split("T")[0]); }},
+                {ar:"هذا الربع",    en:"This Quarter",  fn:()=>{ const n=new Date(); const q=Math.floor(n.getMonth()/3); setCustomDateFrom(new Date(n.getFullYear(),q*3,1).toISOString().split("T")[0]); setCustomDateTo(n.toISOString().split("T")[0]); }},
+                {ar:"هذه السنة",    en:"This Year",     fn:()=>{ const n=new Date(); setCustomDateFrom(`${n.getFullYear()}-01-01`); setCustomDateTo(n.toISOString().split("T")[0]); }},
+              ].map((p,i)=>(
+                <button key={i} onClick={()=>{ p.fn(); }} style={{padding:"10px 12px",borderRadius:12,border:"1px solid rgba(59,130,246,0.2)",background:"rgba(59,130,246,0.08)",color:"#1E40AF",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:500,textAlign:"center"}}>
+                  {isRTL?p.ar:p.en}
+                </button>
+              ))}
+            </div>
+
+            {/* Preview */}
+            {customDateFrom&&customDateTo&&(
+              <div style={{background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.25)",borderRadius:14,padding:"12px 16px",marginBottom:16}}>
+                <div style={{fontSize:12,color:"#6b7280",marginBottom:8}}>{isRTL?"معاينة النتائج":"Preview"}</div>
+                <div style={{display:"flex",justifyContent:"space-between"}}>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:11,color:"#6b7280"}}>{isRTL?"معاملات":"Transactions"}</div>
+                    <div style={{fontSize:18,fontWeight:800,color:"#1E40AF"}}>{filterExp("custom").length}</div>
+                  </div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:11,color:"#ef4444"}}>{t.totalSpent}</div>
+                    <div style={{fontSize:18,fontWeight:800,color:"#ef4444"}}>{sumExp("custom").toLocaleString()}</div>
+                  </div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:11,color:"#4ade80"}}>{t.income}</div>
+                    <div style={{fontSize:18,fontWeight:800,color:"#4ade80"}}>{sumInc("custom").toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div style={{display:"flex",gap:10}}>
+              <button onClick={()=>{ setCustomDateFrom(""); setCustomDateTo(""); setShowDatePicker(false); setActiveTab("month"); }} style={{flex:1,background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.2)",color:"#ef4444",padding:12,borderRadius:12,cursor:"pointer",fontFamily:"inherit",fontSize:13}}>
+                🗑️ {isRTL?"مسح":"Clear"}
+              </button>
+              <button onClick={()=>setShowDatePicker(false)} style={{flex:2,background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"#1a1a2e",padding:12,borderRadius:12,cursor:"pointer",fontFamily:"inherit",fontSize:14,fontWeight:700}}>
+                ✅ {isRTL?"تطبيق الفلتر":"Apply Filter"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Premium Sheet */}
+      {showPremium&&(()=>{
+        const pricing = PRICING[langInfo.currencyCode] || PRICING.DEFAULT;
+        const saving = Math.round((pricing.monthly*12 - pricing.yearly) / (pricing.monthly*12) * 100);
+        return (
+        <div className="overlay" onClick={e=>e.target===e.currentTarget&&setShowPremium(false)}>
+          <div className="sheet" dir={isRTL?"rtl":"ltr"}>
+            <div style={{width:36,height:4,background:"#DBEAFE",borderRadius:2,margin:"0 auto 16px"}}/>
+            <div style={{textAlign:"center",marginBottom:20}}>
+              <div style={{fontSize:50,marginBottom:10}}>💎</div>
+              <div style={{fontSize:22,fontWeight:900,background:"linear-gradient(135deg,#f59e0b,#fbbf24)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{t.premium}</div>
+              <div style={{fontSize:13,color:"#1D4ED8",marginTop:6,fontWeight:600}}>
+                ☕ {isRTL?"أقل من سعر كوب قهوة في الشهر!":"Less than a cup of coffee a month!"}
+              </div>
+              <div style={{fontSize:11,color:"#6b7280",marginTop:3}}>
+                {isRTL?"٧.٥ ر.س · ~٢$ فقط 🌍":"7.5 SAR · ~$2 only 🌍"}
+              </div>
+            </div>
+
+            {/* Features */}
+            {[
+              {icon:"📵",ar:"إزالة الإعلانات",       en:"Remove Ads"},
+              {icon:"📄",ar:"تقارير شاملة",           en:"Full Reports"},
+              {icon:"🤖",ar:"تعرف ذكي بالكاميرا",     en:"AI Camera Recognition"},
+              {icon:"☁️",ar:"نسخ احتياطي سحابي",      en:"Cloud Backup"},
+              {icon:"📊",ar:"تحليلات متقدمة",          en:"Advanced Analytics"},
+              {icon:"🔄",ar:"مزامنة متعددة الأجهزة",  en:"Multi-device Sync"},
+            ].map((f,i)=>(
+              <div key={i} style={{display:"flex",gap:12,alignItems:"center",padding:"9px 0",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+                <span style={{fontSize:18}}>{f.icon}</span>
+                <span style={{fontSize:13,color:"#1E40AF"}}>{isRTL?f.ar:f.en}</span>
+                <span style={{marginInlineStart:"auto",color:"#4ade80",fontSize:14}}>✓</span>
+              </div>
+            ))}
+
+            {/* Pricing Plans */}
+            <div style={{marginTop:20,marginBottom:16}}>
+              <div style={{fontSize:12,color:"#6b7280",marginBottom:10,fontWeight:600}}>{isRTL?"اختر خطتك":"Choose Your Plan"}</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+
+                {/* Monthly */}
+                <div style={{background:"#f3f0ff",border:"1px solid #d4c9ff",borderRadius:16,padding:"14px 12px",textAlign:"center"}}>
+                  <div style={{fontSize:11,color:"#6b7280",marginBottom:6}}>{isRTL?"شهري":"Monthly"}</div>
+                  <div style={{fontSize:26,fontWeight:900,color:"#1a1a2e"}}>{pricing.symbol}{pricing.monthly}</div>
+                  <div style={{fontSize:10,color:"#6b7280",marginTop:2}}>/ {t.month}</div>
+                  <button onClick={()=>{setIsPremium(true);setShowPremium(false);notify("🎉 "+t.premium+"!");}} style={{marginTop:10,width:"100%",background:"#e8e3ff",border:"1px solid rgba(255,255,255,0.15)",color:"#1E40AF",padding:"8px 0",borderRadius:10,cursor:"pointer",fontFamily:"inherit",fontSize:12}}>
+                    {t.upgrade}
+                  </button>
+                </div>
+
+                {/* Yearly */}
+                <div style={{background:"linear-gradient(135deg,rgba(245,158,11,0.15),rgba(251,191,36,0.1))",border:"1px solid rgba(245,158,11,0.4)",borderRadius:16,padding:"14px 12px",textAlign:"center",position:"relative"}}>
+                  <div style={{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#f59e0b,#d97706)",color:"#1a0a00",fontSize:9,fontWeight:800,padding:"3px 10px",borderRadius:20,whiteSpace:"nowrap"}}>
+                    {isRTL?`وفّر ${saving}%`:`Save ${saving}%`} 🔥
+                  </div>
+                  <div style={{fontSize:11,color:"#f59e0b",marginBottom:6}}>{isRTL?"سنوي":"Yearly"}</div>
+                  <div style={{fontSize:26,fontWeight:900,color:"#fbbf24"}}>{pricing.symbol}{pricing.yearly}</div>
+                  <div style={{fontSize:10,color:"#6b7280",marginTop:2,textDecoration:"line-through"}}>{pricing.symbol}{(pricing.monthly*12).toFixed(0)} {isRTL?"بدون خصم":"full price"}</div>
+                  <button onClick={()=>{setIsPremium(true);setShowPremium(false);notify("🎉 "+t.premium+"!");}} style={{marginTop:10,width:"100%",background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",color:"#1a0a00",padding:"8px 0",borderRadius:10,cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:700}}>
+                    ✨ {t.upgrade}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Currency note */}
+            <div style={{textAlign:"center",padding:"8px 0",borderTop:"1px solid #DBEAFE"}}>
+              <div style={{fontSize:11,color:"#6b7280"}}>
+                {isRTL
+                  ? `السعر بالعملة المحلية ${langInfo.flag} ${langInfo.label} · ${pricing.symbol} ${langInfo.currencyCode}`
+                  : `Priced in ${langInfo.flag} ${langInfo.label} · ${pricing.symbol} ${langInfo.currencyCode}`
+                }
+              </div>
+              <div style={{fontSize:10,color:"#9ca3af",marginTop:3}}>
+                {isRTL?"≈ ٧.٥ ر.س / ٢ دولار شهرياً":"≈ 7.5 SAR / 2 USD per month"}
+              </div>
+            </div>
+          </div>
+        </div>
+        );
+      })()}
+    </div>
+  );
+}
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App/>);
+  </script>
+  <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});}</script>
+</body>
+</html>
