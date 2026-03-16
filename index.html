@@ -581,6 +581,33 @@ function App() {
         )
       )
 
+      /* ══ PREMIUM PROMO ══ */
+      , !isPremium && React.createElement('div', { onClick: ()=>setShowPremium(true), style: {width:"100%",marginBottom:14,background:"linear-gradient(135deg,#1e3a5f,#1D4ED8)",borderRadius:18,padding:"18px",cursor:"pointer",position:"relative",overflow:"hidden"},}
+        , React.createElement('div', { style: {position:"absolute",top:-20,right:-20,width:100,height:100,borderRadius:"50%",background:"rgba(255,255,255,0.06)"},})
+        , React.createElement('div', { style: {position:"absolute",bottom:-30,left:-10,width:120,height:120,borderRadius:"50%",background:"rgba(255,255,255,0.04)"},})
+        , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:10,marginBottom:14},}
+          , React.createElement('div', { style: {fontSize:26},}, "💎")
+          , React.createElement('div', null
+            , React.createElement('div', { style: {fontSize:14,fontWeight:900,color:"white"},}, isRTL?"انضم للمميز الآن":"Go Premium Now")
+            , React.createElement('div', { style: {fontSize:11,color:"#93C5FD"},}, isRTL?"☕ أقل من سعر كوب قهوة في الشهر!":"Less than a cup of coffee a month!")
+          )
+        )
+        , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14},}
+          , [
+            {icon:"📊", ar:"مقارنة الأشهر", en:"Monthly Comparison"},
+            {icon:"📄", ar:"تقارير شاملة",  en:"Full Reports"},
+            {icon:"☁️", ar:"نسخ احتياطي",   en:"Cloud Backup"},
+            {icon:"📵", ar:"بدون إعلانات",  en:"No Ads"},
+          ].map((f,i)=>React.createElement('div', { key:i, style: {display:"flex",alignItems:"center",gap:6,background:"rgba(255,255,255,0.1)",borderRadius:10,padding:"8px 10px"},}
+            , React.createElement('span', { style: {fontSize:16},}, f.icon)
+            , React.createElement('span', { style: {fontSize:11,color:"white",fontWeight:600},}, isRTL?f.ar:f.en)
+          ))
+        )
+        , React.createElement('div', { style: {background:"linear-gradient(135deg,#f59e0b,#d97706)",borderRadius:12,padding:"11px",textAlign:"center"},}
+          , React.createElement('div', { style: {fontSize:13,fontWeight:900,color:"#1a0a00"},}, isRTL?"اشترك الآن — ٧.٥ ر.س فقط / شهرياً ✨":"Subscribe Now — Just 7.5 SAR / month ✨")
+        )
+      )
+
       /* ══ REFERRAL ══ */
       , React.createElement('button', { onClick: ()=>setScreen("referral"), style: {width:"100%",marginBottom:14,background:"#fffbeb",border:"1px solid #fde68a",borderRadius:18,padding:"14px 18px",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:12,textAlign:isRTL?"right":"left"},}
         , React.createElement('div', { style: {fontSize:30,flexShrink:0},}, "🎁")
