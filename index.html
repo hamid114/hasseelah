@@ -1739,11 +1739,6 @@ function App() {
   // ── REFERRAL / GIVEAWAY SCREEN ───────────────────────────
   const ReferralScreen=()=>{
     const [copied, setCopied] = useState(false);
-    const [spinDone, setSpinDone] = useState(false);
-    const [spinning, setSpinning] = useState(false);
-    const [spinAngle, setSpinAngle] = useState(0);
-    const [prizeIdx, setPrizeIdx] = useState(null);
-    const [showWin, setShowWin] = useState(false);
 
     const referralCode = "HSSL-" + (langInfo.currencyCode) + "-2026";
     const shareLink = `https://hasseelah.com/join?ref=${referralCode}`;
@@ -1787,61 +1782,6 @@ function App() {
       },
     ];
 
-    const prizes = [
-      {icon:"🎁", labelAr:"اشتراك مجاني شهر",   labelEn:"1 Month Free",    color:"#f59e0b"},
-      {icon:"💎", labelAr:"3 أشهر مجانية",        labelEn:"3 Months Free",   color:"#1D4ED8"},
-      {icon:"⭐", labelAr:"خصم 20%",               labelEn:"20% Discount",    color:"#4ade80"},
-      {icon:"🏆", labelAr:"سنة مجانية!",           labelEn:"1 Year Free!",    color:"#ef4444"},
-      {icon:"🎀", labelAr:`بطاقة هدية ${_optionalChain([PRICING, 'access', _10 => _10[_optionalChain([langInfo, 'optionalAccess', _11 => _11.currencyCode])], 'optionalAccess', _12 => _12.symbol])||"$"}50`,    labelEn:`Gift Card 50 ${_optionalChain([PRICING, 'access', _13 => _13[_optionalChain([langInfo, 'optionalAccess', _14 => _14.currencyCode])], 'optionalAccess', _15 => _15.symbol])||"$"}`, color:"#60a5fa"},
-      {icon:"🌟", labelAr:"خصم 50%",               labelEn:"50% Discount",    color:"#fbbf24"},
-      {icon:"🎊", labelAr:"شهرين مجانيين",         labelEn:"2 Months Free",   color:"#f472b6"},
-      {icon:"💫", labelAr:"حظاً أوفر!",            labelEn:"Try Again!",      color:"#6b7280"},
-    ];
-
-    const SLICE = 360 / prizes.length;
-
-    const doSpin = () => {
-      if(spinning||spinDone) return;
-      setSpinning(true);
-      const winner = Math.floor(Math.random() * prizes.length);
-      const targetAngle = 360*5 + (360 - winner*SLICE - SLICE/2);
-      setSpinAngle(targetAngle);
-      setTimeout(()=>{
-        setSpinning(false);
-        setSpinDone(true);
-        setPrizeIdx(winner);
-        setTimeout(()=>setShowWin(true), 400);
-      }, 4000);
-    };
-
-    // Draw wheel slices with SVG
-    const WheelSVG = () => {
-      const R=120, cx=130, cy=130;
-      return (
-        React.createElement('svg', { width: 260, height: 260, style: {filter:"drop-shadow(0 8px 32px rgba(59,130,246,0.4))"},}
-          , prizes.map((p,i)=>{
-            const startA=(i*SLICE-90)*(Math.PI/180);
-            const endA=((i+1)*SLICE-90)*(Math.PI/180);
-            const x1=cx+R*Math.cos(startA), y1=cy+R*Math.sin(startA);
-            const x2=cx+R*Math.cos(endA),   y2=cy+R*Math.sin(endA);
-            const mx=cx+(R*0.65)*Math.cos((startA+endA)/2);
-            const my=cy+(R*0.65)*Math.sin((startA+endA)/2);
-            return (
-              React.createElement('g', { key: i,}
-                , React.createElement('path', { d: `M${cx},${cy} L${x1},${y1} A${R},${R} 0 0,1 ${x2},${y2} Z`,
-                  fill: p.color, opacity: 0.9, stroke: "#0d1120", strokeWidth: "2",})
-                , React.createElement('text', { x: mx, y: my, textAnchor: "middle", dominantBaseline: "middle",
-                  fontSize: "18", style: {userSelect:"none"},}, p.icon)
-              )
-            );
-          })
-          /* Center circle */
-          , React.createElement('circle', { cx: cx, cy: cy, r: 28, fill: "#0d1120", stroke: "rgba(59,130,246,0.5)", strokeWidth: "3",})
-          , React.createElement('text', { x: cx, y: cy, textAnchor: "middle", dominantBaseline: "middle", fontSize: "20",}, "🎯")
-        )
-      );
-    };
-
     return (
       React.createElement('div', null
         /* Header */
@@ -1851,7 +1791,7 @@ function App() {
             , isRTL?"شارك واربح!":"Share & Win!"
           )
           , React.createElement('div', { style: {fontSize:13,color:"#6b7280",lineHeight:1.6},}
-            , isRTL?"شارك التطبيق مع أصدقائك واحصل على فرصة في السحب على جوائز قيّمة":"Share the app with friends for a chance to win amazing prizes"
+            , isRTL?"شارك التطبيق مع أصدقائك واحصل على شهر مجاني":"Share the app with friends and get a free month"
           )
         )
 
