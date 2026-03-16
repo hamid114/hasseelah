@@ -2211,20 +2211,19 @@ function App() {
         );
       })()
 
-    /* ── FLOATING QUICK ADD BUTTON ── */
-    , screen==="home" && React.createElement('button', {
-        onClick: ()=>setShowAdd(true),
-        style: {
-          position:"fixed", bottom:28, right:24,
-          width:64, height:64, borderRadius:"50%",
-          background:"linear-gradient(135deg,#3B82F6,#2563EB)",
-          border:"none", color:"white", fontSize:36,
-          boxShadow:"0 6px 28px rgba(59,130,246,0.6)",
-          cursor:"pointer", zIndex:9999,
-          display:"flex", alignItems:"center", justifyContent:"center",
-          lineHeight:"1", fontWeight:"300",
-        },
-      }, "+")
+      /* ── FLOATING QUICK ADD BUTTON ── */
+      , screen==="home" && React.createElement('button', {
+          onClick: ()=>setShowAdd(true),
+          style: {
+            position:"fixed", bottom:28, right:24,
+            width:64, height:64, borderRadius:"50%",
+            background:"linear-gradient(135deg,#3B82F6,#2563EB)",
+            border:"none", color:"white", fontSize:36,
+            boxShadow:"0 6px 28px rgba(59,130,246,0.6)",
+            cursor:"pointer", zIndex:9999,
+            display:"flex", alignItems:"center", justifyContent:"center",
+          },
+        }, "+")
     )
   );
 }
