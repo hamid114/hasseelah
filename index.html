@@ -126,12 +126,19 @@ const initExpenses = [
 ];
 
 function App() {
+  // Simple data obfuscation for localStorage
+  const _k = "hs2026";
+  const _enc = (str) => { try { return btoa(str.split("").map((c,i)=>String.fromCharCode(c.charCodeAt(0)^_k.charCodeAt(i%_k.length))).join("")); } catch(e){ return str; } };
+  const _dec = (str) => { try { return atob(str).split("").map((c,i)=>String.fromCharCode(c.charCodeAt(0)^_k.charCodeAt(i%_k.length))).join(""); } catch(e){ return str; } };
+  const _save = (key,val) => { try{ localStorage.setItem(key, _enc(JSON.stringify(val))); }catch(e){} };
+  const _load = (key,def) => { try{ const v=localStorage.getItem(key); return v?JSON.parse(_dec(v)):def; }catch(e){ return def; } };
+
   const [langCode, setLangCode] = useState("ar");
   const [t, setT] = useState(T.ar);
   const [langInfo, setLangInfo] = useState(LANGUAGES[0]);
-  const [expenses, setExpenses] = useState(()=>{ try{ const d=JSON.parse(localStorage.getItem("hs_data")||"{}"); return d.expenses||initExpenses; }catch(e){return initExpenses;} });
-  const [notes, setNotes] = useState(()=>{ try{ const d=JSON.parse(localStorage.getItem("hs_data")||"{}"); return d.notes||[]; }catch(e){return [];} });
-  const [deleted, setDeleted] = useState(()=>{ try{ const d=JSON.parse(localStorage.getItem("hs_data")||"{}"); return d.deleted||[]; }catch(e){return [];} });
+  const [expenses, setExpenses] = useState(()=>{ const d=_load("hs_data",{}); return d.expenses||initExpenses; });
+  const [notes, setNotes] = useState(()=>{ const d=_load("hs_data",{}); return d.notes||[]; });
+  const [deleted, setDeleted] = useState(()=>{ const d=_load("hs_data",{}); return d.deleted||[]; });
   const [showOnboarding, setShowOnboarding] = useState(()=>!localStorage.getItem("hs_onboarded"));
   const [onboardStep, setOnboardStep] = useState(0);
   const [activeTab, setActiveTab] = useState("month");
@@ -145,7 +152,7 @@ function App() {
   const [showAdd, setShowAdd] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
   const [showLangPicker, setShowLangPicker] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
+  const [isPremium, setIsPremium] = useState(()=>localStorage.getItem("hs_premium")==="1");
   const [darkMode, setDarkMode] = useState(()=>localStorage.getItem("hs_dark")==="1");
   const [showLimitAlert, setShowLimitAlert] = useState(false);
   const FREE_MONTHLY_LIMIT = 30;
@@ -153,7 +160,7 @@ function App() {
   const [isListening, setIsListening] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [budget, setBudget] = useState(3000);
-  const [goals, setGoals] = useState(()=>{ try{ return JSON.parse(localStorage.getItem("hs_goals")||"[]"); }catch(e){return [];} });
+  const [goals, setGoals] = useState(()=>_load("hs_goals",[]));
   const [notif, setNotif] = useState(null);
   const [newExp, setNewExp] = useState({name:"",amount:"",category:0,location:"",account:"cash",note:"",type:"expense",paymentMethod:"cash"});
   const [transferData, setTransferData] = useState({from:"cash",to:"bank",amount:"",note:"",direction:"out"});
@@ -353,22 +360,24 @@ function App() {
 
   // Auto-save to localStorage
   useEffect(()=>{
-    const t=setTimeout(()=>{ try{ localStorage.setItem("hs_data",JSON.stringify({expenses,notes,deleted})); }catch(e){} },800);
+    const t=setTimeout(()=>{ _save("hs_data",{expenses,notes,deleted}); },800);
     return ()=>clearTimeout(t);
   },[expenses,notes,deleted]);
 
-  useEffect(()=>{ try{ localStorage.setItem("hs_goals",JSON.stringify(goals)); }catch(e){} },[goals]);
+  useEffect(()=>{ _save("hs_goals",goals); },[goals]);
   useEffect(()=>{ localStorage.setItem("hs_dark", darkMode?"1":"0"); },[darkMode]);
+  useEffect(()=>{ localStorage.setItem("hs_premium", isPremium?"1":"0"); },[isPremium]);
 
   const finishOnboarding=()=>{ localStorage.setItem("hs_onboarded","1"); setShowOnboarding(false); setOnboardStep(0); };
 
   useEffect(()=>{
-    const t=setTimeout(()=>{ try{ localStorage.setItem("hs_data",JSON.stringify({expenses,notes,deleted})); }catch(e){} },800);
+    const t=setTimeout(()=>{ _save("hs_data",{expenses,notes,deleted}); },800);
     return ()=>clearTimeout(t);
   },[expenses,notes,deleted]);
 
-  useEffect(()=>{ try{ localStorage.setItem("hs_goals",JSON.stringify(goals)); }catch(e){} },[goals]);
+  useEffect(()=>{ _save("hs_goals",goals); },[goals]);
   useEffect(()=>{ localStorage.setItem("hs_dark", darkMode?"1":"0"); },[darkMode]);
+  useEffect(()=>{ localStorage.setItem("hs_premium", isPremium?"1":"0"); },[isPremium]);
 
   const getMonthlyCount = () => {
     const now = new Date();
@@ -407,8 +416,45 @@ function App() {
 
   const diffPrice=(curr,prev)=>{ if(!prev) return null; const d=curr-prev,pct=((d/prev)*100).toFixed(1); return {d,pct,type:d<0?"cheaper":d>0?"expensive":"same"}; };
 
+  // Safe math parser - no eval()
+  const safeMath = (expr) => {
+    // Allow only numbers and operators
+    const clean = expr.replace(/[^0-9+\-*/().]/g, '');
+    if(!clean) return NaN;
+    // Recursive descent parser
+    const tokens = clean.match(/\d+\.?\d*|[+\-*/()]/g) || [];
+    let pos = 0;
+    const peek = () => tokens[pos];
+    const consume = () => tokens[pos++];
+    const parseNum = () => {
+      if(peek() === '(') { consume(); const v = parseExpr(); consume(); return v; }
+      const t = consume();
+      return t !== undefined ? parseFloat(t) : NaN;
+    };
+    const parseMul = () => {
+      let left = parseNum();
+      while(peek() === '*' || peek() === '/') {
+        const op = consume();
+        const right = parseNum();
+        left = op === '*' ? left * right : right !== 0 ? left / right : NaN;
+      }
+      return left;
+    };
+    const parseExpr = () => {
+      let left = parseMul();
+      while(peek() === '+' || peek() === '-') {
+        const op = consume();
+        const right = parseMul();
+        left = op === '+' ? left + right : left - right;
+      }
+      return left;
+    };
+    try { const result = parseExpr(); return isFinite(result) ? result : NaN; }
+    catch(e) { return NaN; }
+  };
+
   const calcPress=(v)=>{
-    if(v==="="){try{setCalcVal(String(eval(calcExpr||calcVal)));setCalcExpr("");}catch (e3){setCalcVal("Err");}}
+    if(v==="="){ const result = safeMath((calcExpr||calcVal).replace(/×/g,'*').replace(/÷/g,'/')); setCalcVal(isNaN(result)?"Err":String(Math.round(result*10000000)/10000000)); setCalcExpr(""); }
     else if(v==="C"){setCalcVal("0");setCalcExpr("");}
     else if(v==="⌫"){setCalcExpr(p=>p.slice(0,-1));setCalcVal(p=>p.length>1?p.slice(0,-1):"0");}
     else if(["+","-","×","÷"].includes(v)){const op=v==="×"?"*":v==="÷"?"/":v;setCalcExpr(p=>(p||calcVal)+op);setCalcVal(v);}
