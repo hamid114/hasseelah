@@ -355,11 +355,9 @@ function App() {
   const finishOnboarding=()=>{ localStorage.setItem("hs_onboarded","1"); setShowOnboarding(false); setOnboardStep(0); };
 
   useEffect(()=>{
-    const timer=setTimeout(()=>{ try{ localStorage.setItem("hs_data",JSON.stringify({expenses,notes,deleted})); }catch(e){} },800);
-    return ()=>clearTimeout(timer);
+    const t=setTimeout(()=>{ try{ localStorage.setItem("hs_data",JSON.stringify({expenses,notes,deleted})); }catch(e){} },800);
+    return ()=>clearTimeout(t);
   },[expenses,notes,deleted]);
-
-  const finishOnboarding=()=>{ localStorage.setItem("hs_onboarded","1"); setShowOnboarding(false); setOnboardStep(0); };
 
   const saveExpense = () => {
     if(!newExp.name||!newExp.amount) return;
@@ -1538,7 +1536,7 @@ function App() {
             , isRTL?"شارك واربح!":"Share & Win!"
           )
           , React.createElement('div', { style: {fontSize:13,color:"#6b7280",lineHeight:1.6},}
-            , isRTL?"شارك التطبيق مع أصدقائك واحصل على شهر مجاني":"Share the app with friends and get a free month"
+            , isRTL?"شارك التطبيق مع أصدقائك واحصل على فرصة في السحب على جوائز قيّمة":"Share the app with friends for a chance to win amazing prizes"
           )
         )
 
@@ -1640,34 +1638,6 @@ function App() {
           , isRTL?"تخطي":"Skip"
         )
       )
-    );
-  }
-
-
-  const STEPS = [
-    { icon:"👋", title: isRTL?"أهلاً في حصيلة!":"Welcome to Hasseelah!", desc: isRTL?"تطبيقك الذكي لتتبع المصاريف والدخل":"Your smart expense tracker", color:"#3B82F6" },
-    { icon:"➕", title: isRTL?"أضف معاملة":"Add a Transaction", desc: isRTL?"اضغط الزر الأزرق لتسجيل أي مصروف أو دخل":"Tap the blue button to record any expense or income", color:"#10B981" },
-    { icon:"📊", title: isRTL?"تتبع رصيدك":"Track Your Balance", desc: isRTL?"اعرض تقاريرك حسب اليوم أو الأسبوع أو الشهر":"View reports by day, week, or month", color:"#F59E0B" },
-    { icon:"✅", title: isRTL?"كل شيء جاهز!":"You're All Set!", desc: isRTL?"بياناتك تُحفظ تلقائياً حتى بدون إنترنت":"Your data saves automatically even offline", color:"#3B82F6" },
-  ];
-
-  if (showOnboarding) {
-    const step = STEPS[onboardStep];
-    const isLast = onboardStep === STEPS.length - 1;
-    return React.createElement('div', {dir:isRTL?"rtl":"ltr",style:{minHeight:"100vh",background:"#f7f8fc",fontFamily:isRTL?"'Noto Sans Arabic',sans-serif":"sans-serif",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px"}},
-      React.createElement('div', {style:{display:"flex",gap:8,marginBottom:40}},
-        STEPS.map((_,i)=>React.createElement('div', {key:i,style:{width:i===onboardStep?24:8,height:8,borderRadius:4,background:i===onboardStep?step.color:"#e2e8f0",transition:"all 0.3s"}}))
-      ),
-      React.createElement('div', {style:{background:"#fff",borderRadius:28,padding:"40px 32px",maxWidth:360,width:"100%",textAlign:"center",boxShadow:"0 8px 32px rgba(0,0,0,0.08)"}},
-        React.createElement('div', {style:{fontSize:72,marginBottom:20,lineHeight:1}}, step.icon),
-        React.createElement('div', {style:{fontSize:22,fontWeight:900,color:"#1a1a2e",marginBottom:12}}, step.title),
-        React.createElement('div', {style:{fontSize:15,color:"#6b7280",lineHeight:1.7,marginBottom:32}}, step.desc),
-        React.createElement('button', {onClick:()=>isLast?finishOnboarding():setOnboardStep(s=>s+1),style:{width:"100%",background:step.color,border:"none",color:"white",padding:"16px",borderRadius:16,cursor:"pointer",fontSize:16,fontWeight:700,fontFamily:"inherit",marginBottom:12}},
-          isLast?(isRTL?"ابدأ الآن 🚀":"Start Now 🚀"):(isRTL?"التالي →":"Next →")
-        ),
-        onboardStep > 0 && React.createElement('button', {onClick:()=>setOnboardStep(s=>s-1),style:{background:"none",border:"none",color:"#9ca3af",fontSize:13,cursor:"pointer",fontFamily:"inherit"}}, isRTL?"← السابق":"← Back")
-      ),
-      React.createElement('button', {onClick:finishOnboarding,style:{marginTop:24,background:"none",border:"none",color:"#9ca3af",fontSize:13,cursor:"pointer",fontFamily:"inherit"}}, isRTL?"تخطي":"Skip")
     );
   }
 
@@ -2034,9 +2004,7 @@ function App() {
     const loadingEl = document.getElementById('loading'); if(loadingEl) loadingEl.remove();
     root.render(React.createElement(App, null));
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(React.createElement(App, null));
   </script>
-  <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});}</script>
+  <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});})}</script>
 </body>
 </html>
