@@ -594,6 +594,7 @@ function App() {
           {icon:"📊", ar:"مقارنة الأشهر",    en:"Monthly Comparison",  screen:"charts"},
           {icon:"📄", ar:"تقارير شاملة",     en:"Full Reports",        screen:"allReport"},
           {icon:"☁️", ar:"نسخ احتياطي",      en:"Cloud Backup",        screen:"backup"},
+          {icon:"📵", ar:"بدون إعلانات",     en:"No Ads",              screen:null},
         ];
 
         if(isPremium) {
@@ -634,8 +635,8 @@ function App() {
               , React.createElement('div', {style:{fontSize:11,color:"#93C5FD",marginTop:2}}, isRTL?"☕ أقل من سعر كوب قهوة شهرياً!":"Less than a coffee a month!")
             )
           )
-          , React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}
-            , features.map((f,i)=>React.createElement('div', {key:i, style:{display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.12)",borderRadius:12,padding:"10px 12px"}}
+          , React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}
+            , features.map((f,i)=>React.createElement('div', {key:i, style:{display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.12)",borderRadius:12,padding:"8px 10px"}}
               , React.createElement('span', {style:{fontSize:18}}, f.icon)
               , React.createElement('div', null
                 , React.createElement('div', {style:{fontSize:11,fontWeight:700,color:"white"}}, isRTL?f.ar:f.en)
