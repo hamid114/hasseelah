@@ -1211,6 +1211,75 @@ function App() {
           )
         )
 
+        /* MONTH COMPARISON - PREMIUM */
+        , (()=>{
+          const now = new Date();
+          const mExp = (offset) => expenses.filter(e=>{ const d=new Date(e.date); const t=new Date(now.getFullYear(),now.getMonth()+offset,1); return d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear()&&e.type==="expense"; }).reduce((s,e)=>s+e.amount,0);
+          const mInc = (offset) => expenses.filter(e=>{ const d=new Date(e.date); const t=new Date(now.getFullYear(),now.getMonth()+offset,1); return d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear()&&e.type==="income"; }).reduce((s,e)=>s+e.amount,0);
+          const thisExp=mExp(0), lastExp=mExp(-1), thisInc=mInc(0), lastInc=mInc(-1);
+          const mn=isRTL?["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"]:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+          const thisName=mn[now.getMonth()], lastName=mn[new Date(now.getFullYear(),now.getMonth()-1,1).getMonth()];
+          const expDiff=lastExp>0?((thisExp-lastExp)/lastExp*100).toFixed(0):null;
+          const incDiff=lastInc>0?((thisInc-lastInc)/lastInc*100).toFixed(0):null;
+          const maxE=Math.max(thisExp,lastExp,1), maxI=Math.max(thisInc,lastInc,1);
+
+          if(!isPremium) return React.createElement('div', {style:{background:"#fff",border:"1px solid #DBEAFE",borderRadius:18,padding:20,marginBottom:16,position:"relative",overflow:"hidden"}},
+            React.createElement('div', {style:{filter:"blur(3px)",pointerEvents:"none",opacity:0.4}},
+              React.createElement('div', {style:{fontSize:13,fontWeight:700,color:"#1e3a5f",marginBottom:12}}, "📅 ", isRTL?`${thisName} مقابل ${lastName}`:`${thisName} vs ${lastName}`),
+              React.createElement('div', {style:{display:"flex",gap:8,marginBottom:8}},
+                React.createElement('div', {style:{flex:1,background:"#f3f4f6",borderRadius:10,height:50}}),
+                React.createElement('div', {style:{flex:1,background:"#f3f4f6",borderRadius:10,height:50}})
+              )
+            ),
+            React.createElement('div', {style:{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,0.88)"}},
+              React.createElement('div', {style:{fontSize:28,marginBottom:6}}, "🔒"),
+              React.createElement('div', {style:{fontSize:13,fontWeight:700,color:"#1e3a5f",marginBottom:4}}, isRTL?"مقارنة الأشهر":"Monthly Comparison"),
+              React.createElement('div', {style:{fontSize:11,color:"#6b7280",marginBottom:12,textAlign:"center",paddingInline:16}}, isRTL?"قارن إنفاقك شهراً بشهر واكتشف أولوياتك":"Compare spending month by month"),
+              React.createElement('button', {onClick:()=>setShowPremium(true),style:{background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",color:"#1a0a00",padding:"8px 20px",borderRadius:10,cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit"}}, "✨ ", isRTL?"ترقية":"Upgrade")
+            )
+          );
+
+          return React.createElement('div', {style:{background:"#fff",border:"1px solid #DBEAFE",borderRadius:18,padding:16,marginBottom:16}},
+            React.createElement('div', {style:{fontSize:13,fontWeight:700,color:"#1e3a5f",marginBottom:14}}, "📅 ", isRTL?`${thisName} مقابل ${lastName}`:`${thisName} vs ${lastName}`),
+            React.createElement('div', {style:{marginBottom:12}},
+              React.createElement('div', {style:{display:"flex",justifyContent:"space-between",fontSize:11,color:"#6b7280",marginBottom:5}},
+                React.createElement('span', null, "↑ ", isRTL?"المصروف":"Expenses"),
+                expDiff!==null&&React.createElement('span', {style:{color:expDiff>0?"#ef4444":"#16a34a",fontWeight:600}}, expDiff>0?"▲":"▼", " ", Math.abs(expDiff), "%")
+              ),
+              React.createElement('div', {style:{display:"flex",gap:8}},
+                React.createElement('div', {style:{flex:1}},
+                  React.createElement('div', {style:{fontSize:10,color:"#9ca3af",marginBottom:3}}, lastName),
+                  React.createElement('div', {style:{background:"#f3f4f6",borderRadius:6,height:8}}, React.createElement('div', {style:{height:"100%",width:`${(lastExp/maxE*100).toFixed(0)}%`,background:"#9ca3af",borderRadius:6}})),
+                  React.createElement('div', {style:{fontSize:11,fontWeight:700,color:"#6b7280",marginTop:2}}, lastExp.toLocaleString(), " ", currency)
+                ),
+                React.createElement('div', {style:{flex:1}},
+                  React.createElement('div', {style:{fontSize:10,color:"#ef4444",marginBottom:3}}, thisName),
+                  React.createElement('div', {style:{background:"#f3f4f6",borderRadius:6,height:8}}, React.createElement('div', {style:{height:"100%",width:`${(thisExp/maxE*100).toFixed(0)}%`,background:"#ef4444",borderRadius:6}})),
+                  React.createElement('div', {style:{fontSize:11,fontWeight:700,color:"#ef4444",marginTop:2}}, thisExp.toLocaleString(), " ", currency)
+                )
+              )
+            ),
+            React.createElement('div', null,
+              React.createElement('div', {style:{display:"flex",justifyContent:"space-between",fontSize:11,color:"#6b7280",marginBottom:5}},
+                React.createElement('span', null, "↓ ", isRTL?"الدخل":"Income"),
+                incDiff!==null&&React.createElement('span', {style:{color:incDiff>0?"#16a34a":"#ef4444",fontWeight:600}}, incDiff>0?"▲":"▼", " ", Math.abs(incDiff), "%")
+              ),
+              React.createElement('div', {style:{display:"flex",gap:8}},
+                React.createElement('div', {style:{flex:1}},
+                  React.createElement('div', {style:{fontSize:10,color:"#9ca3af",marginBottom:3}}, lastName),
+                  React.createElement('div', {style:{background:"#f3f4f6",borderRadius:6,height:8}}, React.createElement('div', {style:{height:"100%",width:`${(lastInc/maxI*100).toFixed(0)}%`,background:"#9ca3af",borderRadius:6}})),
+                  React.createElement('div', {style:{fontSize:11,fontWeight:700,color:"#6b7280",marginTop:2}}, lastInc.toLocaleString(), " ", currency)
+                ),
+                React.createElement('div', {style:{flex:1}},
+                  React.createElement('div', {style:{fontSize:10,color:"#16a34a",marginBottom:3}}, thisName),
+                  React.createElement('div', {style:{background:"#f3f4f6",borderRadius:6,height:8}}, React.createElement('div', {style:{height:"100%",width:`${(thisInc/maxI*100).toFixed(0)}%`,background:"#16a34a",borderRadius:6}})),
+                  React.createElement('div', {style:{fontSize:11,fontWeight:700,color:"#16a34a",marginTop:2}}, thisInc.toLocaleString(), " ", currency)
+                )
+              )
+            )
+          );
+        })()
+
         /* MAIN CHART */
         , React.createElement('div', { style: {background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:18,padding:"18px 12px 12px",marginBottom:16},}
           , chartType==="donut" ? React.createElement(DonutChart, null) : (
@@ -1996,6 +2065,20 @@ function App() {
         )
         );
       })()
+
+    /* FLOATING ADD BUTTON */
+    , screen==="home" && React.createElement('button', {
+        onClick: ()=>setShowAdd(true),
+        style: {
+          position:"fixed", bottom:28, right:24,
+          width:64, height:64, borderRadius:"50%",
+          background:"linear-gradient(135deg,#3B82F6,#2563EB)",
+          border:"none", color:"white", fontSize:32,
+          boxShadow:"0 6px 28px rgba(59,130,246,0.5)",
+          cursor:"pointer", zIndex:9999,
+          display:"flex", alignItems:"center", justifyContent:"center",
+        }
+      }, "+")
     )
   );
 }
