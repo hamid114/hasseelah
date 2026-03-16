@@ -974,6 +974,23 @@ function App() {
     React.createElement('div', null
       , React.createElement('div', { style: {fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16},}, "⚙️ " , t.settings)
 
+      /* Dark Mode */
+      , React.createElement('div', { style: {marginBottom:14},}
+        , React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:8}}, isRTL?"المظهر":"Appearance")
+        , React.createElement('button', { onClick:()=>setDarkMode(d=>!d), style: {width:"100%",background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:14,padding:"14px 16px",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"space-between"},}
+          , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:10},}
+            , React.createElement('span', { style: {fontSize:22},}, darkMode?"🌙":"☀️")
+            , React.createElement('div', { style: {textAlign:isRTL?"right":"left"},}
+              , React.createElement('div', { style: {fontWeight:600,fontSize:14,color:"#1a1a2e"},}, isRTL?(darkMode?"وضع الليل مفعّل":"وضع النهار مفعّل"):(darkMode?"Dark Mode On":"Light Mode On"))
+              , React.createElement('div', { style: {fontSize:11,color:"#6b7280"},}, isRTL?"اضغط للتبديل":"Tap to toggle")
+            )
+          )
+          , React.createElement('div', { style: {width:44,height:24,borderRadius:12,background:darkMode?"#3B82F6":"#e2e8f0",position:"relative",transition:"background 0.3s"},}
+            , React.createElement('div', { style: {width:20,height:20,borderRadius:"50%",background:"white",position:"absolute",top:2,left:darkMode?22:2,transition:"left 0.3s",boxShadow:"0 1px 4px rgba(0,0,0,0.2)"},})
+          )
+        )
+      )
+
       /* Language */
       , React.createElement('div', { style: {marginBottom:14},}
         , React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:8},}, t.language)
