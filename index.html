@@ -147,6 +147,8 @@ function App() {
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [darkMode, setDarkMode] = useState(()=>localStorage.getItem("hs_dark")==="1");
+  const [showLimitAlert, setShowLimitAlert] = useState(false);
+  const FREE_MONTHLY_LIMIT = 30;
   const [inputMode, setInputMode] = useState("manual");
   const [isListening, setIsListening] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -368,8 +370,18 @@ function App() {
   useEffect(()=>{ try{ localStorage.setItem("hs_goals",JSON.stringify(goals)); }catch(e){} },[goals]);
   useEffect(()=>{ localStorage.setItem("hs_dark", darkMode?"1":"0"); },[darkMode]);
 
+  const getMonthlyCount = () => {
+    const now = new Date();
+    return expenses.filter(e=>{ const d=new Date(e.date); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); }).length;
+  };
+
   const saveExpense = () => {
     if(!newExp.name||!newExp.amount) return;
+    if(!isPremium && getMonthlyCount() >= FREE_MONTHLY_LIMIT) {
+      setShowAdd(false);
+      setShowLimitAlert(true);
+      return;
+    }
     const ex=expenses.find(e=>e.name.toLowerCase()===newExp.name.toLowerCase()&&e.type===newExp.type);
     setExpenses(p=>[{id:Date.now(),name:newExp.name,amount:parseFloat(newExp.amount),type:newExp.type,category:newExp.category,location:newExp.location||"",date:new Date().toISOString(),prevAmount:ex?ex.amount:null,account:newExp.account,note:newExp.note,paymentMethod:newExp.paymentMethod},...p]);
     setNewExp({name:"",amount:"",category:0,location:"",account:"cash",note:"",type:"expense",paymentMethod:"cash"});
@@ -665,7 +677,12 @@ function App() {
 
       /* ══ TRANSACTIONS HEADER ══ */
       , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10},}
-        , React.createElement('div', { style: {fontSize:15,fontWeight:700,color:"#1a1a2e"},}, t.expenses, " " , React.createElement('span', { style: {fontSize:12,color:"#9ca3af",fontWeight:400},}, "(", curExps.length, ")"))
+        , React.createElement('div', { style: {fontSize:15,fontWeight:700,color:darkMode?"#f1f5f9":"#1a1a2e"},}
+          , t.expenses, " " , React.createElement('span', { style: {fontSize:12,color:"#9ca3af",fontWeight:400},}, "(", curExps.length, ")")
+          , !isPremium && React.createElement('span', {style:{fontSize:10,color:getMonthlyCount()>=FREE_MONTHLY_LIMIT?"#ef4444":"#9ca3af",fontWeight:600,marginInlineStart:6}},
+            `${getMonthlyCount()}/${FREE_MONTHLY_LIMIT}`
+          )
+        )
         , React.createElement('div', { style: {display:"flex",gap:6},}
           , React.createElement('button', { onClick: ()=>setShowSearch(v=>!v), style: {background:"#EFF6FF",border:"none",color:"#1D4ED8",width:34,height:34,borderRadius:10,cursor:"pointer",fontSize:14},}, "🔍")
           , React.createElement('button', { onClick: ()=>setScreen("charts"), style: {background:"#EFF6FF",border:"none",color:"#1D4ED8",width:34,height:34,borderRadius:10,cursor:"pointer",fontSize:14},}, "📊")
@@ -1473,6 +1490,11 @@ function App() {
 
     const saveIncome=()=>{
       if(!newInc.name||!newInc.amount) return;
+      if(!isPremium && getMonthlyCount() >= FREE_MONTHLY_LIMIT) {
+        setShowAddIncome(false);
+        setShowLimitAlert(true);
+        return;
+      }
       setExpenses(p=>[{id:Date.now(),name:newInc.name,amount:parseFloat(newInc.amount),type:"income",category:newInc.category,location:"",date:new Date().toISOString(),prevAmount:null,account:newInc.account,note:newInc.note},...p]);
       setNewInc({name:"",amount:"",account:"bank",note:"",category:8});
       setShowAddIncome(false); notify("✅");
@@ -2271,6 +2293,36 @@ function App() {
         )
         );
       })()
+
+    /* LIMIT ALERT MODAL */
+    , showLimitAlert && React.createElement('div', {className:"overlay", onClick:()=>setShowLimitAlert(false)}
+      , React.createElement('div', {className:"sheet", dir:isRTL?"rtl":"ltr", style:{textAlign:"center"}}
+        , React.createElement('div', {style:{width:36,height:4,background:"#DBEAFE",borderRadius:2,margin:"0 auto 20px"}})
+        , React.createElement('div', {style:{fontSize:56,marginBottom:12}}, "🚀")
+        , React.createElement('div', {style:{fontSize:20,fontWeight:900,color:"#1e3a5f",marginBottom:8}}, isRTL?"وصلت للحد الشهري!":"Monthly Limit Reached!")
+        , React.createElement('div', {style:{fontSize:13,color:"#6b7280",lineHeight:1.7,marginBottom:8}},
+          isRTL
+            ? `لقد سجّلت ${FREE_MONTHLY_LIMIT} معاملة هذا الشهر — وهو الحد المجاني.`
+            : `You've recorded ${FREE_MONTHLY_LIMIT} transactions this month — the free limit.`
+        )
+        , React.createElement('div', {style:{background:"#EFF6FF",borderRadius:14,padding:"14px",marginBottom:20}}
+          , React.createElement('div', {style:{fontSize:13,fontWeight:700,color:"#1D4ED8",marginBottom:8}}, isRTL?"بالترقية تحصل على:":"With Premium you get:")
+          , [
+            isRTL?"✅ معاملات غير محدودة":"✅ Unlimited transactions",
+            isRTL?"✅ مقارنة الأشهر":"✅ Monthly comparison",
+            isRTL?"✅ أهداف الادخار":"✅ Savings goals",
+            isRTL?"✅ تقارير شاملة":"✅ Full reports",
+          ].map((f,i)=>React.createElement('div', {key:i, style:{fontSize:12,color:"#374151",marginBottom:4,textAlign:isRTL?"right":"left"}}, f))
+        )
+        , React.createElement('button', {
+          onClick:()=>{ setShowLimitAlert(false); setShowPremium(true); },
+          style:{width:"100%",background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",color:"#1a0a00",padding:14,borderRadius:14,cursor:"pointer",fontSize:15,fontWeight:900,fontFamily:"inherit",marginBottom:10}
+        }, "✨ ", isRTL?"اشترك الآن — ٧.٥ ر.س فقط":"Subscribe Now — 7.5 SAR only")
+        , React.createElement('button', {onClick:()=>setShowLimitAlert(false), style:{background:"none",border:"none",color:"#9ca3af",fontSize:13,cursor:"pointer",fontFamily:"inherit"}},
+          isRTL?"ليس الآن":"Not now"
+        )
+      )
+    )
 
     /* FLOATING ADD BUTTON */
     , screen==="home" && React.createElement('button', {
