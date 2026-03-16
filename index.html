@@ -687,7 +687,7 @@ function App() {
         , React.createElement('div', { style: {fontSize:30,flexShrink:0},}, "🎁")
         , React.createElement('div', { style: {flex:1},}
           , React.createElement('div', { style: {fontSize:13,fontWeight:800,color:"#92400e",marginBottom:2},}, isRTL?"شارك واربح جوائز قيّمة!":"Share & Win Amazing Prizes!")
-          , React.createElement('div', { style: {fontSize:11,color:"#b45309"},}, isRTL?"أدعُ أصدقاءك وادر عجلة الحظ 🎡":"Invite friends and spin the lucky wheel 🎡")
+          , React.createElement('div', { style: {fontSize:11,color:"#b45309"},}, isRTL?"أدعُ أصدقاءك واحصل على شهر مجاني 🎁":"Invite friends and get a free month 🎁")
         )
         , React.createElement('span', { style: {color:"#f59e0b",fontSize:16},}, "›")
       )
@@ -1860,7 +1860,7 @@ function App() {
           , [
             {n:"1", ar:"شارك التطبيق مع صديق",       en:"Share with a friend",      icon:"📤"},
             {n:"2", ar:"ينضم صديقك للتطبيق",           en:"Friend joins the app",     icon:"👤"},
-            {n:"3", ar:"تحصل على دورة في عجلة الحظ",   en:"You spin the lucky wheel", icon:"🎡"},
+            {n:"3", ar:"تحصل على شهر مجاني في المميز",   en:"Get one free month of Premium", icon:"🎁"},
           ].map((s,i)=>(
             React.createElement('div', { key: i, style: {display:"flex",alignItems:"center",gap:14,background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:14,padding:"12px 16px"},}
               , React.createElement('div', { style: {width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,#3B82F6,#2563EB)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:14,color:"#1a1a2e",flexShrink:0},}, s.n)
@@ -1897,59 +1897,6 @@ function App() {
           ))
         )
 
-        /* Lucky Wheel */
-        , React.createElement('div', { style: {background:"#f9f7ff",border:"1px solid #DBEAFE",borderRadius:22,padding:"22px 16px",textAlign:"center"},}
-          , React.createElement('div', { style: {fontSize:15,fontWeight:800,color:"#1e3a5f",marginBottom:4},}, "🎡 "
-             , isRTL?"عجلة الحظ":"Lucky Wheel"
-          )
-          , React.createElement('div', { style: {fontSize:11,color:"#6b7280",marginBottom:18},}
-            , isRTL?"كل مشاركة تمنحك دورة واحدة":"Each referral earns one spin"
-          )
-
-          /* Wheel container */
-          , React.createElement('div', { style: {position:"relative",display:"inline-block",marginBottom:16},}
-            /* Arrow pointer */
-            , React.createElement('div', { style: {position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",fontSize:24,zIndex:10,filter:"drop-shadow(0 2px 4px rgba(0,0,0,0.5))"},}, "▼")
-            , React.createElement('div', { style: {
-              transform:`rotate(${spinAngle}deg)`,
-              transition:spinning?"transform 4s cubic-bezier(0.17,0.67,0.12,0.99)":"transform 0.3s ease",
-              display:"inline-block",borderRadius:"50%",overflow:"hidden"
-            },}
-              , React.createElement(WheelSVG, null)
-            )
-          )
-
-          /* Spin button */
-          , React.createElement('div', null
-            , !spinDone ? (
-              React.createElement('button', { onClick: doSpin, disabled: spinning, style: {background:spinning?"rgba(59,130,246,0.3)":"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"#1a1a2e",padding:"14px 40px",borderRadius:16,cursor:spinning?"not-allowed":"pointer",fontSize:15,fontWeight:800,fontFamily:"inherit",boxShadow:"0 4px 20px rgba(59,130,246,0.4)",opacity:spinning?0.7:1},}
-                , spinning?(isRTL?"جاري الدوران...":"Spinning..."):(isRTL?"ادر العجلة 🎯":"Spin the Wheel 🎯")
-              )
-            ) : (
-              React.createElement('div', { style: {background:"rgba(74,222,128,0.1)",border:"1px solid rgba(74,222,128,0.3)",borderRadius:14,padding:"12px 20px"},}
-                , React.createElement('div', { style: {fontSize:11,color:"#4ade80",marginBottom:4},}, isRTL?"لقد ربحت!":"You won!")
-                , React.createElement('div', { style: {fontSize:16,fontWeight:800,color:"#1a1a2e"},}, _optionalChain([prizes, 'access', _16 => _16[prizeIdx], 'optionalAccess', _17 => _17.icon]), " " , isRTL?_optionalChain([prizes, 'access', _18 => _18[prizeIdx], 'optionalAccess', _19 => _19.labelAr]):_optionalChain([prizes, 'access', _20 => _20[prizeIdx], 'optionalAccess', _21 => _21.labelEn]))
-              )
-            )
-          )
-        )
-
-        /* Win Modal */
-        , showWin && prizeIdx!==null && _optionalChain([prizes, 'access', _22 => _22[prizeIdx], 'optionalAccess', _23 => _23.labelAr])!=="حظاً أوفر!" && (
-          React.createElement('div', { className: "overlay", onClick: ()=>setShowWin(false),}
-            , React.createElement('div', { className: "sheet", style: {textAlign:"center"}, dir: isRTL?"rtl":"ltr",}
-              , React.createElement('div', { style: {fontSize:80,marginBottom:8,animation:"su 0.5s ease"},}, _optionalChain([prizes, 'access', _24 => _24[prizeIdx], 'optionalAccess', _25 => _25.icon]))
-              , React.createElement('div', { style: {fontSize:22,fontWeight:900,background:`linear-gradient(135deg,${_optionalChain([prizes, 'access', _26 => _26[prizeIdx], 'optionalAccess', _27 => _27.color])},#fff)`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:8},}
-                , isRTL?"🎉 مبروك!":"🎉 Congratulations!"
-              )
-              , React.createElement('div', { style: {fontSize:18,fontWeight:700,color:"#1a1a2e",marginBottom:6},}, isRTL?_optionalChain([prizes, 'access', _28 => _28[prizeIdx], 'optionalAccess', _29 => _29.labelAr]):_optionalChain([prizes, 'access', _30 => _30[prizeIdx], 'optionalAccess', _31 => _31.labelEn]))
-              , React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:24},}, isRTL?"سيتم التواصل معك خلال 24 ساعة":"We'll contact you within 24 hours")
-              , React.createElement('button', { onClick: ()=>setShowWin(false), style: {width:"100%",background:`linear-gradient(135deg,${_optionalChain([prizes, 'access', _32 => _32[prizeIdx], 'optionalAccess', _33 => _33.color])},#3B82F6)`,border:"none",color:"#1a1a2e",padding:14,borderRadius:14,cursor:"pointer",fontSize:15,fontWeight:700,fontFamily:"inherit"},}, "🎊 "
-                 , isRTL?"رائع، شكراً!":"Awesome, Thanks!"
-              )
-            )
-          )
-        )
       )
     );
   };
