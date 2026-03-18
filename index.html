@@ -12,6 +12,7 @@
 </head>
 <body>
   <div id="root"></div>
+  <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
   <script>
@@ -92,6 +93,9 @@ const T = {
 // Fallback to English for missing langs
 ["yo","so","am","si"].forEach(l => { T[l] = {...T.en, appName:"SpendWise", flag: _optionalChain([LANGUAGES, 'access', _2 => _2.find, 'call', _3 => _3(x=>x.code===l), 'optionalAccess', _4 => _4.flag]) }; });
 
+// Paddle Configuration
+const PADDLE_PRICE_ID = "pri_01kkwd2jbktf0zx983z41454jz";
+live_fe1be57257c4b09c97ea928ffbc
 const CAT_COLORS = ["#FF8C69","#4DB6AC","#5C8DD6","#66BB6A","#FFA040","#BA68C8","#FF8A65","#7C7CC4","#4FC3F7"];
 
 const MENU_ITEMS = [
@@ -126,6 +130,39 @@ const initExpenses = [
 ];
 
 function App() {
+  // Initialize Paddle
+  useEffect(()=>{
+    if(window.Paddle) {
+      window.Paddle.Initialize({
+        token: PADDLE_CLIENT_TOKEN,
+        eventCallback: (event) => {
+          if(event.name === "checkout.completed") {
+            setIsPremium(true);
+            localStorage.setItem("hs_premium","1");
+            notify("🎉 " + (isRTL?"مرحباً بك في المميز!":"Welcome to Premium!"));
+            setShowPremium(false);
+          }
+        }
+      });
+    }
+  }, []);
+
+  const openPaddleCheckout = () => {
+    if(window.Paddle) {
+      window.Paddle.Checkout.open({
+        items: [{ priceId: PADDLE_PRICE_ID, quantity: 1 }],
+        settings: {
+          displayMode: "overlay",
+          theme: "light",
+          locale: langCode==="ar"?"ar":"en",
+        }
+      });
+    } else {
+      // Paddle not loaded - fallback
+      notify("⚠️ " + (isRTL?"خطأ في تحميل بوابة الدفع":"Payment gateway error"));
+    }
+  };
+
   // Simple data obfuscation for localStorage
   const _k = "hs2026";
   const _enc = (str) => { try { return btoa(str.split("").map((c,i)=>String.fromCharCode(c.charCodeAt(0)^_k.charCodeAt(i%_k.length))).join("")); } catch(e){ return str; } };
@@ -2302,7 +2339,7 @@ function App() {
                   , React.createElement('div', { style: {fontSize:11,color:"#6b7280",marginBottom:6},}, isRTL?"شهري":"Monthly")
                   , React.createElement('div', { style: {fontSize:26,fontWeight:900,color:"#1a1a2e"},}, pricing.symbol, pricing.monthly)
                   , React.createElement('div', { style: {fontSize:10,color:"#6b7280",marginTop:2},}, "/ " , t.month)
-                  , React.createElement('button', { onClick: ()=>{setIsPremium(true);setShowPremium(false);notify("🎉 "+t.premium+"!");}, style: {marginTop:10,width:"100%",background:"#e8e3ff",border:"1px solid rgba(255,255,255,0.15)",color:"#1E40AF",padding:"8px 0",borderRadius:10,cursor:"pointer",fontFamily:"inherit",fontSize:12},}
+                  , React.createElement('button', { onClick: ()=>openPaddleCheckout(), style: {marginTop:10,width:"100%",background:"#e8e3ff",border:"1px solid rgba(255,255,255,0.15)",color:"#1E40AF",padding:"8px 0",borderRadius:10,cursor:"pointer",fontFamily:"inherit",fontSize:12},}
                     , t.upgrade
                   )
                 )
@@ -2315,7 +2352,7 @@ function App() {
                   , React.createElement('div', { style: {fontSize:11,color:"#f59e0b",marginBottom:6},}, isRTL?"سنوي":"Yearly")
                   , React.createElement('div', { style: {fontSize:26,fontWeight:900,color:"#fbbf24"},}, pricing.symbol, pricing.yearly)
                   , React.createElement('div', { style: {fontSize:10,color:"#6b7280",marginTop:2,textDecoration:"line-through"},}, pricing.symbol, (pricing.monthly*12).toFixed(0), " " , isRTL?"بدون خصم":"full price")
-                  , React.createElement('button', { onClick: ()=>{setIsPremium(true);setShowPremium(false);notify("🎉 "+t.premium+"!");}, style: {marginTop:10,width:"100%",background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",color:"#1a0a00",padding:"8px 0",borderRadius:10,cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:700},}, "✨ "
+                  , React.createElement('button', { onClick: ()=>openPaddleCheckout(), style: {marginTop:10,width:"100%",background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",color:"#1a0a00",padding:"8px 0",borderRadius:10,cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:700},}, "✨ "
                      , t.upgrade
                   )
                 )
