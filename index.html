@@ -8,7 +8,6 @@
   <meta name="theme-color" content="#ffffff"/>
   <meta http-equiv="X-Frame-Options" content="DENY"/>
   <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
-  <meta http-equiv="X-XSS-Protection" content="1; mode=block"/>
   <title>غلة - Ghallah</title>
   <link rel="manifest" href="manifest.json"/>
   <style>*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow-x:hidden;background:#f7f8fc;transition:background 0.3s}#root{height:100%}</style>
@@ -26,46 +25,96 @@
 //  LANGUAGES & CURRENCIES
 // ══════════════════════════════════════════════════════
 const LANGUAGES = [
-  { code:"ar", label:"العربية",      flag:"🇸🇦", dir:"rtl", currency:"ر.س",  currencyCode:"SAR", country:"السعودية" },
-  { code:"en", label:"English",      flag:"🇬🇧", dir:"ltr", currency:"£",    currencyCode:"GBP", country:"United Kingdom" },
-  { code:"ur", label:"اردو",         flag:"🇵🇰", dir:"rtl", currency:"₨",    currencyCode:"PKR", country:"پاکستان" },
-  { code:"hi", label:"हिन्दी",      flag:"🇮🇳", dir:"ltr", currency:"₹",    currencyCode:"INR", country:"India" },
-  { code:"zh", label:"中文",         flag:"🇨🇳", dir:"ltr", currency:"¥",    currencyCode:"CNY", country:"中国" },
-  { code:"fr", label:"Français",     flag:"🇫🇷", dir:"ltr", currency:"€",    currencyCode:"EUR", country:"France" },
-  { code:"tl", label:"Filipino",     flag:"🇵🇭", dir:"ltr", currency:"₱",    currencyCode:"PHP", country:"Philippines" },
-  { code:"id", label:"Indonesia",    flag:"🇮🇩", dir:"ltr", currency:"Rp",   currencyCode:"IDR", country:"Indonesia" },
-  { code:"bn", label:"বাংলা",        flag:"🇧🇩", dir:"ltr", currency:"৳",    currencyCode:"BDT", country:"Bangladesh" },
-  { code:"ne", label:"नेपाली",       flag:"🇳🇵", dir:"ltr", currency:"रू",   currencyCode:"NPR", country:"Nepal" },
-  { code:"si", label:"සිංහල",        flag:"🇱🇰", dir:"ltr", currency:"Rs",   currencyCode:"LKR", country:"Sri Lanka" },
-  { code:"tr", label:"Türkçe",       flag:"🇹🇷", dir:"ltr", currency:"₺",    currencyCode:"TRY", country:"Türkiye" },
-  { code:"ms", label:"Melayu",       flag:"🇲🇾", dir:"ltr", currency:"RM",   currencyCode:"MYR", country:"Malaysia" },
-  { code:"yo", label:"Yoruba",       flag:"🇳🇬", dir:"ltr", currency:"₦",    currencyCode:"NGN", country:"Nigeria" },
-  { code:"so", label:"Soomaali",     flag:"🇸🇴", dir:"ltr", currency:"Sh",   currencyCode:"SOS", country:"Somalia" },
-  { code:"am", label:"አማርኛ",        flag:"🇪🇹", dir:"ltr", currency:"Br",   currencyCode:"ETB", country:"Ethiopia" },
+  // ── الخليج العربي ──
+  { code:"ar",    label:"العربية",      flag:"🇸🇦", dir:"rtl", currency:"ر.س",  currencyCode:"SAR", country:"السعودية",       region:"gulf" },
+  { code:"ar_ae", label:"العربية",      flag:"🇦🇪", dir:"rtl", currency:"د.إ",  currencyCode:"AED", country:"الإمارات",       region:"gulf" },
+  { code:"ar_kw", label:"العربية",      flag:"🇰🇼", dir:"rtl", currency:"د.ك",  currencyCode:"KWD", country:"الكويت",         region:"gulf" },
+  { code:"ar_qa", label:"العربية",      flag:"🇶🇦", dir:"rtl", currency:"ر.ق",  currencyCode:"QAR", country:"قطر",            region:"gulf" },
+  { code:"ar_eg", label:"العربية",      flag:"🇪🇬", dir:"rtl", currency:"ج.م",  currencyCode:"EGP", country:"مصر",            region:"gulf" },
+  { code:"ar_ma", label:"العربية",      flag:"🇲🇦", dir:"rtl", currency:"د.م",  currencyCode:"MAD", country:"المغرب",         region:"gulf" },
+  // ── أوروبا ──
+  { code:"en",    label:"English",      flag:"🇬🇧", dir:"ltr", currency:"£",    currencyCode:"GBP", country:"United Kingdom", region:"europe" },
+  { code:"de",    label:"Deutsch",      flag:"🇩🇪", dir:"ltr", currency:"€",    currencyCode:"EUR", country:"Germany",        region:"europe" },
+  { code:"fr",    label:"Français",     flag:"🇫🇷", dir:"ltr", currency:"€",    currencyCode:"EUR", country:"France",         region:"europe" },
+  { code:"es",    label:"Español",      flag:"🇪🇸", dir:"ltr", currency:"€",    currencyCode:"EUR", country:"Spain",          region:"europe" },
+  { code:"it",    label:"Italiano",     flag:"🇮🇹", dir:"ltr", currency:"€",    currencyCode:"EUR", country:"Italy",          region:"europe" },
+  { code:"nl",    label:"Nederlands",   flag:"🇳🇱", dir:"ltr", currency:"€",    currencyCode:"EUR", country:"Netherlands",    region:"europe" },
+  { code:"pl",    label:"Polski",       flag:"🇵🇱", dir:"ltr", currency:"zł",   currencyCode:"PLN", country:"Poland",         region:"europe" },
+  { code:"ro",    label:"Română",       flag:"🇷🇴", dir:"ltr", currency:"lei",  currencyCode:"RON", country:"Romania",        region:"europe" },
+  // ── أمريكا اللاتينية ──
+  { code:"pt_br", label:"Português",    flag:"🇧🇷", dir:"ltr", currency:"R$",   currencyCode:"BRL", country:"Brasil",         region:"latam" },
+  { code:"es_mx", label:"Español",      flag:"🇲🇽", dir:"ltr", currency:"$",    currencyCode:"MXN", country:"México",         region:"latam" },
+  { code:"es_co", label:"Español",      flag:"🇨🇴", dir:"ltr", currency:"$",    currencyCode:"COP", country:"Colombia",       region:"latam" },
+  { code:"es_ar", label:"Español",      flag:"🇦🇷", dir:"ltr", currency:"$",    currencyCode:"ARS", country:"Argentina",      region:"latam" },
+  { code:"es_cl", label:"Español",      flag:"🇨🇱", dir:"ltr", currency:"$",    currencyCode:"CLP", country:"Chile",          region:"latam" },
+  { code:"es_pe", label:"Español",      flag:"🇵🇪", dir:"ltr", currency:"S/",   currencyCode:"PEN", country:"Perú",           region:"latam" },
+  // ── آسيا ──
+  { code:"hi",    label:"हिन्दी",       flag:"🇮🇳", dir:"ltr", currency:"₹",    currencyCode:"INR", country:"India",          region:"asia" },
+  { code:"zh",    label:"中文",          flag:"🇨🇳", dir:"ltr", currency:"¥",    currencyCode:"CNY", country:"中国",            region:"asia" },
+  { code:"id",    label:"Indonesia",    flag:"🇮🇩", dir:"ltr", currency:"Rp",   currencyCode:"IDR", country:"Indonesia",      region:"asia" },
+  { code:"tl",    label:"Filipino",     flag:"🇵🇭", dir:"ltr", currency:"₱",    currencyCode:"PHP", country:"Philippines",    region:"asia" },
+  { code:"ms",    label:"Melayu",       flag:"🇲🇾", dir:"ltr", currency:"RM",   currencyCode:"MYR", country:"Malaysia",       region:"asia" },
+  { code:"th",    label:"ภาษาไทย",       flag:"🇹🇭", dir:"ltr", currency:"฿",    currencyCode:"THB", country:"Thailand",       region:"asia" },
+  { code:"vi",    label:"Tiếng Việt",   flag:"🇻🇳", dir:"ltr", currency:"₫",    currencyCode:"VND", country:"Vietnam",        region:"asia" },
+  { code:"ko",    label:"한국어",         flag:"🇰🇷", dir:"ltr", currency:"₩",    currencyCode:"KRW", country:"Korea",          region:"asia" },
+  { code:"ja",    label:"日本語",         flag:"🇯🇵", dir:"ltr", currency:"¥",    currencyCode:"JPY", country:"Japan",          region:"asia" },
+  { code:"ur",    label:"اردو",          flag:"🇵🇰", dir:"rtl", currency:"₨",    currencyCode:"PKR", country:"Pakistan",       region:"asia" },
+  { code:"bn",    label:"বাংলা",         flag:"🇧🇩", dir:"ltr", currency:"৳",    currencyCode:"BDT", country:"Bangladesh",     region:"asia" },
+  { code:"tr",    label:"Türkçe",        flag:"🇹🇷", dir:"ltr", currency:"₺",    currencyCode:"TRY", country:"Türkiye",        region:"asia" },
+  // ── أفريقيا ──
+  { code:"yo",    label:"Yoruba",        flag:"🇳🇬", dir:"ltr", currency:"₦",    currencyCode:"NGN", country:"Nigeria",        region:"africa" },
+  { code:"sw",    label:"Kiswahili",     flag:"🇰🇪", dir:"ltr", currency:"KSh",  currencyCode:"KES", country:"Kenya",          region:"africa" },
+  { code:"am",    label:"አማርኛ",         flag:"🇪🇹", dir:"ltr", currency:"Br",   currencyCode:"ETB", country:"Ethiopia",       region:"africa" },
+  { code:"fr_sn", label:"Français",      flag:"🇸🇳", dir:"ltr", currency:"CFA",  currencyCode:"XOF", country:"Sénégal",        region:"africa" },
+  { code:"en_za", label:"English",       flag:"🇿🇦", dir:"ltr", currency:"R",    currencyCode:"ZAR", country:"South Africa",   region:"africa" },
+  // ── أمريكا الشمالية ──
+  { code:"en_us", label:"English",       flag:"🇺🇸", dir:"ltr", currency:"$",    currencyCode:"USD", country:"United States",  region:"namerica" },
+  { code:"en_ca", label:"English",       flag:"🇨🇦", dir:"ltr", currency:"CA$",  currencyCode:"CAD", country:"Canada",         region:"namerica" },
+  // ── أوقيانوسيا ──
+  { code:"en_au", label:"English",       flag:"🇦🇺", dir:"ltr", currency:"A$",   currencyCode:"AUD", country:"Australia",      region:"oceania" },
 ];
 
 // ══════════════════════════════════════════════════════
 //  PRICING PER CURRENCY  (base = 7.5 SAR ≈ 2 USD)
 // ══════════════════════════════════════════════════════
 const PRICING = {
-  SAR: { monthly:7.5,   yearly:75,   symbol:"ر.س",  note:"" },
-  USD: { monthly:2,     yearly:20,   symbol:"$",    note:"" },
-  GBP: { monthly:1.6,   yearly:16,   symbol:"£",    note:"" },
-  EUR: { monthly:1.9,   yearly:19,   symbol:"€",    note:"" },
-  PKR: { monthly:560,   yearly:5600, symbol:"₨",    note:"" },
-  INR: { monthly:167,   yearly:1670, symbol:"₹",    note:"" },
-  CNY: { monthly:14.5,  yearly:145,  symbol:"¥",    note:"" },
-  PHP: { monthly:113,   yearly:1130, symbol:"₱",    note:"" },
-  IDR: { monthly:31500, yearly:315000,symbol:"Rp",  note:"" },
-  BDT: { monthly:220,   yearly:2200, symbol:"৳",    note:"" },
-  NPR: { monthly:268,   yearly:2680, symbol:"रू",   note:"" },
-  LKR: { monthly:595,   yearly:5950, symbol:"Rs",   note:"" },
-  TRY: { monthly:65,    yearly:650,  symbol:"₺",    note:"" },
-  MYR: { monthly:9.4,   yearly:94,   symbol:"RM",   note:"" },
-  NGN: { monthly:3200,  yearly:32000,symbol:"₦",    note:"" },
-  SOS: { monthly:1140,  yearly:11400,symbol:"Sh",   note:"" },
-  ETB: { monthly:110,   yearly:1100, symbol:"Br",   note:"" },
-  DEFAULT: { monthly:2, yearly:20,   symbol:"$",    note:"" },
+  SAR: { monthly:7.5,    yearly:75,    symbol:"ر.س" },
+  AED: { monthly:7.3,    yearly:73,    symbol:"د.إ" },
+  KWD: { monthly:0.6,    yearly:6,     symbol:"د.ك" },
+  QAR: { monthly:7.3,    yearly:73,    symbol:"ر.ق" },
+  EGP: { monthly:98,     yearly:980,   symbol:"ج.م" },
+  MAD: { monthly:20,     yearly:200,   symbol:"د.م" },
+  USD: { monthly:2,      yearly:20,    symbol:"$"   },
+  GBP: { monthly:1.6,    yearly:16,    symbol:"£"   },
+  EUR: { monthly:1.9,    yearly:19,    symbol:"€"   },
+  PLN: { monthly:8,      yearly:80,    symbol:"zł"  },
+  RON: { monthly:9.5,    yearly:95,    symbol:"lei" },
+  BRL: { monthly:10,     yearly:100,   symbol:"R$"  },
+  MXN: { monthly:35,     yearly:350,   symbol:"$"   },
+  COP: { monthly:8000,   yearly:80000, symbol:"$"   },
+  ARS: { monthly:1800,   yearly:18000, symbol:"$"   },
+  CLP: { monthly:1900,   yearly:19000, symbol:"$"   },
+  PEN: { monthly:7.5,    yearly:75,    symbol:"S/"  },
+  INR: { monthly:167,    yearly:1670,  symbol:"₹"   },
+  CNY: { monthly:14.5,   yearly:145,   symbol:"¥"   },
+  IDR: { monthly:31500,  yearly:315000,symbol:"Rp"  },
+  PHP: { monthly:113,    yearly:1130,  symbol:"₱"   },
+  MYR: { monthly:9.4,    yearly:94,    symbol:"RM"  },
+  THB: { monthly:72,     yearly:720,   symbol:"฿"   },
+  VND: { monthly:50000,  yearly:500000,symbol:"₫"   },
+  KRW: { monthly:2700,   yearly:27000, symbol:"₩"   },
+  JPY: { monthly:300,    yearly:3000,  symbol:"¥"   },
+  PKR: { monthly:560,    yearly:5600,  symbol:"₨"   },
+  BDT: { monthly:220,    yearly:2200,  symbol:"৳"   },
+  TRY: { monthly:65,     yearly:650,   symbol:"₺"   },
+  NGN: { monthly:3200,   yearly:32000, symbol:"₦"   },
+  KES: { monthly:260,    yearly:2600,  symbol:"KSh" },
+  ETB: { monthly:110,    yearly:1100,  symbol:"Br"  },
+  XOF: { monthly:1200,   yearly:12000, symbol:"CFA" },
+  ZAR: { monthly:37,     yearly:370,   symbol:"R"   },
+  CAD: { monthly:2.7,    yearly:27,    symbol:"CA$" },
+  AUD: { monthly:3.1,    yearly:31,    symbol:"A$"  },
+  DEFAULT: { monthly:2,  yearly:20,    symbol:"$"   },
 };
 const T = {
   ar:{ appName:"غلة", tagline:"تتبع إنفاقك بذكاء", charts:"الرسوم البيانية", revenue:"الإيرادات", transfersLog:"سجل الحوالات", referral:"شارك واربح 🎁", addExpense:"إضافة معاملة", today:"اليوم", week:"الأسبوع", month:"الشهر", year:"السنة", totalSpent:"المصروف", income:"الدخل", balance:"الرصيد", expenses:"المعاملات", camera:"كاميرا", voice:"صوت", manual:"يدوي", itemName:"اسم السلعة / الوصف", price:"المبلغ", location:"موقع الشراء", category:"الفئة", save:"حفظ", cancel:"إلغاء", summary:"ملخص", accountsSummary:"الحسابات ملخص", allTransactions:"المعاملات - جميع", transfer:"حوالة نقدية", allReport:"تقرير-جميع الحسابات", changeTo:"التغيير إلى", noteBook:"دفتر ملاحظات", calendar:"تقويم", cashCalc:"حاسبة نقدية", backup:"النسخ الاحتياطي", settings:"إعدادات", deletedTrans:"المعاملات المحذوفة", help:"مساعدة", removeAds:"إزالة الإعلان", premium:"مميز", upgrade:"ترقية للمميز", language:"اللغة والدولة", budget:"الميزانية", setBudget:"تحديد الميزانية", remaining:"المتبقي", over:"تجاوز الميزانية", delete:"حذف", listening:"جارٍ الاستماع...", capturing:"جارٍ المسح...", previousPrice:"السابق", noExpenses:"لا توجد معاملات", premium_locked:"🔒 ميزة مميزة", addNote:"إضافة ملاحظة", transferFrom:"من حساب", transferTo:"إلى حساب", amount:"المبلغ", confirm:"تأكيد", cash:"نقدي", bank:"بنك", wallet:"محفظة", expense:"مصروف", incomeLabel:"دخل", greeting_morning:"صباح الخير", greeting_afternoon:"مساء النور", greeting_evening:"مساء الخير", cheaper:"أرخص", expensive:"أغلى", categories:["🍔 طعام","🚗 مواصلات","👕 ملابس","🎬 ترفيه","💊 صحة","📚 تعليم","🏠 سكن","💡 فواتير","📦 أخرى"], savingsGoals:"أهداف الادخار", customCats:"تخصيص الفئات", terms:"شروط الاستخدام", privacy:"سياسة الخصوصية", restore:"استعادة", selectLang:"اختر اللغة والعملة", accounts:"الحسابات", changeCurrency:"تغيير العملة" },
@@ -94,7 +143,7 @@ const T = {
 };
 
 // Fallback to English for missing langs
-["yo","so","am","si"].forEach(l => { T[l] = {...T.en, appName:"SpendWise", flag: _optionalChain([LANGUAGES, 'access', _2 => _2.find, 'call', _3 => _3(x=>x.code===l), 'optionalAccess', _4 => _4.flag]) }; });
+["yo","so","am","si","sw","de","es","it","nl","pl","ro","pt_br","es_mx","es_co","es_ar","es_cl","es_pe","th","vi","ko","ja","ar_ae","ar_kw","ar_qa","ar_eg","ar_ma","fr_sn","en_za","en_us","en_ca","en_au"].forEach(l => { T[l] = l.startsWith("ar")?{...T.ar,flag:_optionalChain([LANGUAGES,'access',_2a=>_2a.find,'call',_3a=>_3a(x=>x.code===l),'optionalAccess',_4a=>_4a.flag])||"🌍"}:{...T.en, appName:"SpendWise", flag: _optionalChain([LANGUAGES, 'access', _2 => _2.find, 'call', _3 => _3(x=>x.code===l), 'optionalAccess', _4 => _4.flag]) }; });
 
 // Paddle Configuration
 const PADDLE_PRICE_ID = "pri_01kkwd2jbktf0zx983z41454jz";
@@ -560,42 +609,85 @@ function App() {
       new Date(e.date).toLocaleDateString().includes(q)
     );
   }) : [];
-  const LangPicker = () => (
-    React.createElement('div', { style: {padding:0},}
-      , React.createElement('div', { style: {fontSize:15,fontWeight:800,color:"#1e3a5f",marginBottom:16,padding:"0 4px"},}, t.selectLang)
+  const LangPicker = () => {
+    const [search, setSearch] = React.useState("");
+    const regions = [
+      { key:"gulf",     label: isRTL?"🌙 الخليج والعرب":"🌙 Gulf & Arab", },
+      { key:"europe",   label: isRTL?"🌍 أوروبا":"🌍 Europe", },
+      { key:"latam",    label: isRTL?"🌎 أمريكا اللاتينية":"🌎 Latin America", },
+      { key:"asia",     label: isRTL?"🌏 آسيا":"🌏 Asia", },
+      { key:"africa",   label: isRTL?"🌍 أفريقيا":"🌍 Africa", },
+      { key:"namerica", label: isRTL?"🌎 أمريكا الشمالية":"🌎 North America", },
+      { key:"oceania",  label: isRTL?"🌏 أوقيانوسيا":"🌏 Oceania", },
+    ];
+    const filtered = search
+      ? LANGUAGES.filter(l=>l.country.toLowerCase().includes(search.toLowerCase())||l.label.toLowerCase().includes(search.toLowerCase()))
+      : null;
 
-      /* Group by region */
-      , [
-        { label: isRTL?"اللغات العربية والإسلامية":"Arabic & Islamic Languages", codes:["ar","ur"] },
-        { label: isRTL?"جنوب آسيا":"South Asia", codes:["hi","bn","ne","si"] },
-        { label: isRTL?"جنوب شرق آسيا":"Southeast Asia", codes:["tl","id","ms"] },
-        { label: isRTL?"شرق آسيا":"East Asia", codes:["zh"] },
-        { label: isRTL?"أوروبا وتركيا":"Europe & Turkey", codes:["en","fr","tr"] },
-        { label: isRTL?"أفريقيا":"Africa", codes:["yo","so","am"] },
-      ].map(group=>(
-        React.createElement('div', { key: group.label, style: {marginBottom:16},}
-          , React.createElement('div', { style: {fontSize:10,color:"#6b7280",fontWeight:600,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.05em"},}, group.label)
-          , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",gap:8},}
-            , group.codes.map(code=>{
-              const info=LANGUAGES.find(l=>l.code===code);
-              if(!info) return null;
-              const active=langCode===code;
-              return (
-                React.createElement('button', { key: code, onClick: ()=>changeLang(code), style: {display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:14,border:active?"1px solid rgba(59,130,246,0.6)":"1px solid rgba(255,255,255,0.07)",background:active?"rgba(59,130,246,0.2)":"rgba(255,255,255,0.04)",cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s",textAlign:isRTL?"right":"left"},}
-                  , React.createElement('span', { style: {fontSize:22,flexShrink:0},}, info.flag)
-                  , React.createElement('div', null
-                    , React.createElement('div', { style: {fontSize:13,fontWeight:600,color:active?"#BAD4FD":"#DBEAFE"},}, info.label)
-                    , React.createElement('div', { style: {fontSize:10,color:"#6b7280"},}, info.currency, " · "  , info.currencyCode)
-                  )
-                  , active && React.createElement('span', { style: {marginInlineStart:"auto",color:"#3B82F6",fontSize:16},}, "✓")
+    return React.createElement('div', {style:{padding:0}}
+      , React.createElement('div', {style:{fontSize:15,fontWeight:800,color:"#1e3a5f",marginBottom:12}}, t.selectLang)
+
+      /* Search */
+      , React.createElement('input', {
+          className:"inp",
+          placeholder: isRTL?"🔍 ابحث عن دولة أو لغة...":"🔍 Search country or language...",
+          value:search,
+          onChange:e=>setSearch(e.target.value),
+          style:{marginBottom:14}
+        })
+
+      /* Search results */
+      , filtered && React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}
+        , filtered.length===0
+          ? React.createElement('div', {style:{gridColumn:"1/-1",textAlign:"center",color:"#9ca3af",fontSize:13,padding:20}}, isRTL?"لا نتائج":"No results")
+          : filtered.map(info=>{
+              const active=langCode===info.code;
+              return React.createElement('button', {key:info.code, onClick:()=>{changeLang(info.code);setSearch("");},
+                style:{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:14,
+                  border:active?"2px solid #3B82F6":"1px solid #DBEAFE",
+                  background:active?"#EFF6FF":"#ffffff",
+                  cursor:"pointer",fontFamily:"inherit",textAlign:isRTL?"right":"left"}}
+                , React.createElement('span', {style:{fontSize:22,flexShrink:0}}, info.flag)
+                , React.createElement('div', {style:{flex:1,overflow:"hidden"}}
+                  , React.createElement('div', {style:{fontSize:12,fontWeight:700,color:active?"#1D4ED8":"#1a1a2e",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}, info.country)
+                  , React.createElement('div', {style:{fontSize:10,color:"#9ca3af"}}, info.currency," · ",info.currencyCode)
                 )
+                , active && React.createElement('span', {style:{color:"#3B82F6",fontSize:14}}, "✓")
               );
             })
-          )
         )
-      ))
-    )
-  );
+
+      /* Regions */
+      , !filtered && regions.map(region=>{
+          const langs = LANGUAGES.filter(l=>l.region===region.key);
+          if(!langs.length) return null;
+          return React.createElement('div', {key:region.key, style:{marginBottom:16}}
+            , React.createElement('div', {style:{fontSize:11,fontWeight:700,color:"#6b7280",marginBottom:8,
+                display:"flex",alignItems:"center",gap:6}}
+              , React.createElement('span', null, region.label)
+              , React.createElement('div', {style:{flex:1,height:1,background:"#f0f4ff",marginInline:4}})
+            )
+            , React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}
+              , langs.map(info=>{
+                  const active=langCode===info.code;
+                  return React.createElement('button', {key:info.code, onClick:()=>changeLang(info.code),
+                    style:{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:14,
+                      border:active?"2px solid #3B82F6":"1px solid #DBEAFE",
+                      background:active?"#EFF6FF":"#ffffff",
+                      cursor:"pointer",fontFamily:"inherit",textAlign:isRTL?"right":"left",transition:"all 0.2s"}}
+                    , React.createElement('span', {style:{fontSize:22,flexShrink:0}}, info.flag)
+                    , React.createElement('div', {style:{flex:1,overflow:"hidden"}}
+                      , React.createElement('div', {style:{fontSize:12,fontWeight:700,color:active?"#1D4ED8":"#1a1a2e",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}, info.country)
+                      , React.createElement('div', {style:{fontSize:10,color:"#9ca3af"}}, info.currency," · ",info.currencyCode)
+                    )
+                    , active && React.createElement('span', {style:{color:"#3B82F6",fontSize:14}}, "✓")
+                  );
+                })
+            )
+          );
+        })
+    );
+  };
 
   // ── HOME ───────────────────────────────────────────────────
   const HomeScreen = () => (
