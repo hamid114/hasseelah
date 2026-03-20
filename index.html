@@ -124,13 +124,7 @@ const MENU_ITEMS = [
   {key:"privacy",icon:"🔒",premium:false},
 ];
 
-const initExpenses = [
-  {id:1,name:"غداء مطعم",amount:45,type:"expense",category:0,location:"الرياض - حي النزهة",date:new Date().toISOString(),prevAmount:40,account:"cash",note:"",paymentMethod:"cash"},
-  {id:2,name:"راتب",amount:5000,type:"income",category:8,location:"",date:new Date(Date.now()-86400000).toISOString(),prevAmount:null,account:"bank",note:"راتب مارس",paymentMethod:"bank_transfer"},
-  {id:3,name:"وقود",amount:200,type:"expense",category:1,location:"محطة أرامكو",date:new Date(Date.now()-86400000*2).toISOString(),prevAmount:180,account:"cash",note:"",paymentMethod:"card"},
-  {id:4,name:"قميص",amount:120,type:"expense",category:2,location:"سيتي ووك",date:new Date(Date.now()-86400000*3).toISOString(),prevAmount:120,account:"wallet",note:"",paymentMethod:"apple_pay"},
-  {id:5,name:"إيجار",amount:1500,type:"expense",category:6,location:"",date:new Date(Date.now()-86400000*5).toISOString(),prevAmount:1500,account:"bank",note:"شهري",paymentMethod:"bank_transfer"},
-];
+const initExpenses = [];
 
 function App() {
   // Initialize Paddle
