@@ -1961,7 +1961,20 @@ function App() {
                 , React.createElement('span', { style: {fontSize:20},}, tr.to==="bank"?"🏦":tr.to==="wallet"?"👜":"💵")
               )
             )
-            , React.createElement('div', { style: {fontSize:11,color:"#9ca3af"},}, new Date(tr.date).toLocaleDateString(), " " , new Date(tr.date).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}))
+            , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:4}}
+              , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:6}}
+                , React.createElement('span', {style:{fontSize:12}}, "📅")
+                , React.createElement('span', { style: {fontSize:11,color:"#6b7280",fontWeight:600}}, new Date(tr.date).toLocaleDateString())
+              )
+              , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:6}}
+                , React.createElement('span', {style:{fontSize:12}}, "🕐")
+                , React.createElement('span', { style: {fontSize:11,color:"#6b7280",fontWeight:600}}, new Date(tr.date).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}))
+              )
+              , React.createElement('button', {
+                  onClick:()=>{ setTransfers(p=>p.filter(t=>t.id!==tr.id)); notify("🗑️"); },
+                  style:{background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.2)",color:"#ef4444",borderRadius:8,padding:"3px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"}
+                }, isRTL?"حذف":"Delete")
+            )
           )
         ))
       )
