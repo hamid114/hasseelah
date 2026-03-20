@@ -227,6 +227,7 @@ function App() {
   const [notes, setNotes] = useState(()=>{ const d=_load("hs_data",{}); return d.notes||[]; });
   const [deleted, setDeleted] = useState(()=>{ const d=_load("hs_data",{}); return d.deleted||[]; });
   const [showOnboarding, setShowOnboarding] = useState(()=>!localStorage.getItem("hs_onboarded"));
+  const [showLangFirst, setShowLangFirst] = useState(()=>!localStorage.getItem("hs_lang_set"));
   const [onboardStep, setOnboardStep] = useState(0);
   const [activeTab, setActiveTab] = useState("month");
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -1437,7 +1438,7 @@ function App() {
 
       , !isPremium&&React.createElement('button', { onClick: ()=>setShowPremium(true), style: {width:"100%",background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",color:"#1a0a00",padding:14,borderRadius:14,cursor:"pointer",fontSize:14,fontWeight:700,fontFamily:"inherit",marginBottom:10},}, "💎 " , t.upgrade)
 
-      , React.createElement('button', { onClick: ()=>{ localStorage.removeItem("hs_onboarded"); setOnboardStep(0); setShowOnboarding(true); }, style: {width:"100%",background:"#EFF6FF",border:"1px solid #DBEAFE",color:"#1D4ED8",padding:14,borderRadius:14,cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"inherit"},}, "📖 "
+      , React.createElement('button', { onClick: ()=>{ localStorage.removeItem("hs_onboarded"); localStorage.removeItem("hs_lang_set"); setOnboardStep(0); setShowOnboarding(true); setShowLangFirst(true); }, style: {width:"100%",background:"#EFF6FF",border:"1px solid #DBEAFE",color:"#1D4ED8",padding:14,borderRadius:14,cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"inherit"},}, "📖 "
          , isRTL?"إعادة عرض دليل الاستخدام":"Replay User Guide"
       )
     )
@@ -2371,6 +2372,61 @@ function App() {
     { icon:"💰", title: isRTL?"الميزانية الشهرية":"Monthly Budget", desc: isRTL?"حدد ميزانيتك الشهرية من الإعدادات وسيتابع التطبيق تلقائياً كم أنفقت وكم تبقى لك":"Set your monthly budget in Settings — the app automatically tracks how much you've spent", color:"#EF4444" },
     { icon:"✅", title: isRTL?"كل شيء جاهز!":"You're All Set!", desc: isRTL?"بياناتك تُحفظ تلقائياً حتى بدون إنترنت. ابدأ الآن بتسجيل أول معاملة!":"Your data saves automatically even offline. Start by recording your first transaction!", color:"#3B82F6" },
   ];
+
+  // ── LANGUAGE FIRST SCREEN ──
+  if (showLangFirst) {
+    return React.createElement('div', {
+      dir:"ltr",
+      style:{minHeight:"100vh",background:"#f7f8fc",fontFamily:"'DM Sans',sans-serif",
+        display:"flex",flexDirection:"column"}
+    }
+      , React.createElement('div', {style:{background:"linear-gradient(135deg,#1e3a5f,#1D4ED8)",padding:"40px 24px 24px",textAlign:"center"}}
+        , React.createElement('div', {style:{fontSize:56,marginBottom:8}}, "🌾")
+        , React.createElement('div', {style:{fontSize:28,fontWeight:900,background:"linear-gradient(135deg,#D4AF37,#F5D76E,#B8860B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}}, "Ghallah · غلة")
+        , React.createElement('div', {style:{fontSize:13,color:"#93C5FD"}}, "Select your language & currency · اختر لغتك وعملتك")
+      )
+      , React.createElement('div', {style:{flex:1,overflowY:"auto",padding:"16px 16px 100px"}}
+        , [
+          { key:"gulf",     label:"🌙 الخليج والعرب · Gulf & Arab" },
+          { key:"europe",   label:"🌍 Europe · أوروبا" },
+          { key:"latam",    label:"🌎 Latin America · أمريكا اللاتينية" },
+          { key:"asia",     label:"🌏 Asia · آسيا" },
+          { key:"africa",   label:"🌍 Africa · أفريقيا" },
+          { key:"namerica", label:"🌎 North America · أمريكا الشمالية" },
+          { key:"oceania",  label:"🌏 Oceania · أوقيانوسيا" },
+        ].map(region=>{
+          const langs = LANGUAGES.filter(l=>l.region===region.key);
+          if(!langs.length) return null;
+          return React.createElement('div', {key:region.key, style:{marginBottom:16}}
+            , React.createElement('div', {style:{fontSize:12,fontWeight:800,color:"#1e3a5f",marginBottom:8,
+                background:"linear-gradient(135deg,#EFF6FF,#DBEAFE)",borderRadius:10,padding:"8px 12px",
+                display:"flex",alignItems:"center",gap:6}}
+              , region.label
+            )
+            , React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}
+              , langs.map(info=>React.createElement('button', {key:info.code,
+                  onClick:()=>{
+                    changeLang(info.code);
+                    localStorage.setItem("hs_lang_set","1");
+                    setShowLangFirst(false);
+                  },
+                  style:{display:"flex",alignItems:"center",gap:8,padding:"12px",borderRadius:14,
+                    border:"1px solid #DBEAFE",background:"#ffffff",cursor:"pointer",
+                    fontFamily:"inherit",textAlign:"left",boxShadow:"0 1px 4px rgba(0,0,0,0.04)",
+                    transition:"all 0.2s"}}
+                , React.createElement('span', {style:{fontSize:24,flexShrink:0}}, info.flag)
+                , React.createElement('div', {style:{overflow:"hidden"}}
+                  , React.createElement('div', {style:{fontSize:12,fontWeight:800,color:"#1a1a2e",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}, info.country)
+                  , React.createElement('div', {style:{fontSize:11,color:"#6b7280"}}, info.label)
+                  , React.createElement('div', {style:{fontSize:10,color:"#9ca3af"}}, info.currency," · ",info.currencyCode)
+                )
+              ))
+            )
+          );
+        })
+      )
+    );
+  }
 
   if (showOnboarding) {
     const step = STEPS[onboardStep];
