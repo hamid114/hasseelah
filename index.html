@@ -6,6 +6,9 @@
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="theme-color" content="#ffffff"/>
+  <meta http-equiv="X-Frame-Options" content="DENY"/>
+  <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block"/>
   <title>غلة - Ghallah</title>
   <link rel="manifest" href="manifest.json"/>
   <style>*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow-x:hidden;background:#f7f8fc;transition:background 0.3s}#root{height:100%}</style>
@@ -187,7 +190,13 @@ function App() {
   const [showAdd, setShowAdd] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
   const [showLangPicker, setShowLangPicker] = useState(false);
-  const [isPremium, setIsPremium] = useState(()=>localStorage.getItem("hs_premium")==="1");
+  const [isPremium, setIsPremium] = useState(()=>{
+    const v = localStorage.getItem("hs_premium");
+    const h = localStorage.getItem("hs_ph");
+    // Simple verification hash
+    const expected = btoa("ghallah_premium_" + (localStorage.getItem("hs_dark")||"0"));
+    return v==="1" && h===expected;
+  });
   const [darkMode, setDarkMode] = useState(()=>localStorage.getItem("hs_dark")==="1");
   const [showLimitAlert, setShowLimitAlert] = useState(false);
   const FREE_MONTHLY_LIMIT = 30;
@@ -403,7 +412,14 @@ function App() {
   useEffect(()=>{ _save("hs_goals",goals); },[goals]);
   useEffect(()=>{ if(customCats) _save("hs_cats",customCats); },[customCats]);
   useEffect(()=>{ localStorage.setItem("hs_dark", darkMode?"1":"0"); },[darkMode]);
-  useEffect(()=>{ localStorage.setItem("hs_premium", isPremium?"1":"0"); },[isPremium]);
+  useEffect(()=>{
+    localStorage.setItem("hs_premium", isPremium?"1":"0");
+    if(isPremium) {
+      localStorage.setItem("hs_ph", btoa("ghallah_premium_" + (localStorage.getItem("hs_dark")||"0")));
+    } else {
+      localStorage.removeItem("hs_ph");
+    }
+  },[isPremium]);
 
   const finishOnboarding=()=>{ localStorage.setItem("hs_onboarded","1"); setShowOnboarding(false); setOnboardStep(0); };
 
@@ -415,7 +431,14 @@ function App() {
   useEffect(()=>{ _save("hs_goals",goals); },[goals]);
   useEffect(()=>{ if(customCats) _save("hs_cats",customCats); },[customCats]);
   useEffect(()=>{ localStorage.setItem("hs_dark", darkMode?"1":"0"); },[darkMode]);
-  useEffect(()=>{ localStorage.setItem("hs_premium", isPremium?"1":"0"); },[isPremium]);
+  useEffect(()=>{
+    localStorage.setItem("hs_premium", isPremium?"1":"0");
+    if(isPremium) {
+      localStorage.setItem("hs_ph", btoa("ghallah_premium_" + (localStorage.getItem("hs_dark")||"0")));
+    } else {
+      localStorage.removeItem("hs_ph");
+    }
+  },[isPremium]);
 
   const getMonthlyCount = () => {
     const now = new Date();
@@ -424,6 +447,8 @@ function App() {
 
   const saveExpense = () => {
     if(!newExp.name||!newExp.amount) return;
+    const parsedAmount = parseFloat(newExp.amount);
+    if(isNaN(parsedAmount) || parsedAmount <= 0 || parsedAmount > 999999999) { notify("⚠️ " + (isRTL?"مبلغ غير صحيح":"Invalid amount")); return; }
     if(!isPremium && getMonthlyCount() >= FREE_MONTHLY_LIMIT) {
       setShowAdd(false);
       setShowLimitAlert(true);
@@ -1674,6 +1699,8 @@ function App() {
 
     const saveIncome=()=>{
       if(!newInc.name||!newInc.amount) return;
+      const parsedIncAmount = parseFloat(newInc.amount);
+      if(isNaN(parsedIncAmount) || parsedIncAmount <= 0 || parsedIncAmount > 999999999) { notify("⚠️ " + (isRTL?"مبلغ غير صحيح":"Invalid amount")); return; }
       if(!isPremium && getMonthlyCount() >= FREE_MONTHLY_LIMIT) {
         setShowAddIncome(false);
         setShowLimitAlert(true);
@@ -1849,7 +1876,7 @@ function App() {
   const ReferralScreen=()=>{
     const [copied, setCopied] = useState(false);
 
-    const referralCode = "GHLL-" + (langInfo.currencyCode) + "-2026";
+    const referralCode = "GHLL-" + (langInfo.currencyCode) + "-" + (localStorage.getItem("hs_rid") || (()=>{ const id=Math.random().toString(36).slice(2,7).toUpperCase(); localStorage.setItem("hs_rid",id); return id; })());
     const shareLink = `https://ghallah.com/join?ref=${referralCode}`;
 
     const copyCode = () => {
