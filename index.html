@@ -662,10 +662,12 @@ function App() {
           const langs = LANGUAGES.filter(l=>l.region===region.key);
           if(!langs.length) return null;
           return React.createElement('div', {key:region.key, style:{marginBottom:16}}
-            , React.createElement('div', {style:{fontSize:11,fontWeight:700,color:"#6b7280",marginBottom:8,
-                display:"flex",alignItems:"center",gap:6}}
-              , React.createElement('span', null, region.label)
-              , React.createElement('div', {style:{flex:1,height:1,background:"#f0f4ff",marginInline:4}})
+            , React.createElement('div', {style:{fontSize:12,fontWeight:800,color:"#1e3a5f",marginBottom:10,
+                display:"flex",alignItems:"center",gap:8,
+                background:"linear-gradient(135deg,#EFF6FF,#DBEAFE)",
+                borderRadius:10,padding:"8px 12px"}}
+              , React.createElement('span', {style:{fontSize:16}}, region.label.split(" ")[0])
+              , React.createElement('span', {style:{color:"#1D4ED8"}}, region.label.split(" ").slice(1).join(" "))
             )
             , React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}
               , langs.map(info=>{
@@ -677,10 +679,11 @@ function App() {
                       cursor:"pointer",fontFamily:"inherit",textAlign:isRTL?"right":"left",transition:"all 0.2s"}}
                     , React.createElement('span', {style:{fontSize:22,flexShrink:0}}, info.flag)
                     , React.createElement('div', {style:{flex:1,overflow:"hidden"}}
-                      , React.createElement('div', {style:{fontSize:12,fontWeight:700,color:active?"#1D4ED8":"#1a1a2e",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}, info.country)
+                      , React.createElement('div', {style:{fontSize:12,fontWeight:800,color:active?"#1D4ED8":"#1a1a2e",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}, info.country)
+                      , React.createElement('div', {style:{fontSize:11,fontWeight:600,color:active?"#3B82F6":"#6b7280"}}, info.label)
                       , React.createElement('div', {style:{fontSize:10,color:"#9ca3af"}}, info.currency," · ",info.currencyCode)
                     )
-                    , active && React.createElement('span', {style:{color:"#3B82F6",fontSize:14}}, "✓")
+                    , active && React.createElement('span', {style:{color:"#3B82F6",fontSize:18,flexShrink:0}}, "✓")
                   );
                 })
             )
