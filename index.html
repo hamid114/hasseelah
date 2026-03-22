@@ -6,8 +6,6 @@
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="theme-color" content="#ffffff"/>
-  <meta http-equiv="X-Frame-Options" content="DENY"/>
-  <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
   <title>غلة - Ghallah</title>
   <link rel="manifest" href="manifest.json"/>
   <style>*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow-x:hidden;background:#f7f8fc;transition:background 0.3s}#root{height:100%}</style>
@@ -1007,44 +1005,80 @@ function App() {
     )
   );
 
-  const TransferScreen=()=>(
-    React.createElement('div', null
+  const TransferScreen=()=>{
+    const amountRef = useRef(null);
+    const noteRef = useRef(null);
+    const [fromAcc, setFromAcc] = useState("cash");
+    const [toAcc, setToAcc] = useState("bank");
+    const [preview, setPreview] = useState("");
+    const [txDate, setTxDate] = useState(()=>new Date().toISOString().slice(0,16));
+
+    const handleAmountChange = () => {
+      const val = amountRef.current?.value || "";
+      setPreview(val);
+    };
+
+    const handleSubmit = () => {
+      const amount = parseFloat(amountRef.current?.value || "0");
+      const note = noteRef.current?.value || "";
+      if(!amount || fromAcc===toAcc) return;
+      const newTransfer={id:Date.now(),from:fromAcc,to:toAcc,amount,note:note||t.transfer,date:new Date(txDate).toISOString(),direction:"out"};
+      setTransfers(p=>[newTransfer,...p]);
+      setExpenses(p=>[
+        {id:Date.now(),name:`↗ ${isRTL?"حوالة إلى":"Transfer to"} ${t[toAcc]}`,amount,type:"expense",category:8,location:"",date:new Date(txDate).toISOString(),prevAmount:null,account:fromAcc,note:note||t.transfer,transferId:newTransfer.id},
+        {id:Date.now()+1,name:`↙ ${isRTL?"حوالة من":"Transfer from"} ${t[fromAcc]}`,amount,type:"income",category:8,location:"",date:new Date(txDate).toISOString(),prevAmount:null,account:toAcc,note:note||t.transfer,transferId:newTransfer.id},
+        ...p
+      ]);
+      if(amountRef.current) amountRef.current.value = "";
+      if(noteRef.current) noteRef.current.value = "";
+      setPreview("");
+      setScreen("home");
+      notify(`✅ ${amount} ${currency}`);
+    };
+
+    return React.createElement('div', null
       , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20},}
         , React.createElement('div', { style: {fontSize:16,fontWeight:800,color:"#1e3a5f"},}, "↔️ " , t.transfer)
         , React.createElement('button', { onClick: ()=>setScreen("transfersLog"), style: {background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.3)",color:"#1D4ED8",padding:"6px 12px",borderRadius:10,cursor:"pointer",fontSize:11,fontFamily:"inherit"},}, "📋 " , isRTL?"السجل":"History")
       )
       , React.createElement('div', { style: {background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:18,padding:20},}
-        , React.createElement('div', { style: {marginBottom:14},}, React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, t.transferFrom)
-          , React.createElement('select', { className: "inp", value: transferData.from, onChange: e=>setTransferData(p=>({...p,from:e.target.value})),}
-            , React.createElement('option', { value: "cash",}, "💵 " , t.cash), React.createElement('option', { value: "bank",}, "🏦 " , t.bank), React.createElement('option', { value: "wallet",}, "👜 " , t.wallet)
+        , React.createElement('div', { style: {marginBottom:14},}
+          , React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, t.transferFrom)
+          , React.createElement('select', { className: "inp", value: fromAcc, onChange: e=>setFromAcc(e.target.value),}
+            , React.createElement('option', { value: "cash",}, "💵 " , t.cash)
+            , React.createElement('option', { value: "bank",}, "🏦 " , t.bank)
+            , React.createElement('option', { value: "wallet",}, "👜 " , t.wallet)
           )
         )
         , React.createElement('div', { style: {textAlign:"center",fontSize:24,color:"#3B82F6",margin:"6px 0"},}, "⬇️")
-        , React.createElement('div', { style: {marginBottom:14},}, React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, t.transferTo)
-          , React.createElement('select', { className: "inp", value: transferData.to, onChange: e=>setTransferData(p=>({...p,to:e.target.value})),}
-            , React.createElement('option', { value: "cash",}, "💵 " , t.cash), React.createElement('option', { value: "bank",}, "🏦 " , t.bank), React.createElement('option', { value: "wallet",}, "👜 " , t.wallet)
+        , React.createElement('div', { style: {marginBottom:14},}
+          , React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, t.transferTo)
+          , React.createElement('select', { className: "inp", value: toAcc, onChange: e=>setToAcc(e.target.value),}
+            , React.createElement('option', { value: "cash",}, "💵 " , t.cash)
+            , React.createElement('option', { value: "bank",}, "🏦 " , t.bank)
+            , React.createElement('option', { value: "wallet",}, "👜 " , t.wallet)
           )
         )
-        , React.createElement('div', { style: {marginBottom:14},}, React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, t.amount, " (" , currency, ")")
-          , React.createElement('input', { className: "inp", type: "tel", placeholder: "0", value: transferData.amount, onChange: e=>setTransferData(p=>({...p,amount:e.target.value})), autoComplete:"new-password", "data-form-type":"other"})
+        , React.createElement('div', { style: {marginBottom:14},}
+          , React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, t.amount, " (" , currency, ")")
+          , React.createElement('input', { ref: amountRef, className: "inp", type: "number", inputMode:"decimal", placeholder: "0", defaultValue: "", onChange: handleAmountChange, autoComplete:"off", style:{fontSize:18,fontWeight:700}})
         )
-        , React.createElement('div', { style: {marginBottom:14},}, React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, "📅 " , isRTL?"التاريخ والوقت":"Date & Time")
-          , React.createElement('input', { className: "inp", type: "datetime-local", value: transferData.date||(()=>{ const n=new Date(); return n.toISOString().slice(0,16); })(), onChange: e=>setTransferData(p=>({...p,date:e.target.value})),})
+        , React.createElement('div', { style: {marginBottom:14},}
+          , React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, "📅 " , isRTL?"التاريخ والوقت":"Date & Time")
+          , React.createElement('input', { className: "inp", type: "datetime-local", value: txDate, onChange: e=>setTxDate(e.target.value),})
         )
-        , React.createElement('div', { style: {marginBottom:20},}, React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, "📝 " , isRTL?"ملاحظة (اختياري)":"Note (optional)")
-          , React.createElement('input', { className: "inp", placeholder: isRTL?"سبب الحوالة...":"Transfer reason...", value: transferData.note, onChange: e=>setTransferData(p=>({...p,note:e.target.value})),})
+        , React.createElement('div', { style: {marginBottom:16},}
+          , React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, "📝 " , isRTL?"ملاحظة (اختياري)":"Note (optional)")
+          , React.createElement('input', { ref: noteRef, className: "inp", placeholder: isRTL?"سبب الحوالة...":"Transfer reason...", defaultValue: "", autoComplete:"off"})
         )
-        /* Preview */
-        , transferData.amount && transferData.from!==transferData.to && (
-          React.createElement('div', { style: {background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.25)",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",justifyContent:"space-between",alignItems:"center"},}
-            , React.createElement('span', { style: {fontSize:12,color:"#6b7280"},}, t[transferData.from], " → "  , t[transferData.to])
-            , React.createElement('span', { style: {fontWeight:700,color:"#1E40AF",fontSize:14},}, parseFloat(transferData.amount||0).toLocaleString(), " " , currency)
-          )
+        , preview && fromAcc!==toAcc && React.createElement('div', { style: {background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.25)",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",justifyContent:"space-between",alignItems:"center"},}
+          , React.createElement('span', { style: {fontSize:12,color:"#6b7280"},}, t[fromAcc], " → " , t[toAcc])
+          , React.createElement('span', { style: {fontWeight:700,color:"#1E40AF",fontSize:14},}, parseFloat(preview||0).toLocaleString(), " " , currency)
         )
-        , React.createElement('button', { onClick: doTransfer, style: {width:"100%",background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"#1a1a2e",padding:14,borderRadius:14,cursor:"pointer",fontSize:15,fontWeight:700,fontFamily:"inherit"},}, t.confirm, " ↔️" )
+        , React.createElement('button', { onClick: handleSubmit, style: {width:"100%",background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"white",padding:14,borderRadius:14,cursor:"pointer",fontSize:15,fontWeight:700,fontFamily:"inherit"},}, t.confirm, " ↔️")
       )
-    )
-  );
+    );
+  };
 
   const NoteBookScreen=()=>(
     React.createElement('div', null
