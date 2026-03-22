@@ -1080,12 +1080,20 @@ function App() {
     );
   };
 
-  const NoteBookScreen=()=>(
-    React.createElement('div', null
+  const NoteBookScreen=()=>{
+    const noteInputRef = useRef(null);
+    const addNote = () => {
+      const text = noteInputRef.current?.value?.trim();
+      if(!text) return;
+      setNotes(p=>[{id:Date.now(),text,date:new Date().toISOString()},...p]);
+      if(noteInputRef.current) noteInputRef.current.value = "";
+      notify("✅");
+    };
+    return React.createElement('div', null
       , React.createElement('div', { style: {fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16},}, "📓 " , t.noteBook)
       , React.createElement('div', { style: {display:"flex",gap:8,marginBottom:16},}
-        , React.createElement('input', { className: "inp", style: {flex:1}, placeholder: t.addNote, value: newNote, onChange: e=>setNewNote(e.target.value),})
-        , React.createElement('button', { onClick: ()=>{ if(newNote.trim()){setNotes(p=>[{id:Date.now(),text:newNote,date:new Date().toISOString()},...p]);setNewNote("");notify("✅");}}, style: {background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"#1a1a2e",padding:"10px 18px",borderRadius:12,cursor:"pointer",fontSize:18},}, "+")
+        , React.createElement('input', { ref: noteInputRef, className: "inp", style: {flex:1}, placeholder: t.addNote, defaultValue: "", autoComplete:"off", onKeyDown: e=>e.key==="Enter"&&addNote()})
+        , React.createElement('button', { onClick: addNote, style: {background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"white",padding:"10px 18px",borderRadius:12,cursor:"pointer",fontSize:18},}, "+")
       )
       , notes.map(n=>(
         React.createElement('div', { key: n.id, style: {background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:14,padding:"12px 16px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"flex-start"},}
@@ -1093,8 +1101,8 @@ function App() {
           , React.createElement('button', { onClick: ()=>setNotes(p=>p.filter(x=>x.id!==n.id)), style: {background:"transparent",border:"none",color:"#ef4444",cursor:"pointer",fontSize:18},}, "×")
         )
       ))
-    )
-  );
+    );
+  };
 
   const CalendarScreen=()=>{
     const y=calDate.getFullYear(),m=calDate.getMonth();
@@ -1906,14 +1914,14 @@ function App() {
               , React.createElement('div', { style: {width:36,height:4,background:"#DBEAFE",borderRadius:2,margin:"0 auto 18px"},})
               , React.createElement('div', { style: {fontSize:16,fontWeight:800,color:"#4ade80",marginBottom:16},}, "↓ " , isRTL?"إضافة إيراد":"Add Income")
               , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:10},}
-                , React.createElement('input', { className: "inp", placeholder: isRTL?"مصدر الإيراد":"Income source", value: newInc.name, onChange: e=>setNewInc(p=>({...p,name:e.target.value})),})
+                , React.createElement('input', { className: "inp", placeholder: isRTL?"مصدر الإيراد":"Income source", defaultValue: newInc.name, onBlur: e=>setNewInc(p=>({...p,name:e.target.value})), onChange: e=>setNewInc(p=>({...p,name:e.target.value})), autoComplete:"off"})
                 , React.createElement('input', { className: "inp", type: "text", inputMode: "decimal", pattern: "[0-9]*\.?[0-9]*", placeholder: `${t.price} (${currency})`, value: newInc.amount, onChange: e=>{ const v=e.target.value; if(/^\d*\.?\d*$/.test(v)) setNewInc(p=>({...p,amount:v})); }, autoComplete:"off",})
                 , React.createElement('select', { className: "inp", value: newInc.account, onChange: e=>setNewInc(p=>({...p,account:e.target.value})),}
                   , React.createElement('option', { value: "bank",}, "🏦 " , t.bank)
                   , React.createElement('option', { value: "cash",}, "💵 " , t.cash)
                   , React.createElement('option', { value: "wallet",}, "👜 " , t.wallet)
                 )
-                , React.createElement('input', { className: "inp", placeholder: `📝 ${t.note||"Note"}`, value: newInc.note, onChange: e=>setNewInc(p=>({...p,note:e.target.value})),})
+                , React.createElement('input', { className: "inp", placeholder: `📝 ${t.note||"Note"}`, defaultValue: newInc.note, onBlur: e=>setNewInc(p=>({...p,note:e.target.value})), onChange: e=>setNewInc(p=>({...p,note:e.target.value})), autoComplete:"off"})
               )
               , React.createElement('div', { style: {display:"flex",gap:10,marginTop:18},}
                 , React.createElement('button', { onClick: ()=>setShowAddIncome(false), style: {flex:1,background:"#f3f0ff",border:"1px solid #d4c9ff",color:"#1E40AF",padding:12,borderRadius:12,cursor:"pointer",fontFamily:"inherit",fontSize:13},}, t.cancel)
@@ -2609,10 +2617,10 @@ function App() {
             , isCapturing&&(React.createElement('div', { style: {marginBottom:14,borderRadius:14,overflow:"hidden",position:"relative",background:"#000",height:150},}, React.createElement('video', { ref: videoRef, autoPlay: true, playsInline: true, muted: true, style: {width:"100%",height:"100%",objectFit:"cover"},}), React.createElement('div', { className: "pulse", style: {position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.5)"},}, React.createElement('span', { style: {color:"#1D4ED8",fontWeight:600},}, "📷 " , t.capturing))))
             , isListening&&(React.createElement('div', { style: {marginBottom:14,padding:18,textAlign:"center",background:"rgba(59,130,246,0.1)",borderRadius:14,border:"1px solid rgba(59,130,246,0.3)"},}, React.createElement('div', { style: {fontSize:28,marginBottom:6}, className: "pulse",}, "🎙️"), React.createElement('div', { style: {color:"#1D4ED8",fontWeight:600,fontSize:13},}, t.listening)))
             , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:10},}
-              , React.createElement('input', { className: "inp", placeholder: t.itemName, value: newExp.name, onChange: e=>setNewExp(p=>({...p,name:e.target.value})),})
+              , React.createElement('input', { className: "inp", placeholder: t.itemName, defaultValue: newExp.name, onBlur: e=>setNewExp(p=>({...p,name:e.target.value})), onChange: e=>setNewExp(p=>({...p,name:e.target.value})), autoComplete:"off"})
               , React.createElement('input', { className: "inp", type: "text", inputMode: "decimal", pattern: "[0-9]*\.?[0-9]*", placeholder: `${t.price} (${currency})`, value: newExp.amount, onChange: e=>{ const v=e.target.value; if(/^\d*\.?\d*$/.test(v)) setNewExp(p=>({...p,amount:v})); }, autoComplete:"off",})
               , React.createElement('div', { style: {display:"flex",gap:8,alignItems:"center"},}
-                , React.createElement('input', { className: "inp", style: {flex:1}, placeholder: `📍 ${t.location}`, value: newExp.location, onChange: e=>setNewExp(p=>({...p,location:e.target.value})),})
+                , React.createElement('input', { className: "inp", style: {flex:1}, placeholder: `📍 ${t.location}`, defaultValue: newExp.location, onBlur: e=>setNewExp(p=>({...p,location:e.target.value})), onChange: e=>setNewExp(p=>({...p,location:e.target.value})), autoComplete:"off"})
                 , React.createElement('button', {
                   type: "button",
                   onClick: ()=>{
@@ -2673,7 +2681,7 @@ function App() {
                 )
               )
 
-              , React.createElement('input', { className: "inp", placeholder: `📝 ${t.note||"Note"}`, value: newExp.note, onChange: e=>setNewExp(p=>({...p,note:e.target.value})),})
+              , React.createElement('input', { className: "inp", placeholder: `📝 ${t.note||"Note"}`, defaultValue: newExp.note, onBlur: e=>setNewExp(p=>({...p,note:e.target.value})), onChange: e=>setNewExp(p=>({...p,note:e.target.value})), autoComplete:"off"})
             )
             , React.createElement('div', { style: {display:"flex",gap:10,marginTop:18},}
               , React.createElement('button', { onClick: ()=>setShowAdd(false), style: {flex:1,background:"#f3f0ff",border:"1px solid #d4c9ff",color:"#1E40AF",padding:12,borderRadius:12,cursor:"pointer",fontFamily:"inherit",fontSize:13},}, t.cancel)
