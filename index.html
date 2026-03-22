@@ -61,6 +61,7 @@ const LANGUAGES = [
   { code:"ur",    label:"اردو",          flag:"🇵🇰", dir:"rtl", currency:"₨",    currencyCode:"PKR", country:"Pakistan",       region:"asia" },
   { code:"bn",    label:"বাংলা",         flag:"🇧🇩", dir:"ltr", currency:"৳",    currencyCode:"BDT", country:"Bangladesh",     region:"asia" },
   { code:"tr",    label:"Türkçe",        flag:"🇹🇷", dir:"ltr", currency:"₺",    currencyCode:"TRY", country:"Türkiye",        region:"asia" },
+  { code:"ru",    label:"Русский",       flag:"🇷🇺", dir:"ltr", currency:"₽",    currencyCode:"RUB", country:"Россия",         region:"europe" },
   // ── أفريقيا ──
   { code:"yo",    label:"Yoruba",        flag:"🇳🇬", dir:"ltr", currency:"₦",    currencyCode:"NGN", country:"Nigeria",        region:"africa" },
   { code:"sw",    label:"Kiswahili",     flag:"🇰🇪", dir:"ltr", currency:"KSh",  currencyCode:"KES", country:"Kenya",          region:"africa" },
@@ -88,6 +89,7 @@ const PRICING = {
   GBP: { monthly:1.6,    yearly:16,    symbol:"£"   },
   EUR: { monthly:1.9,    yearly:19,    symbol:"€"   },
   PLN: { monthly:8,      yearly:80,    symbol:"zł"  },
+  RUB: { monthly:185,    yearly:1850,  symbol:"₽"   },
   RON: { monthly:9.5,    yearly:95,    symbol:"lei" },
   BRL: { monthly:10,     yearly:100,   symbol:"R$"  },
   MXN: { monthly:35,     yearly:350,   symbol:"$"   },
@@ -143,7 +145,7 @@ const T = {
 };
 
 // Fallback to English for missing langs
-["yo","so","am","si","sw","de","es","it","nl","pl","ro","pt_br","es_mx","es_co","es_ar","es_cl","es_pe","th","vi","ko","ja","ar_ae","ar_kw","ar_qa","ar_eg","ar_ma","fr_sn","en_za","en_us","en_ca","en_au"].forEach(l => { T[l] = l.startsWith("ar")?{...T.ar,flag:_optionalChain([LANGUAGES,'access',_2a=>_2a.find,'call',_3a=>_3a(x=>x.code===l),'optionalAccess',_4a=>_4a.flag])||"🌍"}:{...T.en, appName:"SpendWise", flag: _optionalChain([LANGUAGES, 'access', _2 => _2.find, 'call', _3 => _3(x=>x.code===l), 'optionalAccess', _4 => _4.flag]) }; });
+["yo","so","am","si","sw","de","es","it","nl","pl","ro","ru","pt_br","es_mx","es_co","es_ar","es_cl","es_pe","th","vi","ko","ja","ar_ae","ar_kw","ar_qa","ar_eg","ar_ma","fr_sn","en_za","en_us","en_ca","en_au"].forEach(l => { T[l] = l.startsWith("ar")?{...T.ar,flag:_optionalChain([LANGUAGES,'access',_2a=>_2a.find,'call',_3a=>_3a(x=>x.code===l),'optionalAccess',_4a=>_4a.flag])||"🌍"}:{...T.en, appName:"SpendWise", flag: _optionalChain([LANGUAGES, 'access', _2 => _2.find, 'call', _3 => _3(x=>x.code===l), 'optionalAccess', _4 => _4.flag]) }; });
 
 // Paddle Configuration
 const PADDLE_PRICE_ID = "pri_01kkwd2jbktf0zx983z41454jz";
