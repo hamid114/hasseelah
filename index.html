@@ -475,16 +475,6 @@ function App() {
 
   const finishOnboarding=()=>{ localStorage.setItem("hs_onboarded","1"); setShowOnboarding(false); setOnboardStep(0); };
 
-  useEffect(()=>{
-    const t=setTimeout(()=>{ _save("hs_data",{expenses,notes,deleted}); },800);
-    return ()=>clearTimeout(t);
-  },[expenses,notes,deleted]);
-
-  useEffect(()=>{ _save("hs_goals",goals); },[goals]);
-  useEffect(()=>{ if(customCats) _save("hs_cats",customCats); },[customCats]);
-  
-  
-
   const getMonthlyCount = () => {
     const now = new Date();
     return expenses.filter(e=>{ const d=new Date(e.date); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); }).length;
