@@ -482,15 +482,8 @@ function App() {
 
   useEffect(()=>{ _save("hs_goals",goals); },[goals]);
   useEffect(()=>{ if(customCats) _save("hs_cats",customCats); },[customCats]);
-  useEffect(()=>{ localStorage.setItem("hs_dark", darkMode?"1":"0"); },[darkMode]);
-  useEffect(()=>{
-    localStorage.setItem("hs_premium", isPremium?"1":"0");
-    if(isPremium) {
-      localStorage.setItem("hs_ph", btoa("ghallah_premium_" + (localStorage.getItem("hs_dark")||"0")));
-    } else {
-      localStorage.removeItem("hs_ph");
-    }
-  },[isPremium]);
+  
+  
 
   const getMonthlyCount = () => {
     const now = new Date();
