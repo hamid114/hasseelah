@@ -1026,7 +1026,7 @@ function App() {
           )
         )
         , React.createElement('div', { style: {marginBottom:14},}, React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, t.amount, " (" , currency, ")")
-          , React.createElement('input', { className: "inp", type: "tel", placeholder: "0", value: transferData.amount, onChange: e=>setTransferData(p=>({...p,amount:e.target.value})), autoComplete:"off"})
+          , React.createElement('input', { className: "inp", type: "tel", placeholder: "0", value: transferData.amount, onChange: e=>setTransferData(p=>({...p,amount:e.target.value})), autoComplete:"new-password", "data-form-type":"other"})
         )
         , React.createElement('div', { style: {marginBottom:14},}, React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, "📅 " , isRTL?"التاريخ والوقت":"Date & Time")
           , React.createElement('input', { className: "inp", type: "datetime-local", value: transferData.date||(()=>{ const n=new Date(); return n.toISOString().slice(0,16); })(), onChange: e=>setTransferData(p=>({...p,date:e.target.value})),})
