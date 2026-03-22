@@ -990,7 +990,7 @@ function App() {
             , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center"},}
               , React.createElement('div', null, React.createElement('div', { style: {fontWeight:600,fontSize:13,color:"#1a1a2e"},}, e.name)
                 , React.createElement('div', { style: {fontSize:11,color:"#6b7280",display:"flex",flexWrap:"wrap",gap:6,marginTop:2},}
-                  , React.createElement('span', null, new Date(e.date).toLocaleDateString(), " · "  , t[e.account])
+                  , React.createElement('span', null, new Date(e.date).toLocaleDateString(), " · " , new Date(e.date).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}), " · "  , t[e.account])
                   , e.paymentMethod && pmBadge(e.paymentMethod)
                 )
               )
