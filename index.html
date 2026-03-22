@@ -1041,7 +1041,7 @@ function App() {
           )
         )
         , React.createElement('div', { style: {marginBottom:14},}, React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, t.amount, " (" , currency, ")")
-          , React.createElement('input', { className: "inp", type: "number", inputMode: "numeric", placeholder: "0", min:"0", step:"any", value: transferData.amount, onChange: e=>setTransferData(p=>({...p,amount:e.target.value})),})
+          , React.createElement('input', { className: "inp", type: "text", inputMode: "decimal", pattern: "[0-9]*\.?[0-9]*", placeholder: "0", value: transferData.amount, onChange: e=>{ const v=e.target.value; if(/^\d*\.?\d*$/.test(v)) setTransferData(p=>({...p,amount:v})); }, autoComplete:"off",})
         )
         , React.createElement('div', { style: {marginBottom:14},}, React.createElement('div', { style: {fontSize:12,color:"#6b7280",marginBottom:6},}, "📅 " , isRTL?"التاريخ والوقت":"Date & Time")
           , React.createElement('input', { className: "inp", type: "datetime-local", value: transferData.date||(()=>{ const n=new Date(); return n.toISOString().slice(0,16); })(), onChange: e=>setTransferData(p=>({...p,date:e.target.value})),})
@@ -1889,7 +1889,7 @@ function App() {
               , React.createElement('div', { style: {fontSize:16,fontWeight:800,color:"#4ade80",marginBottom:16},}, "↓ " , isRTL?"إضافة إيراد":"Add Income")
               , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:10},}
                 , React.createElement('input', { className: "inp", placeholder: isRTL?"مصدر الإيراد":"Income source", value: newInc.name, onChange: e=>setNewInc(p=>({...p,name:e.target.value})),})
-                , React.createElement('input', { className: "inp", type: "number", placeholder: `${t.price} (${currency})`, value: newInc.amount, onChange: e=>setNewInc(p=>({...p,amount:e.target.value})),})
+                , React.createElement('input', { className: "inp", type: "text", inputMode: "decimal", pattern: "[0-9]*\.?[0-9]*", placeholder: `${t.price} (${currency})`, value: newInc.amount, onChange: e=>{ const v=e.target.value; if(/^\d*\.?\d*$/.test(v)) setNewInc(p=>({...p,amount:v})); }, autoComplete:"off",})
                 , React.createElement('select', { className: "inp", value: newInc.account, onChange: e=>setNewInc(p=>({...p,account:e.target.value})),}
                   , React.createElement('option', { value: "bank",}, "🏦 " , t.bank)
                   , React.createElement('option', { value: "cash",}, "💵 " , t.cash)
@@ -2175,8 +2175,8 @@ function App() {
 
             , React.createElement('div', {style:{display:"flex",flexDirection:"column",gap:10}}
               , React.createElement('input', {className:"inp", placeholder:isRTL?"اسم الهدف (مثال: سفر، سيارة)":"Goal name (e.g. Travel, Car)", value:newGoal.name, onChange:e=>setNewGoal(p=>({...p,name:e.target.value}))})
-              , React.createElement('input', {className:"inp", type:"number", placeholder:`${isRTL?"المبلغ المستهدف":"Target amount"} (${currency})`, value:newGoal.target, onChange:e=>setNewGoal(p=>({...p,target:e.target.value}))})
-              , React.createElement('input', {className:"inp", type:"number", placeholder:`${isRTL?"المبلغ المدخر حالياً":"Already saved"} (${currency})`, value:newGoal.saved, onChange:e=>setNewGoal(p=>({...p,saved:e.target.value}))})
+              , React.createElement('input', {className:"inp", type:"tel", placeholder:`${isRTL?"المبلغ المستهدف":"Target amount"} (${currency})`, value:newGoal.target, onChange:e=>setNewGoal(p=>({...p,target:e.target.value}))})
+              , React.createElement('input', {className:"inp", type:"tel", placeholder:`${isRTL?"المبلغ المدخر حالياً":"Already saved"} (${currency})`, value:newGoal.saved, onChange:e=>setNewGoal(p=>({...p,saved:e.target.value}))})
             )
 
             , React.createElement('div', {style:{marginTop:14}}
@@ -2592,7 +2592,7 @@ function App() {
             , isListening&&(React.createElement('div', { style: {marginBottom:14,padding:18,textAlign:"center",background:"rgba(59,130,246,0.1)",borderRadius:14,border:"1px solid rgba(59,130,246,0.3)"},}, React.createElement('div', { style: {fontSize:28,marginBottom:6}, className: "pulse",}, "🎙️"), React.createElement('div', { style: {color:"#1D4ED8",fontWeight:600,fontSize:13},}, t.listening)))
             , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:10},}
               , React.createElement('input', { className: "inp", placeholder: t.itemName, value: newExp.name, onChange: e=>setNewExp(p=>({...p,name:e.target.value})),})
-              , React.createElement('input', { className: "inp", type: "number", placeholder: `${t.price} (${currency})`, value: newExp.amount, onChange: e=>setNewExp(p=>({...p,amount:e.target.value})),})
+              , React.createElement('input', { className: "inp", type: "text", inputMode: "decimal", pattern: "[0-9]*\.?[0-9]*", placeholder: `${t.price} (${currency})`, value: newExp.amount, onChange: e=>{ const v=e.target.value; if(/^\d*\.?\d*$/.test(v)) setNewExp(p=>({...p,amount:v})); }, autoComplete:"off",})
               , React.createElement('div', { style: {display:"flex",gap:8,alignItems:"center"},}
                 , React.createElement('input', { className: "inp", style: {flex:1}, placeholder: `📍 ${t.location}`, value: newExp.location, onChange: e=>setNewExp(p=>({...p,location:e.target.value})),})
                 , React.createElement('button', {
