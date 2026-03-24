@@ -1144,30 +1144,71 @@ function App() {
     const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
     const cells=[...Array(first).fill(null),...Array.from({length:days},(_,i)=>i+1)];
     const dow=isRTL?["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"]:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const [selectedDay, setSelectedDay] = React.useState(null);
+
+    const dayExps = selectedDay ? expenses.filter(e=>{
+      const dd=new Date(e.date);
+      return dd.getDate()===selectedDay&&dd.getMonth()===m&&dd.getFullYear()===y;
+    }).sort((a,b)=>new Date(a.date)-new Date(b.date)) : [];
+
+    const cats = customCats || t.categories || [];
+    const catIcons = ["🍔","🚗","👕","🎬","💊","📚","🏠","💡","📦"];
+
     return (
       React.createElement('div', null
         , React.createElement('div', { style: {fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16},}, "📅 " , t.calendar)
-        , React.createElement('div', { style: {background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:18,padding:16},}
+        , React.createElement('div', { style: {background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:18,padding:16,marginBottom:12},}
           , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14},}
-            , React.createElement('button', { onClick: ()=>setCalDate(new Date(y,m-1,1)), style: {background:"rgba(59,130,246,0.2)",border:"none",color:"#1D4ED8",cursor:"pointer",borderRadius:8,width:32,height:32,fontSize:16},}, "‹")
-            , React.createElement('div', { style: {fontWeight:700,fontSize:14,color:"#1e3a5f"},}, calDate.toLocaleDateString("en-US",{month:"long",year:"numeric"}))
-            , React.createElement('button', { onClick: ()=>setCalDate(new Date(y,m+1,1)), style: {background:"rgba(59,130,246,0.2)",border:"none",color:"#1D4ED8",cursor:"pointer",borderRadius:8,width:32,height:32,fontSize:16},}, "›")
+            , React.createElement('button', { onClick: ()=>{setCalDate(new Date(y,m-1,1));setSelectedDay(null);}, style: {background:"rgba(59,130,246,0.15)",border:"none",color:"#1D4ED8",cursor:"pointer",borderRadius:8,width:32,height:32,fontSize:16},}, "‹")
+            , React.createElement('div', { style: {fontWeight:700,fontSize:14,color:"#1e3a5f"},}, calDate.toLocaleDateString(isRTL?"ar-SA":"en-US",{month:"long",year:"numeric"}))
+            , React.createElement('button', { onClick: ()=>{setCalDate(new Date(y,m+1,1));setSelectedDay(null);}, style: {background:"rgba(59,130,246,0.15)",border:"none",color:"#1D4ED8",cursor:"pointer",borderRadius:8,width:32,height:32,fontSize:16},}, "›")
           )
-          , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,marginBottom:6},}
-            , dow.map(d=>React.createElement('div', { key: d, style: {textAlign:"center",fontSize:10,color:"#6b7280",padding:"4px 0"},}, d))
+          , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:6},}
+            , dow.map(d=>React.createElement('div', { key: d, style: {textAlign:"center",fontSize:9,color:"#6b7280",padding:"4px 0",fontWeight:600},}, d))
           )
-          , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4},}
+          , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:3},}
             , cells.map((d,i)=>{
               const has=d&&expenses.some(e=>{const dd=new Date(e.date);return dd.getDate()===d&&dd.getMonth()===m&&dd.getFullYear()===y;});
               const today=d&&new Date().getDate()===d&&new Date().getMonth()===m&&new Date().getFullYear()===y;
-              return (
-                React.createElement('div', { key: i, style: {aspectRatio:"1",borderRadius:8,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",background:today?"linear-gradient(135deg,#3B82F6,#2563EB)":has?"rgba(59,130,246,0.15)":"transparent",border:today?"none":has?"1px solid rgba(59,130,246,0.3)":"1px solid transparent"},}
-                  , React.createElement('span', { style: {fontSize:12,color:today?"white":d?"#BAD4FD":"transparent",fontWeight:today?700:400},}, d||"")
-                  , has&&!today&&React.createElement('div', { style: {width:4,height:4,borderRadius:"50%",background:"#3B82F6",position:"absolute",bottom:2},})
-                )
+              const selected=d&&selectedDay===d;
+              return React.createElement('div', { key: i,
+                onClick:()=>d&&setSelectedDay(selectedDay===d?null:d),
+                style: {aspectRatio:"1",borderRadius:8,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",cursor:d?"pointer":"default",
+                  background:selected?"#1D4ED8":today?"linear-gradient(135deg,#3B82F6,#2563EB)":has?"rgba(59,130,246,0.12)":"transparent",
+                  border:selected?"2px solid #1D4ED8":today?"none":has?"1px solid rgba(59,130,246,0.3)":"1px solid transparent",
+                  transition:"all 0.15s"},}
+                , React.createElement('span', { style: {fontSize:12,color:selected||today?"white":d?"#1e3a5f":"transparent",fontWeight:selected||today?700:400},}, d||"")
+                , has&&!today&&!selected&&React.createElement('div', { style: {width:4,height:4,borderRadius:"50%",background:"#3B82F6",position:"absolute",bottom:2},})
               );
             })
           )
+        )
+
+        /* Selected day transactions */
+        , selectedDay && React.createElement('div', null
+          , React.createElement('div', {style:{fontSize:13,fontWeight:700,color:"#1e3a5f",marginBottom:10,display:"flex",alignItems:"center",gap:8}}
+            , React.createElement('span', null, "📋")
+            , React.createElement('span', null, isRTL?`معاملات يوم ${selectedDay}`:`Day ${selectedDay} transactions`)
+            , React.createElement('span', {style:{fontSize:11,color:"#9ca3af",fontWeight:400}}, `(${dayExps.length})`)
+          )
+          , dayExps.length===0
+            ? React.createElement('div', {style:{textAlign:"center",padding:"24px",color:"#9ca3af",background:"#ffffff",borderRadius:14,border:"1px solid #DBEAFE"}}
+              , React.createElement('div', {style:{fontSize:32,marginBottom:8}}, "📭")
+              , React.createElement('div', {style:{fontSize:13}}, isRTL?"لا توجد معاملات في هذا اليوم":"No transactions this day")
+            )
+            : dayExps.map(e=>React.createElement('div', {key:e.id,
+                style:{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:14,padding:"12px 14px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}
+              , React.createElement('div', {style:{display:"flex",alignItems:"center",gap:10}}
+                , React.createElement('div', {style:{width:38,height:38,borderRadius:10,background:e.type==="income"?"rgba(74,222,128,0.15)":"rgba(239,68,68,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}, catIcons[e.category]||"📦")
+                , React.createElement('div', null
+                  , React.createElement('div', {style:{fontSize:13,fontWeight:600,color:"#1a1a2e"}}, e.name)
+                  , React.createElement('div', {style:{fontSize:11,color:"#9ca3af",marginTop:2}}, "🕐 ", new Date(e.date).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",hour12:true}), " · ", t[e.account])
+                )
+              )
+              , React.createElement('div', {style:{fontSize:14,fontWeight:700,color:e.type==="income"?"#16a34a":"#ef4444"}},
+                e.type==="income"?"+":"-", e.amount.toLocaleString(), " ", currency
+              )
+            ))
         )
       )
     );
