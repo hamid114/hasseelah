@@ -12,6 +12,21 @@
 </head>
 <body>
   <div id="root"></div>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyCCBPZKOD207VoYCwqbgWUoYZYakdxUyBw",
+      authDomain: "haseelah-app.firebaseapp.com",
+      projectId: "haseelah-app",
+      storageBucket: "haseelah-app.firebasestorage.app",
+      messagingSenderId: "62049277243",
+      appId: "1:62049277243:web:dba56bbff7e4155a6b531e"
+    });
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -179,6 +194,140 @@ const MENU_ITEMS = [
 
 const initExpenses = [];
 
+
+// ══ AUTH SCREEN ═══════════════════════════════════════════
+function AuthScreen({authScreen, setAuthScreen, setAuthUser}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const isAr = navigator.language.startsWith("ar");
+
+  const handleLogin = async () => {
+    if(!email || !password) { setError(isAr?"يرجى إدخال البريد وكلمة المرور":"Please enter email and password"); return; }
+    setLoading(true); setError("");
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+    } catch(e) {
+      const msgs = {
+        "auth/user-not-found": isAr?"البريد الإلكتروني غير مسجل":"Email not found",
+        "auth/wrong-password": isAr?"كلمة المرور غير صحيحة":"Wrong password",
+        "auth/invalid-email": isAr?"البريد الإلكتروني غير صحيح":"Invalid email",
+        "auth/too-many-requests": isAr?"محاولات كثيرة، حاول لاحقاً":"Too many attempts, try later",
+      };
+      setError(msgs[e.code] || (isAr?"خطأ في تسجيل الدخول":"Login error"));
+    }
+    setLoading(false);
+  };
+
+  const handleRegister = async () => {
+    if(!email || !password || !name) { setError(isAr?"يرجى إدخال جميع البيانات":"Please fill all fields"); return; }
+    if(password.length < 6) { setError(isAr?"كلمة المرور يجب أن تكون 6 أحرف على الأقل":"Password must be at least 6 characters"); return; }
+    setLoading(true); setError("");
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({displayName: name});
+    } catch(e) {
+      const msgs = {
+        "auth/email-already-in-use": isAr?"البريد الإلكتروني مسجل مسبقاً":"Email already registered",
+        "auth/invalid-email": isAr?"البريد الإلكتروني غير صحيح":"Invalid email",
+        "auth/weak-password": isAr?"كلمة المرور ضعيفة":"Password too weak",
+      };
+      setError(msgs[e.code] || (isAr?"خطأ في إنشاء الحساب":"Registration error"));
+    }
+    setLoading(false);
+  };
+
+  const handleForgot = async () => {
+    if(!email) { setError(isAr?"يرجى إدخال بريدك الإلكتروني":"Please enter your email"); return; }
+    setLoading(true); setError("");
+    try {
+      await auth.sendPasswordResetEmail(email);
+      setSuccess(isAr?"تم إرسال رابط الاستعادة لبريدك":"Reset link sent to your email");
+    } catch(e) {
+      setError(isAr?"خطأ في إرسال البريد":"Error sending email");
+    }
+    setLoading(false);
+  };
+
+  return React.createElement('div', {
+    style:{minHeight:"100vh",background:"#f7f8fc",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px",fontFamily:"'Noto Sans Arabic','DM Sans',sans-serif"}
+  }
+    // Logo
+    , React.createElement('div', {style:{textAlign:"center",marginBottom:32}}
+      , React.createElement('div', {style:{fontSize:64,marginBottom:8}}, "🌾")
+      , React.createElement('div', {style:{fontSize:28,fontWeight:900,background:"linear-gradient(135deg,#D4AF37,#F5D76E,#B8860B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}, "غلة · Ghallah")
+      , React.createElement('div', {style:{fontSize:13,color:"#9ca3af",marginTop:4}}, isAr?"تتبع إنفاقك بذكاء":"Track your spending smartly")
+    )
+
+    // Card
+    , React.createElement('div', {style:{background:"#ffffff",borderRadius:24,padding:"28px 24px",width:"100%",maxWidth:380,boxShadow:"0 8px 32px rgba(0,0,0,0.08)"}})
+
+    // Tabs
+    , React.createElement('div', {style:{display:"flex",gap:4,background:"#f3f4f6",borderRadius:12,padding:4,marginBottom:24}}
+      , ["login","register"].map(s=>React.createElement('button', {key:s,
+          onClick:()=>{setAuthScreen(s);setError("");setSuccess("");},
+          style:{flex:1,padding:"8px",borderRadius:9,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:600,
+            background:authScreen===s?"#ffffff":"transparent",
+            color:authScreen===s?"#1D4ED8":"#6b7280",
+            boxShadow:authScreen===s?"0 1px 4px rgba(0,0,0,0.1)":"none",transition:"all 0.2s"}}
+        , s==="login"?(isAr?"تسجيل الدخول":"Login"):(isAr?"إنشاء حساب":"Register")
+      ))
+    )
+
+    // Name field (register only)
+    , authScreen==="register" && React.createElement('div', {style:{marginBottom:14}}
+      , React.createElement('div', {style:{fontSize:12,color:"#6b7280",marginBottom:6}}, isAr?"الاسم":"Full Name")
+      , React.createElement('input', {className:"inp",placeholder:isAr?"اسمك الكامل":"Your full name",value:name,onChange:e=>setName(e.target.value),autoComplete:"name"})
+    )
+
+    // Email
+    , React.createElement('div', {style:{marginBottom:14}}
+      , React.createElement('div', {style:{fontSize:12,color:"#6b7280",marginBottom:6}}, isAr?"البريد الإلكتروني":"Email")
+      , React.createElement('input', {className:"inp",type:"email",placeholder:"example@email.com",value:email,onChange:e=>setEmail(e.target.value),autoComplete:"email",dir:"ltr"})
+    )
+
+    // Password
+    , authScreen!=="forgot" && React.createElement('div', {style:{marginBottom:8}}
+      , React.createElement('div', {style:{fontSize:12,color:"#6b7280",marginBottom:6}}, isAr?"كلمة المرور":"Password")
+      , React.createElement('input', {className:"inp",type:"password",placeholder:isAr?"6 أحرف على الأقل":"At least 6 characters",value:password,onChange:e=>setPassword(e.target.value),autoComplete:authScreen==="login"?"current-password":"new-password",dir:"ltr"})
+    )
+
+    // Forgot link
+    , authScreen==="login" && React.createElement('div', {style:{textAlign:"end",marginBottom:16}}
+      , React.createElement('button', {onClick:()=>{setAuthScreen("forgot");setError("");setSuccess("");},style:{background:"none",border:"none",color:"#3B82F6",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}, isAr?"نسيت كلمة المرور؟":"Forgot password?")
+    )
+
+    // Forgot screen
+    , authScreen==="forgot" && React.createElement('div', {style:{marginBottom:16}}
+      , React.createElement('div', {style:{fontSize:13,color:"#6b7280",marginBottom:16,lineHeight:1.6}}, isAr?"أدخل بريدك الإلكتروني وسنرسل لك رابط استعادة كلمة المرور":"Enter your email and we'll send you a password reset link")
+    )
+
+    // Error
+    , error && React.createElement('div', {style:{background:"#fff0f0",border:"1px solid #fca5a5",borderRadius:10,padding:"10px 14px",marginBottom:12,fontSize:12,color:"#ef4444"}}, "⚠️ ", error)
+
+    // Success
+    , success && React.createElement('div', {style:{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:10,padding:"10px 14px",marginBottom:12,fontSize:12,color:"#16a34a"}}, "✅ ", success)
+
+    // Submit button
+    , React.createElement('button', {
+        onClick: authScreen==="login"?handleLogin:authScreen==="register"?handleRegister:handleForgot,
+        disabled: loading,
+        style:{width:"100%",background:loading?"#9ca3af":"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"white",padding:14,borderRadius:14,cursor:loading?"not-allowed":"pointer",fontSize:15,fontWeight:700,fontFamily:"inherit",marginBottom:12}
+      }
+      , loading?(isAr?"جارٍ التحميل...":"Loading...")
+        :authScreen==="login"?(isAr?"تسجيل الدخول":"Login")
+        :authScreen==="register"?(isAr?"إنشاء الحساب":"Create Account")
+        :(isAr?"إرسال رابط الاستعادة":"Send Reset Link")
+    )
+
+    // Back to login from forgot
+    , authScreen==="forgot" && React.createElement('button', {onClick:()=>{setAuthScreen("login");setError("");setSuccess("");},style:{width:"100%",background:"none",border:"none",color:"#6b7280",fontSize:13,cursor:"pointer",fontFamily:"inherit"}}, isAr?"← العودة لتسجيل الدخول":"← Back to Login")
+  );
+}
+
 function App() {
   // Initialize Paddle
   useEffect(()=>{
@@ -248,6 +397,9 @@ function App() {
     return v==="1" && h===expected;
   });
   const [darkMode, setDarkMode] = useState(()=>localStorage.getItem("hs_dark")==="1");
+  const [authUser, setAuthUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authScreen, setAuthScreen] = useState("login"); // login | register | forgot
   const [showLimitAlert, setShowLimitAlert] = useState(false);
   const FREE_MONTHLY_LIMIT = 30;
   const [inputMode, setInputMode] = useState("manual");
@@ -462,6 +614,39 @@ function App() {
   useEffect(()=>{ _save("hs_goals",goals); },[goals]);
   useEffect(()=>{ if(customCats) _save("hs_cats",customCats); },[customCats]);
   useEffect(()=>{ localStorage.setItem("hs_dark", darkMode?"1":"0"); },[darkMode]);
+
+  // Firebase auth listener
+  useEffect(()=>{
+    if(typeof auth === "undefined") { setAuthLoading(false); return; }
+    const unsub = auth.onAuthStateChanged(user=>{
+      setAuthUser(user);
+      setAuthLoading(false);
+      if(user) {
+        // Load user data from Firestore
+        db.collection("users").doc(user.uid).collection("data").doc("main").get()
+          .then(doc=>{
+            if(doc.exists) {
+              const d = doc.data();
+              if(d.expenses) setExpenses(d.expenses);
+              if(d.notes) setNotes(d.notes);
+              if(d.goals) setGoals(d.goals);
+            }
+          }).catch(()=>{});
+      }
+    });
+    return ()=>unsub();
+  },[]);
+
+  // Sync to Firestore when data changes
+  useEffect(()=>{
+    if(!authUser || typeof db === "undefined") return;
+    const t = setTimeout(()=>{
+      db.collection("users").doc(authUser.uid).collection("data").doc("main")
+        .set({expenses, notes, goals}, {merge:true})
+        .catch(()=>{});
+    }, 2000);
+    return ()=>clearTimeout(t);
+  },[expenses, notes, goals, authUser]);
   useEffect(()=>{
     localStorage.setItem("hs_premium", isPremium?"1":"0");
     if(isPremium) {
@@ -2491,6 +2676,22 @@ function App() {
     { icon:"✅", title: isRTL?"كل شيء جاهز!":"You're All Set!", desc: isRTL?"بياناتك تُحفظ تلقائياً حتى بدون إنترنت. ابدأ الآن بتسجيل أول معاملة!":"Your data saves automatically even offline. Start by recording your first transaction!", color:"#3B82F6" },
   ];
 
+  // ── AUTH LOADING ──
+  if (authLoading) {
+    return React.createElement('div', {style:{minHeight:"100vh",background:"#f7f8fc",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16}}
+      , React.createElement('div', {style:{fontSize:56}}, "🌾")
+      , React.createElement('div', {style:{fontSize:18,fontWeight:700,background:"linear-gradient(135deg,#D4AF37,#F5D76E,#B8860B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}, "غلة")
+      , React.createElement('div', {style:{width:40,height:4,background:"#DBEAFE",borderRadius:2,overflow:"hidden"}}
+        , React.createElement('div', {style:{width:"60%",height:"100%",background:"#3B82F6",borderRadius:2,animation:"none"}})
+      )
+    );
+  }
+
+  // ── AUTH SCREEN ──
+  if (!authUser && typeof auth !== "undefined") {
+    return React.createElement(AuthScreen, {authScreen, setAuthScreen, setAuthUser});
+  }
+
   // ── LANGUAGE FIRST SCREEN ──
   if (showLangFirst) {
     return React.createElement('div', {
@@ -2624,6 +2825,10 @@ function App() {
             onClick:()=>setDarkMode(d=>!d),
             style:{background:darkMode?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.06)",border:"none",borderRadius:10,width:34,height:34,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}
           }, darkMode?"☀️":"🌙")
+        , authUser && React.createElement('button', {
+            onClick:()=>{ if(typeof auth!=="undefined") auth.signOut(); },
+            style:{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:10,padding:"4px 10px",cursor:"pointer",fontSize:11,color:"#ef4444",fontFamily:"inherit"}
+          }, isRTL?"خروج":"Logout")
         , isPremium?React.createElement('span', { style: {fontSize:16},}, "💎"):(
             React.createElement('button', { onClick: ()=>setShowPremium(true), style: {background:"rgba(245,158,11,0.15)",border:"1px solid rgba(245,158,11,0.3)",color:"#f59e0b",borderRadius:10,padding:"4px 10px",cursor:"pointer",fontSize:10,fontWeight:700,fontFamily:"inherit"},}, "✨ PRO" )
           )
