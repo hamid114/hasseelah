@@ -257,7 +257,7 @@ function App() {
   const [goals, setGoals] = useState(()=>_load("hs_goals",[]));
   const [customCats, setCustomCats] = useState(()=>_load("hs_cats", null));
   const [notif, setNotif] = useState(null);
-  const [newExp, setNewExp] = useState({name:"",amount:"",category:0,location:"",account:"cash",note:"",type:"expense",paymentMethod:"cash",date:new Date().toISOString().slice(0,16)});
+  const [newExp, setNewExp] = useState({name:"",amount:"",category:0,location:"",account:"cash",note:"",type:"expense",paymentMethod:"cash",date:""});
   const [transferData, setTransferData] = useState({from:"cash",to:"bank",amount:"",note:"",direction:"out"});
   const [transfers, setTransfers] = useState([
     {id:1,from:"bank",to:"cash",amount:500,note:"سحب راتب",date:new Date(Date.now()-86400000*1).toISOString(),direction:"out"},
@@ -478,6 +478,13 @@ function App() {
     return expenses.filter(e=>{ const d=new Date(e.date); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); }).length;
   };
 
+  // Helper: get local datetime string for datetime-local input
+  const localNow = () => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    return new Date(now - offset).toISOString().slice(0,16);
+  };
+
   const saveExpense = () => {
     if(!newExp.name||!newExp.amount) return;
     const parsedAmount = parseFloat(newExp.amount);
@@ -488,8 +495,8 @@ function App() {
       return;
     }
     const ex=expenses.find(e=>e.name.toLowerCase()===newExp.name.toLowerCase()&&e.type===newExp.type);
-    setExpenses(p=>[{id:Date.now(),name:newExp.name,amount:parseFloat(newExp.amount),type:newExp.type,category:newExp.category,location:newExp.location||"",date:newExp.date?new Date(newExp.date).toISOString():new Date().toISOString(),prevAmount:ex?ex.amount:null,account:newExp.account,note:newExp.note,paymentMethod:newExp.paymentMethod},...p]);
-    setNewExp({name:"",amount:"",category:0,location:"",account:"cash",note:"",type:"expense",paymentMethod:"cash",date:new Date().toISOString().slice(0,16)});
+    setExpenses(p=>[{id:Date.now(),name:newExp.name,amount:parseFloat(newExp.amount),type:newExp.type,category:newExp.category,location:newExp.location||"",date:newExp.date?(()=>{ const d=new Date(newExp.date); const offset=d.getTimezoneOffset()*60000; return new Date(d.getTime()+offset).toISOString(); })():new Date().toISOString(),prevAmount:ex?ex.amount:null,account:newExp.account,note:newExp.note,paymentMethod:newExp.paymentMethod},...p]);
+    setNewExp({name:"",amount:"",category:0,location:"",account:"cash",note:"",type:"expense",paymentMethod:"cash",date:""});
     setShowAdd(false); notify("✅");
   };
 
@@ -1011,7 +1018,7 @@ function App() {
     const [fromAcc, setFromAcc] = useState("cash");
     const [toAcc, setToAcc] = useState("bank");
     const [preview, setPreview] = useState("");
-    const [txDate, setTxDate] = useState(()=>new Date().toISOString().slice(0,16));
+    const [txDate, setTxDate] = useState(()=>{ const now=new Date(); return new Date(now-now.getTimezoneOffset()*60000).toISOString().slice(0,16); });
 
     const handleAmountChange = () => {
       const val = amountRef.current?.value || "";
@@ -2711,7 +2718,7 @@ function App() {
 
               , React.createElement('div', {style:{marginBottom:10}}
                 , React.createElement('div', {style:{fontSize:11,color:"#6b7280",marginBottom:4}}, "📅 ", isRTL?"التاريخ والوقت (اختياري)":"Date & Time (optional)")
-                , React.createElement('input', { className: "inp", type: "datetime-local", value: newExp.date, onChange: e=>setNewExp(p=>({...p,date:e.target.value})), style:{fontSize:13}})
+                , React.createElement('input', { className: "inp", type: "datetime-local", value: newExp.date||localNow(), onChange: e=>setNewExp(p=>({...p,date:e.target.value})), style:{fontSize:13}})
               )
               , React.createElement('input', { className: "inp", placeholder: `📝 ${t.note||"Note"}`, defaultValue: newExp.note, onBlur: e=>setNewExp(p=>({...p,note:e.target.value})), onChange: e=>setNewExp(p=>({...p,note:e.target.value})), autoComplete:"off"})
             )
