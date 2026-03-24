@@ -1136,7 +1136,7 @@ function App() {
     const y=calDate.getFullYear(),m=calDate.getMonth();
     const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
     const cells=[...Array(first).fill(null),...Array.from({length:days},(_,i)=>i+1)];
-    const dow=isRTL?["أح","إث","ثل","أر","خم","جم","سب"]:["Su","Mo","Tu","We","Th","Fr","Sa"];
+    const dow=isRTL?["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"]:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
     return (
       React.createElement('div', null
         , React.createElement('div', { style: {fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16},}, "📅 " , t.calendar)
