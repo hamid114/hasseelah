@@ -1213,7 +1213,7 @@ function App() {
     const handleSubmit = () => {
       const amount = parseFloat(amountRef.current?.value || "0");
       const note = noteRef.current?.value || "";
-      if(!amount || fromAcc===toAcc) return;
+      if(!amount) return;
       const newTransfer={id:Date.now(),from:fromAcc,to:toAcc,amount,note:note||t.transfer,date:new Date(txDate).toISOString(),direction:"out"};
       setTransfers(p=>[newTransfer,...p]);
       setExpenses(p=>[
