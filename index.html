@@ -2916,15 +2916,21 @@ function App() {
                             const addr=d.address;
                             const loc=[addr.road||addr.suburb,addr.city||addr.town||addr.village,addr.country].filter(Boolean).join(", ");
                             setNewExp(p=>({...p,location:loc}));
+                            // Update input field value directly
+                            const input = document.querySelector('input[placeholder*="location"], input[placeholder*="موقع"]');
+                            if(input) { input.value = loc; }
                             notify("✅ "+(isRTL?"تم تحديد الموقع":"Location detected"));
                           })
                           .catch(()=>{
-                            setNewExp(p=>({...p,location:`${lat.toFixed(4)}, ${lng.toFixed(4)}`}));
+                            const coords = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                            setNewExp(p=>({...p,location:coords}));
+                            const input = document.querySelector('input[placeholder*="location"], input[placeholder*="موقع"]');
+                            if(input) { input.value = coords; }
                             notify("📍 "+lat.toFixed(4)+", "+lng.toFixed(4));
                           });
                       },
-                      ()=>notify("❌ "+(isRTL?"تعذّر الوصول للموقع":"Location access denied")),
-                      {timeout:8000}
+                      err=>notify("❌ "+(isRTL?"تعذّر الوصول للموقع. تأكد من تفعيل GPS":"Location access denied. Enable GPS")),
+                      {timeout:10000, enableHighAccuracy:true, maximumAge:0}
                     );
                   },
                   style: {background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"white",padding:"11px 14px",borderRadius:12,cursor:"pointer",fontSize:18,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"},
