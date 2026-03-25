@@ -45,6 +45,17 @@ const LANGUAGES = [
   { code:"ar_qa", label:"العربية",      flag:"🇶🇦", dir:"rtl", currency:"ر.ق",  currencyCode:"QAR", country:"قطر",            region:"gulf" },
   { code:"ar_eg", label:"العربية",      flag:"🇪🇬", dir:"rtl", currency:"ج.م",  currencyCode:"EGP", country:"مصر",            region:"gulf" },
   { code:"ar_ma", label:"العربية",      flag:"🇲🇦", dir:"rtl", currency:"د.م",  currencyCode:"MAD", country:"المغرب",         region:"gulf" },
+  { code:"ar_jo", label:"العربية",      flag:"🇯🇴", dir:"rtl", currency:"د.أ",  currencyCode:"JOD", country:"الأردن",         region:"gulf" },
+  { code:"ar_iq", label:"العربية",      flag:"🇮🇶", dir:"rtl", currency:"د.ع",  currencyCode:"IQD", country:"العراق",         region:"gulf" },
+  { code:"ar_lb", label:"العربية",      flag:"🇱🇧", dir:"rtl", currency:"ل.ل",  currencyCode:"LBP", country:"لبنان",          region:"gulf" },
+  { code:"ar_sy", label:"العربية",      flag:"🇸🇾", dir:"rtl", currency:"ل.س",  currencyCode:"SYP", country:"سوريا",          region:"gulf" },
+  { code:"ar_sd", label:"العربية",      flag:"🇸🇩", dir:"rtl", currency:"ج.س",  currencyCode:"SDG", country:"السودان",        region:"gulf" },
+  { code:"ar_ly", label:"العربية",      flag:"🇱🇾", dir:"rtl", currency:"د.ل",  currencyCode:"LYD", country:"ليبيا",          region:"gulf" },
+  { code:"ar_tn", label:"العربية",      flag:"🇹🇳", dir:"rtl", currency:"د.ت",  currencyCode:"TND", country:"تونس",           region:"gulf" },
+  { code:"ar_dz", label:"العربية",      flag:"🇩🇿", dir:"rtl", currency:"د.ج",  currencyCode:"DZD", country:"الجزائر",        region:"gulf" },
+  { code:"ar_ye", label:"العربية",      flag:"🇾🇪", dir:"rtl", currency:"ر.ي",  currencyCode:"YER", country:"اليمن",          region:"gulf" },
+  { code:"ar_om", label:"العربية",      flag:"🇴🇲", dir:"rtl", currency:"ر.ع",  currencyCode:"OMR", country:"عُمان",          region:"gulf" },
+  { code:"ar_bh", label:"العربية",      flag:"🇧🇭", dir:"rtl", currency:"د.ب",  currencyCode:"BHD", country:"البحرين",        region:"gulf" },
   // ── أوروبا ──
   { code:"en",    label:"English",      flag:"🇬🇧", dir:"ltr", currency:"£",    currencyCode:"GBP", country:"United Kingdom", region:"europe" },
   { code:"de",    label:"Deutsch",      flag:"🇩🇪", dir:"ltr", currency:"€",    currencyCode:"EUR", country:"Germany",        region:"europe" },
@@ -81,6 +92,12 @@ const LANGUAGES = [
   { code:"am",    label:"አማርኛ",         flag:"🇪🇹", dir:"ltr", currency:"Br",   currencyCode:"ETB", country:"Ethiopia",       region:"africa" },
   { code:"fr_sn", label:"Français",      flag:"🇸🇳", dir:"ltr", currency:"CFA",  currencyCode:"XOF", country:"Sénégal",        region:"africa" },
   { code:"en_za", label:"English",       flag:"🇿🇦", dir:"ltr", currency:"R",    currencyCode:"ZAR", country:"South Africa",   region:"africa" },
+  { code:"fr_ci", label:"Français",      flag:"🇨🇮", dir:"ltr", currency:"CFA",  currencyCode:"XOF", country:"Côte d'Ivoire",  region:"africa" },
+  { code:"ar_td", label:"العربية",       flag:"🇹🇩", dir:"rtl", currency:"CFA",  currencyCode:"XAF", country:"تشاد",           region:"africa" },
+  { code:"ar_km", label:"العربية",       flag:"🇰🇲", dir:"rtl", currency:"CF",   currencyCode:"KMF", country:"جزر القمر",      region:"africa" },
+  { code:"fr_cm", label:"Français",      flag:"🇨🇲", dir:"ltr", currency:"CFA",  currencyCode:"XAF", country:"Cameroun",       region:"africa" },
+  { code:"en_gh", label:"English",       flag:"🇬🇭", dir:"ltr", currency:"₵",    currencyCode:"GHS", country:"Ghana",          region:"africa" },
+  { code:"fr_ma_dz", label:"Français",   flag:"🇲🇦", dir:"ltr", currency:"د.م",  currencyCode:"MAD", country:"Maroc",          region:"africa" },
   // ── أمريكا الشمالية ──
   { code:"en_us", label:"English",       flag:"🇺🇸", dir:"ltr", currency:"$",    currencyCode:"USD", country:"United States",  region:"namerica" },
   { code:"en_ca", label:"English",       flag:"🇨🇦", dir:"ltr", currency:"CA$",  currencyCode:"CAD", country:"Canada",         region:"namerica" },
@@ -103,6 +120,20 @@ const PRICING = {
   EUR: { monthly:1.9,    yearly:19,    symbol:"€"   },
   PLN: { monthly:8,      yearly:80,    symbol:"zł"  },
   RUB: { monthly:185,    yearly:1850,  symbol:"₽"   },
+  JOD: { monthly:1.4,    yearly:14,    symbol:"د.أ" },
+  IQD: { monthly:2620,   yearly:26200, symbol:"د.ع" },
+  LBP: { monthly:179000, yearly:1790000,symbol:"ل.ل"},
+  SYP: { monthly:26000,  yearly:260000,symbol:"ل.س" },
+  SDG: { monthly:1100,   yearly:11000, symbol:"ج.س" },
+  LYD: { monthly:9.7,    yearly:97,    symbol:"د.ل" },
+  TND: { monthly:6.2,    yearly:62,    symbol:"د.ت" },
+  DZD: { monthly:270,    yearly:2700,  symbol:"د.ج" },
+  YER: { monthly:500,    yearly:5000,  symbol:"ر.ي" },
+  OMR: { monthly:0.77,   yearly:7.7,   symbol:"ر.ع" },
+  BHD: { monthly:0.75,   yearly:7.5,   symbol:"د.ب" },
+  XAF: { monthly:1200,   yearly:12000, symbol:"CFA" },
+  KMF: { monthly:920,    yearly:9200,  symbol:"CF"  },
+  GHS: { monthly:31,     yearly:310,   symbol:"₵"   },
   RON: { monthly:9.5,    yearly:95,    symbol:"lei" },
   BRL: { monthly:10,     yearly:100,   symbol:"R$"  },
   MXN: { monthly:35,     yearly:350,   symbol:"$"   },
@@ -158,7 +189,7 @@ const T = {
 };
 
 // Fallback to English for missing langs
-["yo","so","am","si","sw","de","es","it","nl","pl","ro","ru","pt_br","es_mx","es_co","es_ar","es_cl","es_pe","th","vi","ko","ja","ar_ae","ar_kw","ar_qa","ar_eg","ar_ma","fr_sn","en_za","en_us","en_ca","en_au"].forEach(l => { T[l] = l.startsWith("ar")?{...T.ar,flag:_optionalChain([LANGUAGES,'access',_2a=>_2a.find,'call',_3a=>_3a(x=>x.code===l),'optionalAccess',_4a=>_4a.flag])||"🌍"}:{...T.en, appName:"SpendWise", flag: _optionalChain([LANGUAGES, 'access', _2 => _2.find, 'call', _3 => _3(x=>x.code===l), 'optionalAccess', _4 => _4.flag]) }; });
+["yo","so","am","si","sw","de","es","it","nl","pl","ro","ru","ar_jo","ar_iq","ar_lb","ar_sy","ar_sd","ar_ly","ar_tn","ar_dz","ar_ye","ar_om","ar_bh","ar_td","ar_km","fr_ci","fr_cm","en_gh","fr_ma_dz","pt_br","es_mx","es_co","es_ar","es_cl","es_pe","th","vi","ko","ja","ar_ae","ar_kw","ar_qa","ar_eg","ar_ma","fr_sn","en_za","en_us","en_ca","en_au"].forEach(l => { T[l] = l.startsWith("ar")?{...T.ar,flag:_optionalChain([LANGUAGES,'access',_2a=>_2a.find,'call',_3a=>_3a(x=>x.code===l),'optionalAccess',_4a=>_4a.flag])||"🌍"}:{...T.en, appName:"SpendWise", flag: _optionalChain([LANGUAGES, 'access', _2 => _2.find, 'call', _3 => _3(x=>x.code===l), 'optionalAccess', _4 => _4.flag]) }; });
 
 // Paddle Configuration
 const PADDLE_PRICE_ID = "pri_01kkwd2jbktf0zx983z41454jz";
@@ -1040,7 +1071,7 @@ function App() {
             ))
           )
           , React.createElement('div', {style:{background:"linear-gradient(135deg,#f59e0b,#d97706)",borderRadius:12,padding:11,textAlign:"center"}}
-            , React.createElement('div', {style:{fontSize:13,fontWeight:900,color:"#1a0a00"}}, isRTL?"اشترك الآن — ٧.٥ ر.س فقط / شهر ✨":"Subscribe Now — 7.5 SAR / month only ✨")
+            , React.createElement('div', {style:{fontSize:13,fontWeight:900,color:"#1a0a00"}}, isRTL?"اشترك الآن — ٧،٥ ر.س فقط / شهر ✨":"Subscribe Now — 7.5 SAR / month only ✨")
           )
         );
       })()
@@ -2506,7 +2537,7 @@ function App() {
         },
         {
           title: isRTL?"٣. الاشتراك المميز":"3. Premium Subscription",
-          body: isRTL?"الاشتراك المميز شهري بسعر ٧.٥ ريال سعودي (ما يعادل ٢ دولار أمريكي). يمكن إلغاء الاشتراك في أي وقت. لا تُقدَّم استردادات للفترات المنتهية.":"Premium subscription is 7.5 SAR / $2 per month. Cancel anytime. No refunds for completed billing periods."
+          body: isRTL?"الاشتراك المميز شهري بسعر ٧،٥ ريال سعودي (ما يعادل ٢ دولار أمريكي). يمكن إلغاء الاشتراك في أي وقت. لا تُقدَّم استردادات للفترات المنتهية.":"Premium subscription is 7.5 SAR / $2 per month. Cancel anytime. No refunds for completed billing periods."
         },
         {
           title: isRTL?"٤. البيانات والخصوصية":"4. Data & Privacy",
@@ -3087,7 +3118,7 @@ function App() {
                  , isRTL?"أقل من سعر كوب قهوة في الشهر!":"Less than a cup of coffee a month!"
               )
               , React.createElement('div', { style: {fontSize:11,color:"#6b7280",marginTop:3},}
-                , isRTL?"٧.٥ ر.س · ~٢$ فقط 🌍":"7.5 SAR · ~$2 only 🌍"
+                , isRTL?"٧،٥ ر.س · ~٢$ فقط 🌍":"7.5 SAR · ~$2 only 🌍"
               )
             )
 
@@ -3147,7 +3178,7 @@ function App() {
                 
               )
               , React.createElement('div', { style: {fontSize:10,color:"#9ca3af",marginTop:3},}
-                , isRTL?"≈ ٧.٥ ر.س / ٢ دولار شهرياً":"≈ 7.5 SAR / 2 USD per month"
+                , isRTL?"≈ ٧،٥ ر.س / ٢ دولار شهرياً":"≈ 7.5 SAR / 2 USD per month"
               )
             )
           )
@@ -3178,7 +3209,7 @@ function App() {
         , React.createElement('button', {
           onClick:()=>{ setShowLimitAlert(false); setShowPremium(true); },
           style:{width:"100%",background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",color:"#1a0a00",padding:14,borderRadius:14,cursor:"pointer",fontSize:15,fontWeight:900,fontFamily:"inherit",marginBottom:10}
-        }, "✨ ", isRTL?"اشترك الآن — ٧.٥ ر.س فقط":"Subscribe Now — 7.5 SAR only")
+        }, "✨ ", isRTL?"اشترك الآن — ٧،٥ ر.س فقط":"Subscribe Now — 7.5 SAR only")
         , React.createElement('button', {onClick:()=>setShowLimitAlert(false), style:{background:"none",border:"none",color:"#9ca3af",fontSize:13,cursor:"pointer",fontFamily:"inherit"}},
           isRTL?"ليس الآن":"Not now"
         )
