@@ -83,6 +83,9 @@ const LANGUAGES = [
   { code:"vi",    label:"Tiếng Việt",   flag:"🇻🇳", dir:"ltr", currency:"₫",    currencyCode:"VND", country:"Vietnam",        region:"asia" },
   { code:"ko",    label:"한국어",         flag:"🇰🇷", dir:"ltr", currency:"₩",    currencyCode:"KRW", country:"Korea",          region:"asia" },
   { code:"ja",    label:"日本語",         flag:"🇯🇵", dir:"ltr", currency:"¥",    currencyCode:"JPY", country:"Japan",          region:"asia" },
+  { code:"zh_tw", label:"繁體中文",        flag:"🇹🇼", dir:"ltr", currency:"NT$",  currencyCode:"TWD", country:"台灣 Taiwan",     region:"asia" },
+  { code:"zh_hk", label:"繁體中文",        flag:"🇭🇰", dir:"ltr", currency:"HK$",  currencyCode:"HKD", country:"香港 Hong Kong",  region:"asia" },
+  { code:"zh_mo", label:"繁體中文",        flag:"🇲🇴", dir:"ltr", currency:"P",    currencyCode:"MOP", country:"澳門 Macau",      region:"asia" },
   { code:"ur",    label:"اردو",          flag:"🇵🇰", dir:"rtl", currency:"₨",    currencyCode:"PKR", country:"Pakistan",       region:"asia" },
   { code:"bn",    label:"বাংলা",         flag:"🇧🇩", dir:"ltr", currency:"৳",    currencyCode:"BDT", country:"Bangladesh",     region:"asia" },
   { code:"tr",    label:"Türkçe",        flag:"🇹🇷", dir:"ltr", currency:"₺",    currencyCode:"TRY", country:"Türkiye",        region:"asia" },
@@ -150,6 +153,9 @@ const PRICING = {
   THB: { monthly:72,     yearly:720,   symbol:"฿"   },
   VND: { monthly:50000,  yearly:500000,symbol:"₫"   },
   KRW: { monthly:2700,   yearly:27000, symbol:"₩"   },
+  TWD: { monthly:65,     yearly:650,   symbol:"NT$" },
+  HKD: { monthly:15.6,   yearly:156,   symbol:"HK$" },
+  MOP: { monthly:16,     yearly:160,   symbol:"P"   },
   JPY: { monthly:300,    yearly:3000,  symbol:"¥"   },
   PKR: { monthly:560,    yearly:5600,  symbol:"₨"   },
   BDT: { monthly:220,    yearly:2200,  symbol:"৳"   },
@@ -190,7 +196,7 @@ const T = {
 };
 
 // Fallback to English for missing langs
-["yo","so","am","si","sw","de","es","it","nl","pl","ro","ru","ar_jo","ar_iq","ar_lb","ar_sy","ar_sd","ar_ly","ar_tn","ar_dz","ar_ye","ar_om","ar_bh","ar_td","ar_km","fr_ci","fr_cm","en_gh","fr_ma_dz","pt_br","es_mx","es_co","es_ar","es_cl","es_pe","th","vi","ko","ja","ar_ae","ar_kw","ar_qa","ar_eg","ar_ma","fr_sn","en_za","en_us","en_ca","en_au"].forEach(l => { T[l] = l.startsWith("ar")?{...T.ar,flag:_optionalChain([LANGUAGES,'access',_2a=>_2a.find,'call',_3a=>_3a(x=>x.code===l),'optionalAccess',_4a=>_4a.flag])||"🌍"}:{...T.en, appName:"SpendWise", flag: _optionalChain([LANGUAGES, 'access', _2 => _2.find, 'call', _3 => _3(x=>x.code===l), 'optionalAccess', _4 => _4.flag]) }; });
+["yo","so","am","si","sw","de","es","it","nl","pl","ro","ru","zh_tw","zh_hk","zh_mo","ar_jo","ar_iq","ar_lb","ar_sy","ar_sd","ar_ly","ar_tn","ar_dz","ar_ye","ar_om","ar_bh","ar_td","ar_km","fr_ci","fr_cm","en_gh","fr_ma_dz","pt_br","es_mx","es_co","es_ar","es_cl","es_pe","th","vi","ko","ja","ar_ae","ar_kw","ar_qa","ar_eg","ar_ma","fr_sn","en_za","en_us","en_ca","en_au"].forEach(l => { T[l] = l.startsWith("ar")?{...T.ar,flag:_optionalChain([LANGUAGES,'access',_2a=>_2a.find,'call',_3a=>_3a(x=>x.code===l),'optionalAccess',_4a=>_4a.flag])||"🌍"}:{...T.en, appName:"SpendWise", flag: _optionalChain([LANGUAGES, 'access', _2 => _2.find, 'call', _3 => _3(x=>x.code===l), 'optionalAccess', _4 => _4.flag]) }; });
 
 // Paddle Configuration
 const PADDLE_PRICE_ID = "pri_01kkwd2jbktf0zx983z41454jz";
