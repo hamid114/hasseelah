@@ -1766,21 +1766,48 @@ function App() {
     );
   };
 
-  const HelpScreen=()=>(
-    React.createElement('div', null
-      , React.createElement('div', { style: {fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16},}, "❓ " , t.help)
-      , [
-        {q:"?",a:"Press + button or use camera/voice"},
-        {q:"?",a:"Go to Settings → Set Budget"},
-        {q:"?",a:"Remove ads, full reports, cloud backup"},
-      ].map((item,i)=>(
-        React.createElement('div', { key: i, style: {background:"#ffffff",border:"1px solid #e5e0ff",borderRadius:14,padding:"14px 16px",marginBottom:10},}
-          , React.createElement('div', { style: {fontWeight:600,fontSize:13,color:"#1E40AF",marginBottom:6},}, "❓ " , ["How to add expense?","How to set budget?","What are premium features?"][i])
-          , React.createElement('div', { style: {fontSize:12,color:"#6b7280",lineHeight:1.6},}, item.a)
+  const HelpScreen=()=>{
+    const faqs = [
+      {
+        q: isRTL?"كيف أضيف معاملة جديدة؟":"How to add a transaction?",
+        a: isRTL?"اضغط على زر + في الشاشة الرئيسية أو استخدم الكاميرا أو الصوت":"Tap the + button on the home screen or use camera/voice input"
+      },
+      {
+        q: isRTL?"كيف أحدد ميزانيتي الشهرية؟":"How to set a monthly budget?",
+        a: isRTL?"افتح الإعدادات ← تحديد الميزانية، أو اضغط على أيقونة التعديل في بطاقة الميزانية":"Go to Settings → Set Budget, or tap the edit icon on the budget card"
+      },
+      {
+        q: isRTL?"ما هي المزايا المميزة؟":"What are premium features?",
+        a: isRTL?"المزايا المميزة تشمل: معاملات غير محدودة، مقارنة الأشهر، أهداف الادخار، تقارير شاملة، نسخ احتياطي سحابي":"Premium includes: unlimited transactions, monthly comparison, savings goals, full reports, cloud backup"
+      },
+      {
+        q: isRTL?"كيف أسترجع بياناتي على جهاز جديد؟":"How to restore data on a new device?",
+        a: isRTL?"قم بتسجيل الدخول بنفس حسابك وستظهر بياناتك تلقائياً من السحابة":"Sign in with the same account and your data will sync automatically from the cloud"
+      },
+      {
+        q: isRTL?"كيف أغير العملة أو اللغة؟":"How to change currency or language?",
+        a: isRTL?"افتح القائمة ☰ ← الإعدادات ← اللغة والدولة":"Open menu ☰ → Settings → Language & Country"
+      },
+      {
+        q: isRTL?"كيف أتواصل مع الدعم؟":"How to contact support?",
+        a: isRTL?"راسلنا على: support@ghallah.pro":"Email us at: support@ghallah.pro"
+      },
+    ];
+
+    return React.createElement('div', null
+      , React.createElement('div', { style: {fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}, "❓ " , t.help)
+      , faqs.map((item,i)=>
+        React.createElement('div', { key: i, style: {background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:14,padding:"14px 16px",marginBottom:10}}
+          , React.createElement('div', { style: {fontWeight:600,fontSize:13,color:"#1D4ED8",marginBottom:6}}, "❓ " , item.q)
+          , React.createElement('div', { style: {fontSize:12,color:"#6b7280",lineHeight:1.7}}, item.a)
         )
-      ))
-    )
-  );
+      )
+      , React.createElement('div', {style:{textAlign:"center",marginTop:20,fontSize:12,color:"#9ca3af"}},
+        isRTL?"هل تحتاج مساعدة إضافية؟ ":"Need more help? "
+        , React.createElement('a', {href:"mailto:support@ghallah.pro",style:{color:"#3B82F6",textDecoration:"none"}}, "support@ghallah.pro")
+      )
+    );
+  };
 
   // ── CHARTS ────────────────────────────────────────────────
   const ChartsScreen=()=>{
