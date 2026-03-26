@@ -6,7 +6,7 @@
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="theme-color" content="#ffffff"/>
-  <title>غلة - Ghallah v11</title>
+  <title>غلة - Ghallah</title>
   <link rel="manifest" href="manifest.json"/>
   <style>*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow-x:hidden;background:#f7f8fc;transition:background 0.3s}#root{height:100%}</style>
 </head>
@@ -2307,7 +2307,7 @@ function App() {
     const [copied, setCopied] = useState(false);
 
     const referralCode = "GHLL-" + (langInfo.currencyCode) + "-" + (localStorage.getItem("hs_rid") || (()=>{ const id=Math.random().toString(36).slice(2,7).toUpperCase(); localStorage.setItem("hs_rid",id); return id; })());
-    const shareLink = `https://ghallah.com/join?ref=${referralCode}`;
+    const shareLink = `https://ghallah.pro/join?ref=${referralCode}`;
 
     const copyCode = () => {
       _optionalChain([navigator, 'access', _5 => _5.clipboard, 'optionalAccess', _6 => _6.writeText, 'call', _7 => _7(shareLink), 'access', _8 => _8.catch, 'call', _9 => _9(()=>{})]);
@@ -2553,7 +2553,7 @@ function App() {
         },
         {
           title: isRTL?"٧. التواصل":"7. Contact",
-          body: isRTL?"للتواصل معنا: support@ghallah.co":"Contact us: support@ghallah.co"
+          body: isRTL?"للتواصل معنا: support@ghallah.pro":"Contact us: support@ghallah.pro"
         },
       ].map((s,i)=>React.createElement('div', {key:i, style:{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:14,padding:16,marginBottom:10}}
         , React.createElement('div', {style:{fontSize:13,fontWeight:700,color:"#1D4ED8",marginBottom:6}}, s.title)
@@ -2594,7 +2594,7 @@ function App() {
         },
         {
           title: isRTL?"٧. التواصل":"7. Contact",
-          body: isRTL?"لأي استفسارات عن الخصوصية: privacy@ghallah.co":"For privacy inquiries: privacy@ghallah.co"
+          body: isRTL?"لأي استفسارات عن الخصوصية: privacy@ghallah.pro":"For privacy inquiries: privacy@ghallah.pro"
         },
       ].map((s,i)=>React.createElement('div', {key:i, style:{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:14,padding:16,marginBottom:10}}
         , React.createElement('div', {style:{fontSize:13,fontWeight:700,color:"#1D4ED8",marginBottom:6}}, s.title)
@@ -3238,6 +3238,6 @@ function App() {
     root.render(React.createElement(App, null));
 
   </script>
-  <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/hasseelah/sw.js').catch(()=>{});})}</script>
+  <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});})}</script>
 </body>
 </html>
