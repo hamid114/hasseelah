@@ -2597,6 +2597,39 @@ function App() {
   );
 
   // ── PRIVACY POLICY ────────────────────────────────────────
+
+  const RefundScreen=()=>(
+    React.createElement('div', null
+      , React.createElement('div', {style:{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}, "💰 ", isRTL?"سياسة الاسترداد":"Refund Policy")
+      , React.createElement('div', {style:{fontSize:11,color:"#9ca3af",marginBottom:20}}, isRTL?"آخر تحديث: مارس 2026":"Last updated: March 2026")
+      , [
+        {
+          title: isRTL?"١. الاشتراك الشهري":"1. Monthly Subscription",
+          body: isRTL?"يمكن إلغاء الاشتراك الشهري في أي وقت. لا تُقدَّم استردادات للفترة المنتهية من الاشتراك. يستمر وصولك للمزايا المميزة حتى نهاية فترة الاشتراك المدفوعة.":"Monthly subscriptions can be cancelled at any time. No refunds are provided for the current billing period. Your premium access continues until the end of the paid period."
+        },
+        {
+          title: isRTL?"٢. الاشتراك السنوي":"2. Annual Subscription",
+          body: isRTL?"يحق لك طلب استرداد كامل خلال 7 أيام من بدء الاشتراك السنوي إذا لم تكن راضياً عن الخدمة. بعد 7 أيام، لا تُقدَّم استردادات للاشتراك السنوي.":"You may request a full refund within 7 days of starting an annual subscription if you are not satisfied. After 7 days, no refunds are provided for annual subscriptions."
+        },
+        {
+          title: isRTL?"٣. كيفية طلب الاسترداد":"3. How to Request a Refund",
+          body: isRTL?"لطلب استرداد، تواصل معنا عبر البريد الإلكتروني: support@ghallah.pro مع ذكر بريدك الإلكتروني المسجل وسبب طلب الاسترداد. سنرد خلال 3 أيام عمل.":"To request a refund, contact us at support@ghallah.pro with your registered email and reason for the refund. We will respond within 3 business days."
+        },
+        {
+          title: isRTL?"٤. الحالات المستثناة":"4. Exceptions",
+          body: isRTL?"لا تُقدَّم استردادات في حالة انتهاك شروط الاستخدام أو إساءة استخدام الخدمة.":"No refunds are provided in cases of Terms of Service violations or service abuse."
+        },
+        {
+          title: isRTL?"٥. معالجة الاسترداد":"5. Refund Processing",
+          body: isRTL?"تتم معالجة الاستردادات المعتمدة خلال 5-10 أيام عمل عبر نفس وسيلة الدفع الأصلية.":"Approved refunds are processed within 5-10 business days via the original payment method."
+        },
+      ].map((s,i)=>React.createElement('div', {key:i, style:{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:14,padding:16,marginBottom:10}}
+        , React.createElement('div', {style:{fontSize:13,fontWeight:700,color:"#1D4ED8",marginBottom:6}}, s.title)
+        , React.createElement('div', {style:{fontSize:12,color:"#6b7280",lineHeight:1.7}}, s.body)
+      ))
+    )
+  );
+
   const PrivacyScreen=()=>(
     React.createElement('div', null
       , React.createElement('div', {style:{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16}}, "🔒 ", isRTL?"سياسة الخصوصية":"Privacy Policy")
@@ -2729,7 +2762,7 @@ function App() {
     )
   );
 
-  const screenMap={home:React.createElement(HomeScreen, null),referral:React.createElement(ReferralScreen, null),charts:React.createElement(ChartsScreen, null),revenue:React.createElement(RevenueScreen, null),transfersLog:React.createElement(TransfersLogScreen, null),summary:React.createElement(SummaryScreen, null),accountsSummary:React.createElement(AccountsSummaryScreen, null),accounts:React.createElement(AccountsSummaryScreen, null),allTransactions:React.createElement(AllTransactionsScreen, null),transfer:React.createElement(TransferScreen, null),allReport:isPremium?React.createElement(AllReportScreen, null):React.createElement(LockedScreen, null),changeTo:isPremium?React.createElement(AllReportScreen, null):React.createElement(LockedScreen, null),noteBook:React.createElement(NoteBookScreen, null),calendar:React.createElement(CalendarScreen, null),cashCalc:React.createElement(CashCalcScreen, null),backup:isPremium?React.createElement(BackupScreen, null):React.createElement(LockedScreen, null),settings:React.createElement(SettingsScreen, null),deletedTrans:React.createElement(DeletedTransScreen, null),help:React.createElement(HelpScreen, null),savingsGoals:React.createElement(SavingsGoalsScreen, null),terms:React.createElement(TermsScreen, null),privacy:React.createElement(PrivacyScreen, null),customCats:React.createElement(CustomCatsScreen, null)};
+  const screenMap={home:React.createElement(HomeScreen, null),referral:React.createElement(ReferralScreen, null),charts:React.createElement(ChartsScreen, null),revenue:React.createElement(RevenueScreen, null),transfersLog:React.createElement(TransfersLogScreen, null),summary:React.createElement(SummaryScreen, null),accountsSummary:React.createElement(AccountsSummaryScreen, null),accounts:React.createElement(AccountsSummaryScreen, null),allTransactions:React.createElement(AllTransactionsScreen, null),transfer:React.createElement(TransferScreen, null),allReport:isPremium?React.createElement(AllReportScreen, null):React.createElement(LockedScreen, null),changeTo:isPremium?React.createElement(AllReportScreen, null):React.createElement(LockedScreen, null),noteBook:React.createElement(NoteBookScreen, null),calendar:React.createElement(CalendarScreen, null),cashCalc:React.createElement(CashCalcScreen, null),backup:isPremium?React.createElement(BackupScreen, null):React.createElement(LockedScreen, null),settings:React.createElement(SettingsScreen, null),deletedTrans:React.createElement(DeletedTransScreen, null),help:React.createElement(HelpScreen, null),savingsGoals:React.createElement(SavingsGoalsScreen, null),terms:React.createElement(TermsScreen, null),refund:React.createElement(RefundScreen, null),privacy:React.createElement(PrivacyScreen, null),customCats:React.createElement(CustomCatsScreen, null)};
 
   // ─── ONBOARDING STEPS ───
   const STEPS = [
