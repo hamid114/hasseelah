@@ -365,6 +365,7 @@ function AuthScreen({authScreen, setAuthScreen, setAuthUser}) {
 
     // Back to login from forgot
     , authScreen==="forgot" && React.createElement('button', {onClick:()=>{setAuthScreen("login");setError("");setSuccess("");},style:{width:"100%",background:"none",border:"none",color:"#6b7280",fontSize:13,cursor:"pointer",fontFamily:"inherit"}}, isAr?"← العودة لتسجيل الدخول":"← Back to Login")
+    , React.createElement('button', {onClick:()=>setAuthScreen("landing"),style:{width:"100%",background:"none",border:"none",color:"#9ca3af",fontSize:12,cursor:"pointer",fontFamily:"inherit",marginTop:8}}, isAr?"← العودة للصفحة الرئيسية":"← Back to Home")
   );
 }
 
@@ -439,7 +440,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(()=>localStorage.getItem("hs_dark")==="1");
   const [authUser, setAuthUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [authScreen, setAuthScreen] = useState("login"); // login | register | forgot
+  const [authScreen, setAuthScreen] = useState("landing"); // landing | login | register | forgot
   const [showLimitAlert, setShowLimitAlert] = useState(false);
   const FREE_MONTHLY_LIMIT = 30;
   const [inputMode, setInputMode] = useState("manual");
@@ -2893,6 +2894,48 @@ function App() {
 
   // ── AUTH SCREEN ──
   if (!authUser && typeof auth !== "undefined") {
+    if (authScreen === "landing") {
+      return React.createElement('div', {style:{minHeight:"100vh",background:"linear-gradient(160deg,#1e3a5f 0%,#1D4ED8 100%)",display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 24px",fontFamily:"'Noto Sans Arabic','DM Sans',sans-serif"}}
+        , React.createElement('div', {style:{textAlign:"center",marginBottom:32}}
+          , React.createElement('div', {style:{fontSize:72,marginBottom:8}}, "🌾")
+          , React.createElement('div', {style:{fontSize:32,fontWeight:900,color:"#D4AF37",marginBottom:4}}, "غلة · Ghallah")
+          , React.createElement('div', {style:{fontSize:14,color:"#93C5FD"}}, "تطبيق تتبع المصاريف الذكي")
+        )
+
+        , React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,width:"100%",maxWidth:400,marginBottom:24}}
+          , [
+            {icon:"📊",ar:"تتبع مصاريفك",en:"Track expenses"},
+            {icon:"🎯",ar:"حدد ميزانيتك",en:"Set budgets"},
+            {icon:"💰",ar:"أهداف الادخار",en:"Savings goals"},
+            {icon:"🌍",ar:"60+ دولة",en:"60+ countries"},
+            {icon:"☁️",ar:"نسخ احتياطي",en:"Cloud backup"},
+            {icon:"📱",ar:"يعمل على الجوال",en:"Works on mobile"},
+          ].map((f,i)=>React.createElement('div', {key:i, style:{background:"rgba(255,255,255,0.1)",borderRadius:14,padding:"12px",display:"flex",alignItems:"center",gap:10}}
+            , React.createElement('span', {style:{fontSize:22}}, f.icon)
+            , React.createElement('span', {style:{fontSize:12,color:"white",fontWeight:600}}, f.ar)
+          ))
+        )
+
+        , React.createElement('div', {style:{background:"rgba(255,255,255,0.15)",borderRadius:18,padding:"16px 24px",marginBottom:24,width:"100%",maxWidth:400,textAlign:"center"}}
+          , React.createElement('div', {style:{fontSize:13,color:"#93C5FD",marginBottom:4}}, "الاشتراك المميز")
+          , React.createElement('div', {style:{fontSize:28,fontWeight:900,color:"#F5D76E"}}, "٧،٥ ر.س / شهر")
+          , React.createElement('div', {style:{fontSize:11,color:"#93C5FD",marginTop:2}}, "☕ أقل من سعر كوب قهوة!")
+        )
+
+        , React.createElement('button', {onClick:()=>setAuthScreen("register"), style:{width:"100%",maxWidth:400,background:"linear-gradient(135deg,#D4AF37,#F5D76E)",border:"none",color:"#1a1a2e",padding:16,borderRadius:16,cursor:"pointer",fontSize:16,fontWeight:900,fontFamily:"inherit",marginBottom:12}}
+          , "ابدأ مجاناً ✨"
+        )
+        , React.createElement('button', {onClick:()=>setAuthScreen("login"), style:{width:"100%",maxWidth:400,background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.3)",color:"white",padding:14,borderRadius:16,cursor:"pointer",fontSize:14,fontFamily:"inherit",marginBottom:24}}
+          , "تسجيل الدخول"
+        )
+
+        , React.createElement('div', {style:{display:"flex",gap:16,fontSize:11,color:"#93C5FD"}}
+          , React.createElement('span', null, "🔒 آمن ومشفر")
+          , React.createElement('span', null, "✅ مجاني للبدء")
+          , React.createElement('span', null, "🌍 60+ دولة")
+        )
+      );
+    }
     return React.createElement(AuthScreen, {authScreen, setAuthScreen, setAuthUser});
   }
 
