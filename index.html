@@ -2892,6 +2892,17 @@ function App() {
     );
   }
 
+  // ── PUBLIC POLICY PAGES (no auth required) ──
+  const [publicPage, setPublicPage] = React.useState(null);
+  if (publicPage) {
+    const pageMap = {terms: TermsScreen, refund: RefundScreen, privacy: PrivacyScreen};
+    const PageComp = pageMap[publicPage];
+    return React.createElement('div', {style:{minHeight:"100vh",background:"#f7f8fc",padding:"24px 20px",fontFamily:"'Noto Sans Arabic','DM Sans',sans-serif",direction:"rtl"}}
+      , React.createElement('button', {onClick:()=>setPublicPage(null), style:{background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.2)",color:"#1D4ED8",borderRadius:10,padding:"6px 14px",cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:16}}, "← رجوع")
+      , PageComp ? React.createElement(PageComp, null) : null
+    );
+  }
+
   // ── AUTH SCREEN ──
   if (!authUser && typeof auth !== "undefined") {
     if (authScreen === "landing") {
@@ -2929,10 +2940,16 @@ function App() {
           , "تسجيل الدخول"
         )
 
-        , React.createElement('div', {style:{display:"flex",gap:16,fontSize:11,color:"#93C5FD"}}
+        , React.createElement('div', {style:{display:"flex",gap:16,fontSize:11,color:"#93C5FD",marginBottom:16}}
           , React.createElement('span', null, "🔒 آمن ومشفر")
           , React.createElement('span', null, "✅ مجاني للبدء")
           , React.createElement('span', null, "🌍 60+ دولة")
+        )
+
+        , React.createElement('div', {style:{display:"flex",gap:16,fontSize:11,color:"#93C5FD",borderTop:"1px solid rgba(255,255,255,0.1)",paddingTop:12}}
+          , React.createElement('button', {onClick:()=>setPublicPage("terms"), style:{background:"none",border:"none",color:"#93C5FD",fontSize:11,cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}}, "شروط الاستخدام")
+          , React.createElement('button', {onClick:()=>setPublicPage("refund"), style:{background:"none",border:"none",color:"#93C5FD",fontSize:11,cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}}, "سياسة الاسترداد")
+          , React.createElement('button', {onClick:()=>setPublicPage("privacy"), style:{background:"none",border:"none",color:"#93C5FD",fontSize:11,cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}}, "سياسة الخصوصية")
         )
       );
     }
