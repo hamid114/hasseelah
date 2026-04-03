@@ -715,7 +715,8 @@ function App() {
   };
 
   const saveExpense = () => {
-    if(!newExp.name||!newExp.amount) return;
+    if(!newExp.name) { notify("⚠️ "+(isRTL?"أدخل اسم السلعة":"Enter item name")); return; }
+    if(!newExp.amount || parseFloat(newExp.amount)<=0) { notify("⚠️ "+(isRTL?"أدخل السعر":"Enter price")); return; }
     const parsedAmount = parseFloat(newExp.amount);
     if(isNaN(parsedAmount) || parsedAmount <= 0 || parsedAmount > 999999999) { notify("⚠️ " + (isRTL?"مبلغ غير صحيح":"Invalid amount")); return; }
     if(!isPremium && getMonthlyCount() >= FREE_MONTHLY_LIMIT) {
