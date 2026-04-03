@@ -714,6 +714,36 @@ function App() {
     return new Date(now - offset).toISOString().slice(0,16);
   };
 
+  const scheduleNotifications = () => {
+    if(!("Notification" in window) || Notification.permission !== "granted") return;
+    const messages = isRTL ? [
+      {title:"🌾 غلة تسألك!", body:"هل سجّلت مصاريف اليوم؟ ستشكر نفسك لاحقاً 😊"},
+      {title:"💰 تذكير غلة", body:"دقيقة واحدة لتسجيل مصاريفك تساوي راحة بال كاملة ✨"},
+      {title:"📊 كيف كان إنفاقك اليوم؟", body:"سجّله الآن في غلة قبل أن تنسى 📝"},
+      {title:"🎯 هدفك المالي يحتاجك!", body:"خطوة صغيرة كل يوم = نتائج كبيرة 💪"},
+    ] : [
+      {title:"🌾 Ghallah reminder", body:"Did you log today's expenses? You'll thank yourself later 😊"},
+      {title:"💰 Track your spending", body:"One minute to log = total peace of mind ✨"},
+      {title:"📊 How was your spending today?", body:"Log it now before you forget 📝"},
+      {title:"🎯 Your financial goal needs you!", body:"Small steps every day = big results 💪"},
+    ];
+    const msg = messages[Math.floor(Math.random() * messages.length)];
+    // Show once now as confirmation
+    new Notification(msg.title, {body: msg.body, icon: "/manifest.json"});
+    // Schedule evening reminder via setTimeout (works while tab is open)
+    const now = new Date();
+    const evening = new Date();
+    evening.setHours(21, 0, 0, 0);
+    if(now > evening) evening.setDate(evening.getDate() + 1);
+    const msUntilEvening = evening - now;
+    setTimeout(()=>{
+      if(Notification.permission==="granted") {
+        const m = messages[Math.floor(Math.random()*messages.length)];
+        new Notification(m.title, {body:m.body, icon:"/manifest.json"});
+      }
+    }, msUntilEvening);
+  };
+
   const saveExpense = () => {
     if(!newExp.name) { notify("⚠️ "+(isRTL?"أدخل اسم السلعة":"Enter item name")); return; }
     if(!newExp.amount || parseFloat(newExp.amount)<=0) { notify("⚠️ "+(isRTL?"أدخل السعر":"Enter price")); return; }
@@ -1781,6 +1811,45 @@ function App() {
           )
           , React.createElement('div', { style: {width:44,height:24,borderRadius:12,background:darkMode?"#3B82F6":"#e2e8f0",position:"relative",transition:"background 0.3s"},}
             , React.createElement('div', { style: {width:20,height:20,borderRadius:"50%",background:"white",position:"absolute",top:2,left:darkMode?22:2,transition:"left 0.3s",boxShadow:"0 1px 4px rgba(0,0,0,0.2)"},})
+          )
+        )
+      )
+
+      /* Notifications */
+      , React.createElement('div', {style:{marginBottom:14}}
+        , React.createElement('div', {style:{fontSize:12,color:"#6b7280",marginBottom:8}}, isRTL?"التنبيهات":"Notifications")
+        , React.createElement('div', {style:{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:14,padding:"14px 16px"}}
+          , React.createElement('div', {style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}
+            , React.createElement('div', {style:{display:"flex",alignItems:"center",gap:10}}
+              , React.createElement('span', {style:{fontSize:22}}, "🔔")
+              , React.createElement('div', null
+                , React.createElement('div', {style:{fontWeight:600,fontSize:14,color:"#1a1a2e"}}, isRTL?"تذكير يومي":"Daily reminder")
+                , React.createElement('div', {style:{fontSize:11,color:"#6b7280"}}, isRTL?"تذكير بتسجيل مصاريفك":"Remind you to log expenses")
+              )
+            )
+            , React.createElement('button', {
+              onClick: async ()=>{
+                if(!("Notification" in window)) { notify("⚠️ "+(isRTL?"المتصفح لا يدعم التنبيهات":"Browser doesn't support notifications")); return; }
+                if(Notification.permission==="granted") {
+                  notify("✅ "+(isRTL?"التنبيهات مفعّلة":"Notifications enabled"));
+                  scheduleNotifications();
+                } else if(Notification.permission !== "denied") {
+                  const perm = await Notification.requestPermission();
+                  if(perm==="granted") {
+                    notify("✅ "+(isRTL?"تم تفعيل التنبيهات":"Notifications enabled"));
+                    scheduleNotifications();
+                  } else {
+                    notify("❌ "+(isRTL?"تم رفض إذن التنبيهات":"Notification permission denied"));
+                  }
+                } else {
+                  notify("⚠️ "+(isRTL?"يرجى السماح بالتنبيهات من إعدادات المتصفح":"Allow notifications in browser settings"));
+                }
+              },
+              style:{background:Notification&&Notification.permission==="granted"?"rgba(74,222,128,0.15)":"rgba(59,130,246,0.1)",border:`1px solid ${Notification&&Notification.permission==="granted"?"rgba(74,222,128,0.3)":"rgba(59,130,246,0.3)"}`,borderRadius:10,padding:"6px 14px",cursor:"pointer",fontSize:12,color:Notification&&Notification.permission==="granted"?"#16a34a":"#1D4ED8",fontFamily:"inherit",fontWeight:600}
+            }, Notification&&Notification.permission==="granted"?(isRTL?"مفعّل ✅":"Active ✅"):(isRTL?"تفعيل":"Enable"))
+          )
+          , React.createElement('div', {style:{fontSize:11,color:"#9ca3af",background:"rgba(59,130,246,0.05)",borderRadius:8,padding:"8px 10px"}},
+            isRTL?"📱 ستصلك تذكيرات ذكية لتسجيل مصاريفك يومياً":"📱 Smart reminders to log your daily expenses"
           )
         )
       )
