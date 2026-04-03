@@ -442,6 +442,7 @@ function App() {
   const [authUser, setAuthUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [publicPage, setPublicPage] = useState(null);
+  const [communityAlert, setCommunityAlert] = useState(null);
   const [authScreen, setAuthScreen] = useState("landing"); // landing | login | register | forgot
   const [showLimitAlert, setShowLimitAlert] = useState(false);
   const FREE_MONTHLY_LIMIT = 30;
@@ -724,6 +725,37 @@ function App() {
     }
     const ex=expenses.find(e=>e.name.toLowerCase()===newExp.name.toLowerCase()&&e.type===newExp.type);
     setExpenses(p=>[{id:Date.now(),name:newExp.name,amount:parseFloat(newExp.amount),type:newExp.type,category:newExp.category,location:newExp.location||"",date:newExp.date?(()=>{ const d=new Date(newExp.date); const offset=d.getTimezoneOffset()*60000; return new Date(d.getTime()+offset).toISOString(); })():new Date().toISOString(),prevAmount:ex?ex.amount:null,account:newExp.account,note:newExp.note,qty:newExp.qty||"",paymentMethod:newExp.paymentMethod},...p]);
+
+    // Community price comparison
+    if(typeof db !== "undefined" && newExp.name && parsedAmount > 0) {
+      const itemKey = newExp.name.trim().toLowerCase().replace(/\s+/g,"_").replace(/[^a-z0-9_\u0600-\u06ff]/g,"");
+      const priceRef2 = db.collection("community_prices").doc(itemKey);
+      priceRef2.get().then(doc => {
+        if(doc.exists) {
+          const data = doc.data();
+          const avg = data.total / data.count;
+          const diff = ((parsedAmount - avg) / avg * 100).toFixed(0);
+          const qty = newExp.qty ? ` (${newExp.qty})` : "";
+          if(Math.abs(diff) >= 5) {
+            if(parsedAmount > avg) {
+              setCommunityAlert({name:newExp.name+qty, price:parsedAmount, avg:Math.round(avg), diff:Math.abs(diff), type:"expensive", count:data.count});
+            } else {
+              setCommunityAlert({name:newExp.name+qty, price:parsedAmount, avg:Math.round(avg), diff:Math.abs(diff), type:"cheaper", count:data.count});
+            }
+          }
+        }
+        // Save this price anonymously
+        if(isPremium || Math.random() < 0.5) {
+          priceRef2.set({
+            total: (doc.exists ? doc.data().total : 0) + parsedAmount,
+            count: (doc.exists ? doc.data().count : 0) + 1,
+            currency: langInfo.currencyCode,
+            lastUpdated: new Date().toISOString()
+          }, {merge:true}).catch(()=>{});
+        }
+      }).catch(()=>{});
+    }
+
     setNewExp({name:"",amount:"",category:0,location:"",account:"cash",note:"",qty:"",type:"expense",paymentMethod:"cash",date:""});
     setShowAdd(false); notify("✅");
   };
@@ -3563,6 +3595,44 @@ function App() {
         )
         );
       })()
+
+    /* COMMUNITY PRICE ALERT */
+    , communityAlert && React.createElement('div', {className:"overlay", onClick:()=>setCommunityAlert(null)}
+      , React.createElement('div', {className:"sheet", dir:isRTL?"rtl":"ltr", style:{textAlign:"center"}}
+        , React.createElement('div', {style:{width:36,height:4,background:"#DBEAFE",borderRadius:2,margin:"0 auto 20px"}})
+        , React.createElement('div', {style:{fontSize:52,marginBottom:8}}, communityAlert.type==="expensive"?"🔴":"🟢")
+        , React.createElement('div', {style:{fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:8}}
+          , communityAlert.type==="expensive"
+            ? (isRTL?"سعرك أغلى من المتوسط!":"Your price is above average!")
+            : (isRTL?"سعرك أرخص من المتوسط!":"Your price is below average!")
+        )
+        , React.createElement('div', {style:{background:communityAlert.type==="expensive"?"rgba(239,68,68,0.08)":"rgba(74,222,128,0.08)",border:`1px solid ${communityAlert.type==="expensive"?"rgba(239,68,68,0.2)":"rgba(74,222,128,0.2)"}`,borderRadius:14,padding:"14px",marginBottom:16}}
+          , React.createElement('div', {style:{fontSize:13,color:"#6b7280",marginBottom:6}}, communityAlert.name)
+          , React.createElement('div', {style:{display:"flex",justifyContent:"space-around",alignItems:"center"}}
+            , React.createElement('div', null
+              , React.createElement('div', {style:{fontSize:11,color:"#9ca3af"}}, isRTL?"سعرك":"Your price")
+              , React.createElement('div', {style:{fontSize:20,fontWeight:800,color:communityAlert.type==="expensive"?"#ef4444":"#16a34a"}}, communityAlert.price.toLocaleString(), " ", currency)
+            )
+            , React.createElement('div', {style:{fontSize:24}}, communityAlert.type==="expensive"?"▲":"▼")
+            , React.createElement('div', null
+              , React.createElement('div', {style:{fontSize:11,color:"#9ca3af"}}, isRTL?"متوسط المجتمع":"Community avg")
+              , React.createElement('div', {style:{fontSize:20,fontWeight:800,color:"#1D4ED8"}}, communityAlert.avg.toLocaleString(), " ", currency)
+            )
+          )
+          , React.createElement('div', {style:{fontSize:11,color:"#9ca3af",marginTop:8}},
+            communityAlert.type==="expensive"
+              ? (isRTL?`أغلى بـ ${communityAlert.diff}% من ${communityAlert.count} مستخدم`:`${communityAlert.diff}% above ${communityAlert.count} users`)
+              : (isRTL?`أرخص بـ ${communityAlert.diff}% من ${communityAlert.count} مستخدم`:`${communityAlert.diff}% below ${communityAlert.count} users`)
+          )
+        )
+        , React.createElement('div', {style:{fontSize:12,color:"#6b7280",marginBottom:16}},
+          isRTL?"📊 البيانات مجهولة الهوية تماماً — لا اسم، لا موقع":"📊 Data is fully anonymous — no name, no location"
+        )
+        , React.createElement('button', {onClick:()=>setCommunityAlert(null), style:{width:"100%",background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"white",padding:14,borderRadius:14,cursor:"pointer",fontSize:14,fontWeight:700,fontFamily:"inherit"}},
+          isRTL?"حسناً، شكراً!":"Got it, thanks!"
+        )
+      )
+    )
 
     /* LIMIT ALERT MODAL */
     , showLimitAlert && React.createElement('div', {className:"overlay", onClick:()=>setShowLimitAlert(false)}
