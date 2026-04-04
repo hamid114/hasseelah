@@ -3004,7 +3004,8 @@ function App() {
       const name = nameRef.current?.value?.trim();
       const price = parseFloat(priceRef.current?.value||"0");
       const qty = qtyRef.current?.value?.trim();
-      if(!name) return;
+      if(!name) { notify("⚠️ "+(isRTL?"أدخل اسم المنتج":"Enter item name")); return; }
+      if(!price || price <= 0) { notify("⚠️ "+(isRTL?"أدخل السعر":"Enter price")); return; }
       setItems(p=>[...p, {id:Date.now(), name, price:price||0, qty}]);
       if(nameRef.current) nameRef.current.value="";
       if(priceRef.current) priceRef.current.value="";
