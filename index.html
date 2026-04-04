@@ -767,7 +767,7 @@ function App() {
           const avg = data.total / data.count;
           const diff = ((parsedAmount - avg) / avg * 100).toFixed(0);
           const qty = newExp.qty ? ` (${newExp.qty})` : "";
-          if(Math.abs(diff) >= 5) {
+          if(Math.abs(diff) >= 1 || Math.abs(parsedAmount - avg) >= 0.5) {
             if(parsedAmount > avg) {
               setCommunityAlert({name:newExp.name+qty, price:parsedAmount, avg:Math.round(avg), diff:Math.abs(diff), type:"expensive", count:data.count});
             } else {
