@@ -391,21 +391,10 @@ function App() {
   }, []);
 
   const openPaddleCheckout = () => {
-    if(window.Paddle && window.Paddle.Checkout) {
-      window.Paddle.Checkout.open({
-        items: [{ priceId: PADDLE_PRICE_ID, quantity: 1 }],
-        settings: {
-          displayMode: "overlay",
-          theme: "light",
-          locale: langCode==="ar"?"ar":"en",
-        }
-      });
-    } else {
-      // Fallback to Lemon Squeezy
-      const email = authUser?.email || "";
-      const url = `${LS_CHECKOUT_URL}?checkout[email]=${encodeURIComponent(email)}&checkout[custom][user_id]=${authUser?.uid||""}`;
-      window.open(url, "_blank");
-    }
+    // Use Lemon Squeezy as primary (Paddle pending approval)
+    const email = authUser?.email || "";
+    const url = `${LS_CHECKOUT_URL}?checkout[email]=${encodeURIComponent(email)}&checkout[custom][user_id]=${authUser?.uid||""}`;
+    window.open(url, "_blank");
   };
 
   // Simple data obfuscation for localStorage
