@@ -1335,19 +1335,19 @@ function App() {
 
       if(transferType === "external") {
         // حوالة خارجية — مصروف واحد فقط
-        const newTransfer={id:Date.now(),from:fromAcc,to:"external",amount,note:note||t.transfer,date:new Date(txDate).toISOString(),direction:"out",recipient};
+        const ts=Date.now(); const newTransfer={id:ts,from:fromAcc,to:"external",amount,note:note||t.transfer,date:new Date(txDate).toISOString(),direction:"out",recipient};
         setTransfers(p=>[newTransfer,...p]);
         setExpenses(p=>[
-          {id:Date.now(),name:`📤 ${isRTL?"حوالة صادرة":"Outgoing Transfer"}${recipient?` → ${recipient}`:""}`,amount,type:"expense",category:8,location:"",date:new Date(txDate).toISOString(),prevAmount:null,account:fromAcc,note:note||t.transfer,transferId:newTransfer.id},
+          {id:ts+1,name:`📤 ${isRTL?"حوالة صادرة":"Outgoing Transfer"}${recipient?` → ${recipient}`:""}`,amount,type:"expense",category:8,location:"",date:new Date(txDate).toISOString(),prevAmount:null,account:fromAcc,note:note||t.transfer,transferId:newTransfer.id},
           ...p
         ]);
       } else {
         // حوالة داخلية — مصروف ودخل
-        const newTransfer={id:Date.now(),from:fromAcc,to:toAcc,amount,note:note||t.transfer,date:new Date(txDate).toISOString(),direction:"out"};
+        const ts2=Date.now(); const newTransfer={id:ts2,from:fromAcc,to:toAcc,amount,note:note||t.transfer,date:new Date(txDate).toISOString(),direction:"out"};
         setTransfers(p=>[newTransfer,...p]);
         setExpenses(p=>[
-          {id:Date.now(),name:`↗ ${isRTL?"حوالة إلى":"Transfer to"} ${t[toAcc]}`,amount,type:"expense",category:8,location:"",date:new Date(txDate).toISOString(),prevAmount:null,account:fromAcc,note:note||t.transfer,transferId:newTransfer.id},
-          {id:Date.now()+1,name:`↙ ${isRTL?"حوالة من":"Transfer from"} ${t[fromAcc]}`,amount,type:"income",category:8,location:"",date:new Date(txDate).toISOString(),prevAmount:null,account:toAcc,note:note||t.transfer,transferId:newTransfer.id},
+          {id:ts2+1,name:`↗ ${isRTL?"حوالة إلى":"Transfer to"} ${t[toAcc]}`,amount,type:"expense",category:8,location:"",date:new Date(txDate).toISOString(),prevAmount:null,account:fromAcc,note:note||t.transfer,transferId:newTransfer.id},
+          {id:ts2+2,name:`↙ ${isRTL?"حوالة من":"Transfer from"} ${t[fromAcc]}`,amount,type:"income",category:8,location:"",date:new Date(txDate).toISOString(),prevAmount:null,account:toAcc,note:note||t.transfer,transferId:newTransfer.id},
           ...p
         ]);
       }
