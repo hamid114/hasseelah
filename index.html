@@ -983,6 +983,100 @@ function App() {
   };
 
   // ── HOME ───────────────────────────────────────────────────
+  const CommunityCard = () => {
+    const [posts, setPosts] = React.useState([]);
+    const [showPost, setShowPost] = React.useState(false);
+    const [postText, setPostText] = React.useState("");
+    const [posting, setPosting] = React.useState(false);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(()=>{
+      if(typeof db === "undefined") { setLoading(false); return; }
+      db.collection("community_posts")
+        .orderBy("date","desc")
+        .limit(5)
+        .get()
+        .then(snap=>{
+          setPosts(snap.docs.map(d=>({id:d.id,...d.data()})));
+          setLoading(false);
+        })
+        .catch(()=>setLoading(false));
+    },[]);
+
+    const submitPost = async () => {
+      if(!postText.trim()) return;
+      if(!isPremium) { notify("⭐ "+(isRTL?"المشتركون فقط يستطيعون النشر":"Premium only")); return; }
+      setPosting(true);
+      try {
+        await db.collection("community_posts").add({
+          text: postText.trim(),
+          date: new Date().toISOString(),
+          country: langInfo.country || "",
+          flag: langInfo.flag || "🌍",
+          likes: 0,
+        });
+        setPosts(p=>[{id:Date.now(),text:postText.trim(),date:new Date().toISOString(),flag:langInfo.flag||"🌍",likes:0},...p.slice(0,4)]);
+        setPostText("");
+        setShowPost(false);
+        notify("✅ "+(isRTL?"تم النشر!":"Posted!"));
+      } catch(e) { notify("❌ "+(isRTL?"خطأ في النشر":"Post failed")); }
+      setPosting(false);
+    };
+
+    const timeAgo = (date) => {
+      const mins = Math.floor((Date.now()-new Date(date))/60000);
+      if(mins<60) return isRTL?`${mins} د`:`${mins}m`;
+      const hrs = Math.floor(mins/60);
+      if(hrs<24) return isRTL?`${hrs} س`:`${hrs}h`;
+      return isRTL?`${Math.floor(hrs/24)} ي`:`${Math.floor(hrs/24)}d`;
+    };
+
+    return React.createElement('div', {style:{marginBottom:14}}
+      , React.createElement('div', {style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}
+        , React.createElement('div', {style:{fontSize:13,fontWeight:800,color:"#1e3a5f"}}, "🛍️ ", isRTL?"سوق غلة — نبض السوق":"Ghallah Market")
+        , isPremium && React.createElement('button', {
+            onClick:()=>setShowPost(p=>!p),
+            style:{background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"white",borderRadius:10,padding:"4px 12px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600}
+          }, isRTL?"+ نشر":"+ Post")
+      )
+
+      , showPost && isPremium && React.createElement('div', {style:{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:14,padding:12,marginBottom:8}}
+        , React.createElement('textarea', {
+            value: postText,
+            onChange: e=>setPostText(e.target.value),
+            placeholder: isRTL?"مثل: تخفيض 30% على اللحوم في كارفور الرياض اليوم فقط! 🔥":"e.g. 30% off meat at Carrefour Riyadh today only! 🔥",
+            style:{width:"100%",border:"1px solid #DBEAFE",borderRadius:10,padding:"8px 10px",fontSize:12,fontFamily:"inherit",resize:"none",height:70,direction:isRTL?"rtl":"ltr",boxSizing:"border-box"}
+          })
+        , React.createElement('div', {style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}
+          , React.createElement('span', {style:{fontSize:11,color:"#9ca3af"}}, `${postText.length}/200`)
+          , React.createElement('button', {
+              onClick:submitPost, disabled:posting||!postText.trim(),
+              style:{background:posting||!postText.trim()?"#e5e7eb":"linear-gradient(135deg,#10B981,#059669)",border:"none",color:"white",borderRadius:10,padding:"6px 16px",cursor:posting?"not-allowed":"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600}
+            }, posting?(isRTL?"جارٍ...":"..."):( isRTL?"نشر":"Post"))
+        )
+      )
+
+      , !isPremium && React.createElement('div', {style:{background:"rgba(59,130,246,0.05)",border:"1px solid rgba(59,130,246,0.15)",borderRadius:14,padding:"10px 14px",marginBottom:8,display:"flex",alignItems:"center",gap:8}}
+        , React.createElement('span', {style:{fontSize:16}}, "⭐")
+        , React.createElement('span', {style:{fontSize:12,color:"#6b7280"}}, isRTL?"اشترك للنشر ومشاركة التخفيضات مع المجتمع":"Subscribe to post deals & tips")
+      )
+
+      , loading
+        ? React.createElement('div', {style:{textAlign:"center",padding:"16px",color:"#9ca3af",fontSize:12}}, "...")
+        : posts.length===0
+          ? React.createElement('div', {style:{background:"#f8fafc",borderRadius:14,padding:"16px",textAlign:"center",color:"#9ca3af",fontSize:12}},
+              isRTL?"لا توجد منشورات بعد — كن أول من يشارك تخفيضاً! 🔥":"No posts yet — be the first to share a deal!"
+            )
+          : posts.map((post,i)=>React.createElement('div', {key:post.id||i, style:{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:14,padding:"10px 14px",marginBottom:6,display:"flex",gap:10,alignItems:"flex-start"}}
+              , React.createElement('span', {style:{fontSize:18,flexShrink:0}}, post.flag||"🌍")
+              , React.createElement('div', {style:{flex:1}}
+                , React.createElement('div', {style:{fontSize:13,color:"#1e3a5f",lineHeight:1.5}}, post.text)
+                , React.createElement('div', {style:{fontSize:11,color:"#9ca3af",marginTop:4}}, timeAgo(post.date))
+              )
+            ))
+    );
+  };
+
   const HomeScreen = () => (
     React.createElement(React.Fragment, null
       /* ══ BALANCE CARD ══ */
@@ -1168,6 +1262,9 @@ function App() {
         )
         , React.createElement('span', { style: {color:"#f59e0b",fontSize:16},}, "›")
       )
+
+      /* ══ COMMUNITY MARKET ══ */
+      , React.createElement(CommunityCard, null)
 
       /* ══ TRANSACTIONS HEADER ══ */
       , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10},}
