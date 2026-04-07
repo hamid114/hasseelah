@@ -3544,7 +3544,31 @@ function App() {
               , React.createElement('input', { className: "inp", placeholder: t.itemName, defaultValue: newExp.name, onBlur: e=>setNewExp(p=>({...p,name:e.target.value})), onChange: e=>setNewExp(p=>({...p,name:e.target.value})), autoComplete:"off"})
               , React.createElement('input', { className: "inp", type: "text", inputMode: "decimal", pattern: "[0-9]*\.?[0-9]*", placeholder: `${t.price} (${currency})`, value: newExp.amount, onChange: e=>{ const v=e.target.value; if(/^\d*\.?\d*$/.test(v)) setNewExp(p=>({...p,amount:v})); }, autoComplete:"off",})
               , React.createElement('div', { style: {display:"flex",gap:8,alignItems:"center"},}
-                , React.createElement('input', { className: "inp", style: {flex:1}, placeholder: `📍 ${t.location}`, defaultValue: newExp.location, onBlur: e=>setNewExp(p=>({...p,location:e.target.value})), onChange: e=>setNewExp(p=>({...p,location:e.target.value})), autoComplete:"off"})
+                , React.createElement('div', {style:{flex:1,position:"relative"}}
+                  , React.createElement('input', { className: "inp", style:{width:"100%"}, placeholder: `📍 ${t.location}`, defaultValue: newExp.location,
+                      onBlur: e=>{ setTimeout(()=>setNewExp(p=>({...p,_locSuggest:false})),200); setNewExp(p=>({...p,location:e.target.value})); },
+                      onChange: e=>{ const val=e.target.value; setNewExp(p=>({...p,location:val,_locSuggest:val.length>0})); }, autoComplete:"off"})
+                  , newExp._locSuggest && (()=>{
+                      const val=(newExp.location||"").toLowerCase();
+                      const matches=[...new Set(expenses.filter(e=>e.location&&e.location.toLowerCase().includes(val)).map(e=>e.location))].slice(0,4);
+                      if(!matches.length) return null;
+                      return React.createElement('div', {style:{position:"absolute",top:"100%",right:0,left:0,background:"white",border:"1px solid #DBEAFE",borderRadius:12,boxShadow:"0 4px 12px rgba(0,0,0,0.1)",zIndex:999,overflow:"hidden"}}
+                        , matches.map((loc,i)=>{
+                            const visits=expenses.filter(e=>e.location===loc).sort((a,b)=>new Date(b.date)-new Date(a.date));
+                            const lastDate=visits[0]?new Date(visits[0].date).toLocaleDateString(isRTL?"ar-SA":"en-US",{month:"short",day:"numeric"}):"";
+                            const items=visits.slice(0,2).map(e=>e.name).join("، ");
+                            return React.createElement('div', {key:i, onMouseDown:()=>setNewExp(p=>({...p,location:loc,_locSuggest:false})),
+                              style:{padding:"10px 14px",cursor:"pointer",borderBottom:i<matches.length-1?"1px solid #f0f4ff":"none"}}
+                              , React.createElement('div', {style:{display:"flex",justifyContent:"space-between"}}
+                                , React.createElement('span', {style:{fontWeight:600,fontSize:13,color:"#1e3a5f"}}, "📍 ", loc)
+                                , React.createElement('span', {style:{fontSize:11,color:"#9ca3af"}}, lastDate)
+                              )
+                              , items&&React.createElement('div', {style:{fontSize:11,color:"#6b7280",marginTop:2}}, items)
+                            );
+                          })
+                      );
+                    })()
+                )
                 , React.createElement('button', {
                   type: "button",
                   onClick: ()=>{
