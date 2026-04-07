@@ -762,7 +762,21 @@ function App() {
       setShowLimitAlert(true);
       return;
     }
-    const ex=expenses.find(e=>e.name.toLowerCase()===newExp.name.toLowerCase()&&e.type===newExp.type);
+    const ex=expenses.find(e=>e.name.toLowerCase()===newExp.name.toLowerCase()&&e.type===newExp.type&&!newExp._editId);
+
+    if(newExp._editId) {
+      // Edit mode — update existing
+      setExpenses(p=>p.map(e=>e.id===newExp._editId ? {
+        ...e, name:newExp.name, amount:parsedAmount, type:newExp.type,
+        category:newExp.category, location:newExp.location||"",
+        date:newExp.date?(()=>{ const d=new Date(newExp.date); const offset=d.getTimezoneOffset()*60000; return new Date(d.getTime()+offset).toISOString(); })():e.date,
+        account:newExp.account, note:newExp.note, qty:newExp.qty||"", paymentMethod:newExp.paymentMethod
+      } : e));
+      setNewExp({name:"",amount:"",category:0,location:"",account:"cash",note:"",qty:"",type:"expense",paymentMethod:"cash",date:""});
+      setShowAdd(false); notify("✅ "+(isRTL?"تم التعديل":"Updated"));
+      return;
+    }
+
     setExpenses(p=>[{id:Date.now(),name:newExp.name,amount:parseFloat(newExp.amount),type:newExp.type,category:newExp.category,location:newExp.location||"",date:newExp.date?(()=>{ const d=new Date(newExp.date); const offset=d.getTimezoneOffset()*60000; return new Date(d.getTime()+offset).toISOString(); })():new Date().toISOString(),prevAmount:ex?ex.amount:null,account:newExp.account,note:newExp.note,qty:newExp.qty||"",paymentMethod:newExp.paymentMethod},...p]);
 
     // Community price comparison
@@ -1327,10 +1341,13 @@ function App() {
                   )
                 )
               )
-              , React.createElement('div', { style: {textAlign:isRTL?"left":"right",flexShrink:0},}
+                , React.createElement('div', { style: {textAlign:isRTL?"left":"right",flexShrink:0},}
                 , React.createElement('div', { style: {fontWeight:900,fontSize:20,color:e.type==="income"?"#16a34a":"#dc2626",letterSpacing:"-0.5px"},}, e.type==="income"?"+":"-", e.amount.toLocaleString())
                 , React.createElement('div', { style: {fontSize:10,color:"#b0b8c8",marginBottom:6},}, currency, " · "  , new Date(e.date).toLocaleDateString(), " · ", new Date(e.date).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",hour12:true}))
-                , React.createElement('button', { onClick: ()=>delExpense(e.id), style: {background:"rgba(239,68,68,0.07)",border:"none",color:"#ef4444",borderRadius:8,padding:"3px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"},}, t.delete)
+                , React.createElement('div', {style:{display:"flex",gap:4,justifyContent:isRTL?"flex-start":"flex-end"}}
+                  , React.createElement('button', { onClick: ()=>{ setNewExp({name:e.name,amount:String(e.amount),category:e.category,location:e.location||"",account:e.account||"cash",note:e.note||"",qty:e.qty||"",type:e.type,paymentMethod:e.paymentMethod||"cash",date:new Date(new Date(e.date)-new Date(e.date).getTimezoneOffset()*60000).toISOString().slice(0,16),_editId:e.id}); setShowAdd(true); }, style: {background:"rgba(59,130,246,0.08)",border:"none",color:"#1D4ED8",borderRadius:8,padding:"3px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"},}, "✏️")
+                  , React.createElement('button', { onClick: ()=>delExpense(e.id), style: {background:"rgba(239,68,68,0.07)",border:"none",color:"#ef4444",borderRadius:8,padding:"3px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"},}, t.delete)
+                )
               )
             )
           )
@@ -3525,7 +3542,7 @@ function App() {
         React.createElement('div', { className: "overlay", onClick: e=>e.target===e.currentTarget&&setShowAdd(false),}
           , React.createElement('div', { className: "sheet", dir: isRTL?"rtl":"ltr",}
             , React.createElement('div', { style: {width:36,height:4,background:"#DBEAFE",borderRadius:2,margin:"0 auto 18px"},})
-            , React.createElement('div', { style: {fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16},}, "+ " , t.addExpense)
+            , React.createElement('div', { style: {fontSize:16,fontWeight:800,color:"#1e3a5f",marginBottom:16},}, newExp._editId ? "✏️ "+(isRTL?"تعديل معاملة":"Edit Transaction") : ("+ " + t.addExpense))
             , React.createElement('div', { style: {display:"flex",gap:6,marginBottom:16,background:"#f9f7ff",padding:4,borderRadius:12},}
               , ["expense","income"].map(type=>(
                 React.createElement('button', { key: type, onClick: ()=>setNewExp(p=>({...p,type})), style: {flex:1,padding:9,borderRadius:10,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",background:newExp.type===type?(type==="income"?"linear-gradient(135deg,#059669,#10b981)":"linear-gradient(135deg,#dc2626,#ef4444)"):"transparent",color:newExp.type===type?"white":"#555"},}
