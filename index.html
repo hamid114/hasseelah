@@ -3294,7 +3294,7 @@ function App() {
     const pageMap = {terms: TermsScreen, refund: RefundScreen, privacy: PrivacyScreen};
     const PageComp = pageMap[publicPage];
     return React.createElement('div', {style:{minHeight:"100vh",background:"#f7f8fc",padding:"24px 20px",fontFamily:"'Noto Sans Arabic','DM Sans',sans-serif",direction:"rtl"}}
-      , React.createElement('button', {onClick:()=>setPublicPage(null), style:{background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.2)",color:"#1D4ED8",borderRadius:10,padding:"6px 14px",cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:16}}, "← رجوع")
+      , React.createElement('button', {onClick:()=>{ setPublicPage(null); setAuthScreen("landing"); }, style:{background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.2)",color:"#1D4ED8",borderRadius:10,padding:"6px 14px",cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:16}}, "← رجوع")
       , PageComp ? React.createElement(PageComp, null) : null
     );
   }
