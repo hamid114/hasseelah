@@ -3301,12 +3301,59 @@ function App() {
 
   // ── AUTH SCREEN ──
   if (!authUser && typeof auth !== "undefined") {
+    const SloganCarousel = () => {
+      const slogans = [
+        { text: "اعرف وين راح فلوسك", icon: "🔍", sub: "مصاريف اليوم" },
+        { text: "حاسب قبل المحاسب", icon: "📊", sub: "مصاريف الشهر" },
+        { text: "جيبك يشكرك لاحقاً", icon: "💰", sub: "مصاريف السنة" },
+        { text: "تسوّق وأنت عارف", icon: "🛒", sub: "كل وقت" },
+      ];
+      const [idx, setIdx] = React.useState(0);
+      const [animating, setAnimating] = React.useState(false);
+
+      const next = () => {
+        if(animating) return;
+        setAnimating(true);
+        setTimeout(()=>{ setIdx(i=>(i+1)%slogans.length); setAnimating(false); }, 300);
+      };
+
+      React.useEffect(()=>{
+        const timer = setInterval(next, 3000);
+        return ()=>clearInterval(timer);
+      },[]);
+
+      const s = slogans[idx];
+
+      return React.createElement('button', {
+        onClick: next,
+        style:{
+          marginTop:16, background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.2)",
+          borderRadius:20, padding:"16px 24px", cursor:"pointer", fontFamily:"inherit",
+          width:"100%", maxWidth:360, transition:"all 0.3s",
+          opacity: animating ? 0 : 1, transform: animating ? "translateY(8px)" : "translateY(0)"
+        }
+      }
+        , React.createElement('div', {style:{fontSize:44, marginBottom:8}}, s.icon)
+        , React.createElement('div', {style:{fontSize:18, fontWeight:800, color:"white", marginBottom:4}}, s.text)
+        , React.createElement('div', {style:{fontSize:12, color:"#93C5FD", marginBottom:10}}, s.sub)
+        , React.createElement('div', {style:{display:"flex", justifyContent:"center", gap:6}}
+          , slogans.map((_,i)=>React.createElement('div', {key:i, style:{
+              width: i===idx ? 20 : 6, height:6, borderRadius:3,
+              background: i===idx ? "#D4AF37" : "rgba(255,255,255,0.3)",
+              transition:"all 0.3s"
+            }}))
+        )
+        , React.createElement('div', {style:{fontSize:10, color:"rgba(255,255,255,0.4)", marginTop:8}}, "اضغط للتالي ›")
+      );
+    };
+
     if (authScreen === "landing") {
       return React.createElement('div', {style:{minHeight:"100vh",background:"linear-gradient(160deg,#1e3a5f 0%,#1D4ED8 100%)",display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 24px",fontFamily:"'Noto Sans Arabic','DM Sans',sans-serif"}}
         , React.createElement('div', {style:{textAlign:"center",marginBottom:32}}
           , React.createElement('div', {style:{fontSize:72,marginBottom:8}}, "🌾")
           , React.createElement('div', {style:{fontSize:32,fontWeight:900,color:"#D4AF37",marginBottom:4}}, "غلة · Ghallah")
           , React.createElement('div', {style:{fontSize:14,color:"#93C5FD"}}, "تطبيق تتبع المصاريف الذكي")
+          , React.createElement(SloganCarousel, null)
         )
 
         , React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,width:"100%",maxWidth:400,marginBottom:24}}
