@@ -435,6 +435,7 @@ function App() {
   const [authUser, setAuthUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [publicPage, setPublicPage] = useState(null);
+  const [landingLang, setLandingLang] = useState("ar"); // ar | en
   const [communityAlert, setCommunityAlert] = useState(null);
   const [authScreen, setAuthScreen] = useState("landing"); // landing | login | register | forgot
   const [showLimitAlert, setShowLimitAlert] = useState(false);
@@ -2140,8 +2141,47 @@ function App() {
 
       , !isPremium&&React.createElement('button', { onClick: ()=>setShowPremium(true), style: {width:"100%",background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",color:"#1a0a00",padding:14,borderRadius:14,cursor:"pointer",fontSize:14,fontWeight:700,fontFamily:"inherit",marginBottom:10},}, "💎 " , t.upgrade)
 
-      , React.createElement('button', { onClick: ()=>{ localStorage.removeItem("hs_onboarded"); localStorage.removeItem("hs_lang_set"); setOnboardStep(0); setShowOnboarding(true); setShowLangFirst(true); }, style: {width:"100%",background:"#EFF6FF",border:"1px solid #DBEAFE",color:"#1D4ED8",padding:14,borderRadius:14,cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"inherit"},}, "📖 "
+      , React.createElement('button', { onClick: ()=>{ localStorage.removeItem("hs_onboarded"); localStorage.removeItem("hs_lang_set"); setOnboardStep(0); setShowOnboarding(true); setShowLangFirst(true); }, style: {width:"100%",background:"#EFF6FF",border:"1px solid #DBEAFE",color:"#1D4ED8",padding:14,borderRadius:14,cursor:"pointer",fontSize:14,fontWeight:600,fontFamily:"inherit",marginBottom:10},}, "📖 "
          , isRTL?"إعادة عرض دليل الاستخدام":"Replay User Guide"
+      )
+
+      , React.createElement('div', {style:{marginTop:8}}
+        , React.createElement('div', {style:{fontSize:12,color:"#6b7280",marginBottom:8,fontWeight:600}}, isRTL?"🗑️ حذف المصاريف":"🗑️ Delete Expenses")
+        , React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}
+          , [
+            {label:isRTL?"اليوم":"Today", filter:e=>{ const d=new Date(e.date); const n=new Date(); return d.toDateString()===n.toDateString(); }},
+            {label:isRTL?"هذا الأسبوع":"This Week", filter:e=>{ const d=new Date(e.date); const n=new Date(); const w=new Date(n); w.setDate(n.getDate()-7); return d>=w; }},
+            {label:isRTL?"هذا الشهر":"This Month", filter:e=>{ const d=new Date(e.date); const n=new Date(); return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear(); }},
+            {label:isRTL?"هذه السنة":"This Year", filter:e=>{ const d=new Date(e.date); return d.getFullYear()===new Date().getFullYear(); }},
+          ].map((item,i)=>React.createElement('button', {
+            key:i,
+            onClick:()=>{
+              const count = expenses.filter(item.filter).length;
+              if(count===0){ notify("⚠️ "+(isRTL?"لا توجد مصاريف في هذه الفترة":"No expenses in this period")); return; }
+              if(window.confirm(`${isRTL?"حذف":"Delete"} ${count} ${isRTL?"معاملة؟":"transactions?"}`)){
+                const toDelete = expenses.filter(item.filter);
+                setDeleted(p=>[...p,...toDelete.map(e=>({...e,deletedAt:new Date().toISOString()}))]);
+                setExpenses(p=>p.filter(e=>!item.filter(e)));
+                notify(`🗑️ ${isRTL?"تم حذف":"Deleted"} ${count}`);
+              }
+            },
+            style:{background:"rgba(239,68,68,0.07)",border:"1px solid rgba(239,68,68,0.15)",color:"#ef4444",borderRadius:12,padding:"10px 8px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600}
+          }, item.label))
+        )
+        , React.createElement('button', {
+          onClick:()=>{
+            if(expenses.length===0){ notify("⚠️ "+(isRTL?"لا توجد مصاريف":"No expenses")); return; }
+            if(window.confirm(isRTL?`حذف جميع المصاريف (${expenses.length})؟`:`Delete all expenses (${expenses.length})?`)){
+              setDeleted(p=>[...p,...expenses.map(e=>({...e,deletedAt:new Date().toISOString()}))]);
+              setExpenses([]);
+              notify("🗑️ "+(isRTL?"تم حذف الكل":"All deleted"));
+            }
+          },
+          style:{width:"100%",background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.3)",color:"#ef4444",borderRadius:12,padding:"12px",cursor:"pointer",fontSize:13,fontFamily:"inherit",fontWeight:700}
+        }, "🗑️ ", isRTL?"حذف جميع المصاريف":"Delete All Expenses")
+        , React.createElement('div', {style:{fontSize:11,color:"#9ca3af",marginTop:6,textAlign:"center"}},
+          isRTL?"المصاريف المحذوفة تُحفظ في سلة المحذوفات":"Deleted expenses are saved in trash"
+        )
       )
     )
     );
@@ -3407,11 +3447,21 @@ function App() {
 
     if (authScreen === "landing") {
       return React.createElement('div', {style:{minHeight:"100vh",background:"linear-gradient(160deg,#1e3a5f 0%,#1D4ED8 100%)",display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 24px",fontFamily:"'Noto Sans Arabic','DM Sans',sans-serif"}}
-        , React.createElement('div', {style:{textAlign:"center",marginBottom:32}}
+        , React.createElement('div', {style:{textAlign:"center",marginBottom:24}}
           , React.createElement('div', {style:{fontSize:72,marginBottom:8}}, "🌾")
           , React.createElement('div', {style:{fontSize:32,fontWeight:900,color:"#D4AF37",marginBottom:4}}, "غلة · Ghallah")
-          , React.createElement('div', {style:{fontSize:14,color:"#93C5FD"}}, "تطبيق تتبع المصاريف الذكي")
-          , React.createElement(SloganCarousel, null)
+          , React.createElement('div', {style:{fontSize:14,color:"#93C5FD"}}, landingLang==="en" ? "Smart Personal Finance App" : "تطبيق تتبع المصاريف الذكي")
+          , landingLang==="ar" && React.createElement(SloganCarousel, null)
+        )
+
+        , React.createElement('div', {style:{display:"flex",gap:8,marginBottom:20,width:"100%",maxWidth:400}}
+          , React.createElement('button', {onClick:()=>setLandingLang("ar"), style:{flex:1,padding:"8px",borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:700,background:landingLang==="ar"?"#D4AF37":"rgba(255,255,255,0.15)",color:landingLang==="ar"?"#1a1a2e":"white"}}, "🇸🇦 العربية")
+          , React.createElement('button', {onClick:()=>setLandingLang("en"), style:{flex:1,padding:"8px",borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:700,background:landingLang==="en"?"#D4AF37":"rgba(255,255,255,0.15)",color:landingLang==="en"?"#1a1a2e":"white"}}, "🇬🇧 English")
+        )
+
+        , landingLang==="en" && React.createElement('div', {style:{background:"rgba(255,255,255,0.1)",borderRadius:16,padding:"16px",marginBottom:16,width:"100%",maxWidth:400,textAlign:"left",direction:"ltr"}}
+          , React.createElement('div', {style:{fontSize:15,fontWeight:700,color:"white",marginBottom:8}}, "Ghallah — Personal Finance Management App")
+          , React.createElement('div', {style:{fontSize:12,color:"#93C5FD",lineHeight:1.6}}, "A cloud-based SaaS app to track expenses, set savings goals, and manage budgets. Supports 60+ countries and currencies. Available as a Progressive Web App (PWA) on all devices.")
         )
 
         , React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,width:"100%",maxWidth:400,marginBottom:24}}
@@ -3424,33 +3474,40 @@ function App() {
             {icon:"📱",ar:"يعمل على الجوال",en:"Works on mobile"},
           ].map((f,i)=>React.createElement('div', {key:i, style:{background:"rgba(255,255,255,0.1)",borderRadius:14,padding:"12px",display:"flex",alignItems:"center",gap:10}}
             , React.createElement('span', {style:{fontSize:22}}, f.icon)
-            , React.createElement('span', {style:{fontSize:12,color:"white",fontWeight:600}}, f.ar)
+            , React.createElement('span', {style:{fontSize:12,color:"white",fontWeight:600}}, landingLang==="en"?f.en:f.ar)
           ))
         )
 
         , React.createElement('div', {style:{background:"rgba(255,255,255,0.15)",borderRadius:18,padding:"16px 24px",marginBottom:24,width:"100%",maxWidth:400,textAlign:"center"}}
-          , React.createElement('div', {style:{fontSize:13,color:"#93C5FD",marginBottom:4}}, "الاشتراك المميز")
-          , React.createElement('div', {style:{fontSize:28,fontWeight:900,color:"#F5D76E"}}, "٧،٥ ر.س / شهر")
-          , React.createElement('div', {style:{fontSize:11,color:"#93C5FD",marginTop:2}}, "☕ أقل من سعر كوب قهوة!")
+          , React.createElement('div', {style:{fontSize:13,color:"#93C5FD",marginBottom:4}}, landingLang==="en"?"Premium Subscription":"الاشتراك المميز")
+          , landingLang==="en"
+            ? React.createElement('div', null
+                , React.createElement('div', {style:{fontSize:28,fontWeight:900,color:"#F5D76E"}}, "$2 / month")
+                , React.createElement('div', {style:{fontSize:11,color:"#93C5FD",marginTop:2}}, "≈ 7.5 SAR · Less than a cup of coffee!")
+              )
+            : React.createElement('div', null
+                , React.createElement('div', {style:{fontSize:28,fontWeight:900,color:"#F5D76E"}}, "٧،٥ ر.س / شهر")
+                , React.createElement('div', {style:{fontSize:11,color:"#93C5FD",marginTop:2}}, "☕ أقل من سعر كوب قهوة!")
+              )
         )
 
         , React.createElement('button', {onClick:()=>setAuthScreen("register"), style:{width:"100%",maxWidth:400,background:"linear-gradient(135deg,#D4AF37,#F5D76E)",border:"none",color:"#1a1a2e",padding:16,borderRadius:16,cursor:"pointer",fontSize:16,fontWeight:900,fontFamily:"inherit",marginBottom:12}}
-          , "ابدأ مجاناً ✨"
+          , landingLang==="en" ? "Get Started Free ✨" : "ابدأ مجاناً ✨"
         )
         , React.createElement('button', {onClick:()=>setAuthScreen("login"), style:{width:"100%",maxWidth:400,background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.3)",color:"white",padding:14,borderRadius:16,cursor:"pointer",fontSize:14,fontFamily:"inherit",marginBottom:24}}
-          , "تسجيل الدخول"
+          , landingLang==="en" ? "Sign In" : "تسجيل الدخول"
         )
 
         , React.createElement('div', {style:{display:"flex",gap:16,fontSize:11,color:"#93C5FD",marginBottom:16}}
-          , React.createElement('span', null, "🔒 آمن ومشفر")
-          , React.createElement('span', null, "✅ مجاني للبدء")
-          , React.createElement('span', null, "🌍 60+ دولة")
+          , React.createElement('span', null, "🔒 ", landingLang==="en"?"Secure & Encrypted":"آمن ومشفر")
+          , React.createElement('span', null, "✅ ", landingLang==="en"?"Free to start":"مجاني للبدء")
+          , React.createElement('span', null, "🌍 60+ ", landingLang==="en"?"countries":"دولة")
         )
 
-        , React.createElement('div', {style:{display:"flex",gap:16,fontSize:11,color:"#93C5FD",borderTop:"1px solid rgba(255,255,255,0.1)",paddingTop:12}}
-          , React.createElement('button', {onClick:()=>setPublicPage("terms"), style:{background:"none",border:"none",color:"#93C5FD",fontSize:11,cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}}, "شروط الاستخدام")
-          , React.createElement('button', {onClick:()=>setPublicPage("refund"), style:{background:"none",border:"none",color:"#93C5FD",fontSize:11,cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}}, "سياسة الاسترداد")
-          , React.createElement('button', {onClick:()=>setPublicPage("privacy"), style:{background:"none",border:"none",color:"#93C5FD",fontSize:11,cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}}, "سياسة الخصوصية")
+        , React.createElement('div', {style:{display:"flex",gap:16,fontSize:11,color:"#93C5FD",borderTop:"1px solid rgba(255,255,255,0.1)",paddingTop:12,flexWrap:"wrap",justifyContent:"center"}}
+          , React.createElement('button', {onClick:()=>setPublicPage("terms"), style:{background:"none",border:"none",color:"#93C5FD",fontSize:11,cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}}, landingLang==="en"?"Terms of Service":"شروط الاستخدام")
+          , React.createElement('button', {onClick:()=>setPublicPage("refund"), style:{background:"none",border:"none",color:"#93C5FD",fontSize:11,cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}}, landingLang==="en"?"Refund Policy":"سياسة الاسترداد")
+          , React.createElement('button', {onClick:()=>setPublicPage("privacy"), style:{background:"none",border:"none",color:"#93C5FD",fontSize:11,cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}}, landingLang==="en"?"Privacy Policy":"سياسة الخصوصية")
         )
       );
     }
