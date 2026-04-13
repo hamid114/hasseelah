@@ -3756,13 +3756,18 @@ function App() {
                     navigator.geolocation.getCurrentPosition(
                       pos=>{
                         const {latitude:lat,longitude:lng}=pos.coords;
-                        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=${langCode}`)
+                        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=18&addressdetails=1&accept-language=${langCode.startsWith("ar")?"ar":"en"}`)
                           .then(r=>r.json())
                           .then(d=>{
-                            const addr=d.address;
-                            const loc=[addr.road||addr.suburb,addr.city||addr.town||addr.village,addr.country].filter(Boolean).join(", ");
+                            const addr=d.address||{};
+                            const parts = [
+                              addr.shop||addr.amenity||addr.building||addr.tourism||"",
+                              addr.road||addr.pedestrian||addr.footway||addr.path||"",
+                              addr.neighbourhood||addr.suburb||addr.quarter||addr.district||"",
+                              addr.city||addr.town||addr.village||addr.county||"",
+                            ].filter(Boolean);
+                            const loc = parts.slice(0,3).join("، ");
                             setNewExp(p=>({...p,location:loc}));
-                            // Update input field value directly
                             const input = document.querySelector('input[placeholder*="location"], input[placeholder*="موقع"]');
                             if(input) { input.value = loc; }
                             notify("✅ "+(isRTL?"تم تحديد الموقع":"Location detected"));
@@ -3776,7 +3781,7 @@ function App() {
                           });
                       },
                       err=>notify("❌ "+(isRTL?"تعذّر الوصول للموقع. تأكد من تفعيل GPS":"Location access denied. Enable GPS")),
-                      {timeout:10000, enableHighAccuracy:true, maximumAge:0}
+                      {timeout:15000, enableHighAccuracy:true, maximumAge:0}
                     );
                   },
                   style: {background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"white",padding:"11px 14px",borderRadius:12,cursor:"pointer",fontSize:18,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"},
