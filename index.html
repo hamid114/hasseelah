@@ -3318,6 +3318,16 @@ function App() {
     { icon:"✅", title: isRTL?"كل شيء جاهز!":"You're All Set!", desc: isRTL?"بياناتك تُحفظ تلقائياً حتى بدون إنترنت. ابدأ الآن بتسجيل أول معاملة!":"Your data saves automatically even offline. Start by recording your first transaction!", color:"#3B82F6" },
   ];
 
+  // ── PUBLIC POLICY PAGES (no auth required) ──
+  if (publicPage) {
+    const pageMap = {terms: TermsScreen, refund: RefundScreen, privacy: PrivacyScreen};
+    const PageComp = pageMap[publicPage];
+    return React.createElement('div', {style:{minHeight:"100vh",background:"#f7f8fc",padding:"24px 20px",fontFamily:"'Noto Sans Arabic','DM Sans',sans-serif",direction:"rtl"}}
+      , React.createElement('button', {onClick:()=>{ setPublicPage(null); setAuthScreen("landing"); }, style:{background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.2)",color:"#1D4ED8",borderRadius:10,padding:"6px 14px",cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:16}}, "← رجوع")
+      , PageComp ? React.createElement(PageComp, null) : null
+    );
+  }
+
   // ── AUTH LOADING ──
   if (authLoading) {
     return React.createElement('div', {style:{minHeight:"100vh",background:"#f7f8fc",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16}}
@@ -3326,16 +3336,6 @@ function App() {
       , React.createElement('div', {style:{width:40,height:4,background:"#DBEAFE",borderRadius:2,overflow:"hidden"}}
         , React.createElement('div', {style:{width:"60%",height:"100%",background:"#3B82F6",borderRadius:2,animation:"none"}})
       )
-    );
-  }
-
-  // ── PUBLIC POLICY PAGES (no auth required) ──
-  if (publicPage) {
-    const pageMap = {terms: TermsScreen, refund: RefundScreen, privacy: PrivacyScreen};
-    const PageComp = pageMap[publicPage];
-    return React.createElement('div', {style:{minHeight:"100vh",background:"#f7f8fc",padding:"24px 20px",fontFamily:"'Noto Sans Arabic','DM Sans',sans-serif",direction:"rtl"}}
-      , React.createElement('button', {onClick:()=>{ setPublicPage(null); setAuthScreen("landing"); }, style:{background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.2)",color:"#1D4ED8",borderRadius:10,padding:"6px 14px",cursor:"pointer",fontSize:13,fontFamily:"inherit",marginBottom:16}}, "← رجوع")
-      , PageComp ? React.createElement(PageComp, null) : null
     );
   }
 
