@@ -382,6 +382,12 @@ function App() {
           if(event.name === "checkout.completed") {
             setIsPremium(true);
             localStorage.setItem("hs_premium","1");
+            // Save to Firestore
+            if(authUser && typeof db !== "undefined") {
+              db.collection("users").doc(authUser.uid).collection("data").doc("subscription")
+                .set({isPremium:true, activatedAt: new Date().toISOString()}, {merge:true})
+                .catch(()=>{});
+            }
             notify("🎉 " + (isRTL?"مرحباً بك في المميز!":"Welcome to Premium!"));
             setShowPremium(false);
           }
@@ -683,6 +689,14 @@ function App() {
               if(d.expenses) setExpenses(d.expenses);
               if(d.notes) setNotes(d.notes);
               if(d.goals) setGoals(d.goals);
+            }
+          }).catch(()=>{});
+        // Load premium status from Firestore
+        db.collection("users").doc(user.uid).collection("data").doc("subscription").get()
+          .then(doc=>{
+            if(doc.exists && doc.data().isPremium === true) {
+              setIsPremium(true);
+              localStorage.setItem("hs_premium","1");
             }
           }).catch(()=>{});
       }
@@ -4071,6 +4085,26 @@ function App() {
               , React.createElement('button', {onClick:()=>{setShowPremium(false);setScreen("refund");}, style:{background:"none",border:"none",color:"#3B82F6",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}, isRTL?"سياسة الاسترداد":"Refund Policy")
               , React.createElement('span', {style:{color:"#DBEAFE",fontSize:11}}, "|")
               , React.createElement('button', {onClick:()=>{setShowPremium(false);setScreen("privacy");}, style:{background:"none",border:"none",color:"#3B82F6",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}, isRTL?"الخصوصية":"Privacy")
+            )
+            /* Restore Purchase */
+            , React.createElement('div', {style:{textAlign:"center",paddingBottom:8}}
+              , React.createElement('button', {
+                  onClick:()=>{
+                    if(!authUser){ notify(isRTL?"سجل دخولك أولاً":"Please sign in first"); return; }
+                    db.collection("users").doc(authUser.uid).collection("data").doc("subscription").get()
+                      .then(doc=>{
+                        if(doc.exists && doc.data().isPremium===true){
+                          setIsPremium(true);
+                          localStorage.setItem("hs_premium","1");
+                          setShowPremium(false);
+                          notify("✅ "+(isRTL?"تم استعادة اشتراكك!":"Subscription restored!"));
+                        } else {
+                          notify("❌ "+(isRTL?"لم يُعثر على اشتراك سابق":"No previous subscription found"));
+                        }
+                      }).catch(()=>notify("❌ "+(isRTL?"حدث خطأ، حاول لاحقاً":"Error, try again")));
+                  },
+                  style:{background:"none",border:"none",color:"#6b7280",fontSize:11,cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}
+                }, isRTL?"🔄 استعادة الاشتراك السابق":"🔄 Restore Purchase")
             )
           )
         )
