@@ -1894,7 +1894,40 @@ function App() {
       , React.createElement('div', {style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}
         , React.createElement('div', {style:{fontSize:16,fontWeight:800,color:"#1e3a5f"}}, "📄 ", t.allReport)
         , React.createElement('button', {onClick:exportPDF, style:{background:"linear-gradient(135deg,#3B82F6,#2563EB)",border:"none",color:"white",padding:"8px 16px",borderRadius:12,cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit",display:"flex",alignItems:"center",gap:6}}
-          , "⬇️ ", isRTL?"تصدير PDF":"Export"
+          , "⬇️ ", isRTL?"PDF":"PDF"
+        )
+        , React.createElement('button', {onClick:()=>{
+            const now = new Date();
+            const filteredExp = expenses.filter(e=>{
+              const d=new Date(e.date);
+              if(reportPeriod==="today") return d.toDateString()===now.toDateString();
+              if(reportPeriod==="week") return (now-d)<7*86400000;
+              if(reportPeriod==="month") return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+              return d.getFullYear()===now.getFullYear();
+            });
+            const cats = customCats || t.categories || [];
+            const header = isRTL ? "التاريخ,الاسم,الفئة,المبلغ,العملة,النوع,الموقع,الحساب\n" : "Date,Name,Category,Amount,Currency,Type,Location,Account\n";
+            const rows = filteredExp.map(e=>[
+              new Date(e.date).toLocaleDateString(),
+              '"'+(e.name||'').replace(/"/g,'""')+'"',
+              '"'+(cats[e.category]||'')+'"',
+              e.amount,
+              currency,
+              e.type==="income"?(isRTL?"دخل":"Income"):(isRTL?"مصروف":"Expense"),
+              '"'+(e.location||'')+'"',
+              e.account||"cash"
+            ].join(",")).join("\n");
+            const csv = "\uFEFF" + header + rows;
+            const blob = new Blob([csv],{type:"text/csv;charset=utf-8"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href=url;
+            a.download=`Ghallah-${reportPeriod}-${now.toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            notify("📊 "+(isRTL?"تم تصدير CSV":"CSV exported!"));
+          }, style:{background:"linear-gradient(135deg,#16a34a,#15803d)",border:"none",color:"white",padding:"8px 16px",borderRadius:12,cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"inherit",display:"flex",alignItems:"center",gap:6}}
+          , "📊 CSV"
         )
       )
       , React.createElement('div', {style:{display:"flex",gap:8,marginBottom:16}}
@@ -3985,7 +4018,7 @@ function App() {
                 /* Monthly */
                 , React.createElement('div', { style: {background:"#f3f0ff",border:"1px solid #d4c9ff",borderRadius:16,padding:"14px 12px",textAlign:"center"},}
                   , React.createElement('div', { style: {fontSize:11,color:"#6b7280",marginBottom:6},}, isRTL?"شهري":"Monthly")
-                  , React.createElement('div', { style: {fontSize:26,fontWeight:900,color:"#1a1a2e"},}, pricing.symbol, pricing.monthly)
+                  , React.createElement('div', { style: {fontSize:26,fontWeight:900,color:"#1a1a2e"},}, "$2")
                   , React.createElement('div', { style: {fontSize:10,color:"#6b7280",marginTop:2},}, "/ " , t.month)
                   , React.createElement('button', { onClick: ()=>openPaddleCheckout(), style: {marginTop:10,width:"100%",background:"#e8e3ff",border:"1px solid rgba(255,255,255,0.15)",color:"#1E40AF",padding:"8px 0",borderRadius:10,cursor:"pointer",fontFamily:"inherit",fontSize:12},}
                     , t.upgrade
@@ -3995,11 +4028,11 @@ function App() {
                 /* Yearly */
                 , React.createElement('div', { style: {background:"linear-gradient(135deg,rgba(245,158,11,0.15),rgba(251,191,36,0.1))",border:"1px solid rgba(245,158,11,0.4)",borderRadius:16,padding:"14px 12px",textAlign:"center",position:"relative"},}
                   , React.createElement('div', { style: {position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#f59e0b,#d97706)",color:"#1a0a00",fontSize:9,fontWeight:800,padding:"3px 10px",borderRadius:20,whiteSpace:"nowrap"},}
-                    , isRTL?`وفّر ${saving}%`:`Save ${saving}%`, " 🔥"
+                    , isRTL?"وفّر 29%":"Save 29%", " 🔥"
                   )
                   , React.createElement('div', { style: {fontSize:11,color:"#f59e0b",marginBottom:6},}, isRTL?"سنوي":"Yearly")
-                  , React.createElement('div', { style: {fontSize:26,fontWeight:900,color:"#fbbf24"},}, pricing.symbol, pricing.yearly)
-                  , React.createElement('div', { style: {fontSize:10,color:"#6b7280",marginTop:2,textDecoration:"line-through"},}, pricing.symbol, (pricing.monthly*12).toFixed(0), " " , isRTL?"بدون خصم":"full price")
+                  , React.createElement('div', { style: {fontSize:26,fontWeight:900,color:"#fbbf24"},}, "$17")
+                  , React.createElement('div', { style: {fontSize:10,color:"#6b7280",marginTop:2,textDecoration:"line-through"},}, "$24 ", isRTL?"بدون خصم":"full price")
                   , React.createElement('button', { onClick: ()=>openPaddleCheckout(), style: {marginTop:10,width:"100%",background:"linear-gradient(135deg,#f59e0b,#d97706)",border:"none",color:"#1a0a00",padding:"8px 0",borderRadius:10,cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:700},}, "✨ "
                      , t.upgrade
                   )
@@ -4008,17 +4041,27 @@ function App() {
               )
             )
 
-            /* Currency note */
-            , React.createElement('div', { style: {textAlign:"center",padding:"8px 0",borderTop:"1px solid #DBEAFE"},}
-              , React.createElement('div', { style: {fontSize:11,color:"#6b7280"},}
-                , isRTL
-                  ? `السعر بالعملة المحلية ${langInfo.flag} ${langInfo.label} · ${pricing.symbol} ${langInfo.currencyCode}`
-                  : `Priced in ${langInfo.flag} ${langInfo.label} · ${pricing.symbol} ${langInfo.currencyCode}`
-                
+            /* Currency Converter */
+            , React.createElement('div', {style:{background:"#f8faff",borderRadius:14,padding:"12px",marginBottom:12,border:"1px solid #DBEAFE"}}
+              , React.createElement('div', {style:{fontSize:11,color:"#6b7280",marginBottom:8,fontWeight:600,textAlign:"center"}}, isRTL?"💱 حوّل السعر لعملتك":"💱 Convert to your currency")
+              , React.createElement('div', {style:{display:"flex",gap:8,alignItems:"center"}}
+                , React.createElement('div', {style:{flex:1,background:"white",borderRadius:10,padding:"8px 12px",border:"1px solid #DBEAFE",textAlign:"center"}}
+                  , React.createElement('div', {style:{fontSize:10,color:"#6b7280"}}, "USD")
+                  , React.createElement('div', {style:{fontSize:18,fontWeight:800,color:"#1D4ED8"}}, "$2")
+                )
+                , React.createElement('div', {style:{fontSize:16,color:"#6b7280"}}, "→")
+                , React.createElement('div', {style:{flex:1,background:"white",borderRadius:10,padding:"8px 12px",border:"1px solid #DBEAFE",textAlign:"center"}}
+                  , React.createElement('div', {style:{fontSize:10,color:"#6b7280"}}, currency)
+                  , React.createElement('div', {style:{fontSize:18,fontWeight:800,color:"#16a34a"}},
+                      (() => {
+                        const rates = {SAR:3.75,AED:3.67,KWD:0.31,QAR:3.64,BHD:0.38,OMR:0.38,EGP:49,MAD:10,TND:3.1,DZD:135,LYD:4.9,IQD:1310,JOD:0.71,SYP:13000,YER:250,USD:1,GBP:0.79,EUR:0.92,TRY:32,PKR:278,INR:83,IDR:15800,MYR:4.7,NGN:1500,GHS:15,KES:130,ZAR:18,BRL:5,CAD:1.36,AUD:1.52,JPY:149,CNY:7.2,RUB:90,UAH:39,PLN:4,SEK:10.5,NOK:10.6,DKK:6.9,CHF:0.9,SGD:1.35,HKD:7.8,NZD:1.63,MXN:17,ARS:870,CLP:950,COP:4000,PEN:3.7,PHP:56,THB:35,VND:24000,BDT:110,LKR:310,NPR:133,TZS:2500,UGX:3800,ZMW:26,ETB:56,XOF:600,XAF:600};
+                        const rate = rates[langInfo.currencyCode] || 1;
+                        return (2 * rate).toFixed(2);
+                      })()
+                  )
+                )
               )
-              , React.createElement('div', { style: {fontSize:10,color:"#9ca3af",marginTop:3},}
-                , isRTL?"≈ ٧،٥ ر.س / ٢ دولار شهرياً":"≈ 7.5 SAR / 2 USD per month"
-              )
+              , React.createElement('div', {style:{fontSize:10,color:"#9ca3af",textAlign:"center",marginTop:6}}, isRTL?"السعر تقريبي حسب سعر الصرف الحالي":"Approximate rate based on current exchange")
             )
 
             /* Policy links */
