@@ -1119,22 +1119,20 @@ function App() {
         , React.createElement('div', { style: {fontSize:52,fontWeight:900,color:darkMode?"#f1f5f9":"#1a1a2e",lineHeight:1,marginBottom:20,letterSpacing:"-2px"},}
           , bal(activeTab).toLocaleString(), " " , React.createElement('span', { style: {fontSize:18,color:"#b0b8c8",fontWeight:500},}, currency)
         )
-        , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",gap:10},}
-          , React.createElement('div', { style: {background:"#f0fdf4",borderRadius:16,padding:"14px 16px",border:"1px solid #dcfce7"},}
-            , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:6,marginBottom:8},}
-              , React.createElement('div', { style: {width:28,height:28,borderRadius:10,background:"#22c55e",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14},}, "↓")
-              , React.createElement('span', { style: {fontSize:12,color:"#6b7280",fontWeight:600},}, t.income)
+        , React.createElement('div', { style: {display:"flex",gap:8,marginTop:12},}
+          , React.createElement('div', { style: {flex:1,background:"#f0fdf4",borderRadius:14,padding:"10px 12px",border:"1px solid #dcfce7",display:"flex",alignItems:"center",gap:8},}
+            , React.createElement('div', { style: {width:24,height:24,borderRadius:8,background:"#22c55e",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"white",flexShrink:0},}, "↓")
+            , React.createElement('div', null
+              , React.createElement('div', { style: {fontSize:10,color:"#6b7280",fontWeight:500},}, t.income)
+              , React.createElement('div', { style: {fontSize:15,fontWeight:900,color:"#15803d",letterSpacing:"-0.5px"},}, sumInc(activeTab).toLocaleString(), " ", React.createElement('span', {style:{fontSize:9,color:"#86efac"}}, currency))
             )
-            , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:"#15803d",letterSpacing:"-0.5px"},}, sumInc(activeTab).toLocaleString())
-            , React.createElement('div', { style: {fontSize:11,color:"#86efac",fontWeight:500},}, currency)
           )
-          , React.createElement('div', { style: {background:"#fff5f5",borderRadius:16,padding:"14px 16px",border:"1px solid #fee2e2"},}
-            , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:6,marginBottom:8},}
-              , React.createElement('div', { style: {width:28,height:28,borderRadius:10,background:"#ef4444",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"white"},}, "↑")
-              , React.createElement('span', { style: {fontSize:12,color:"#6b7280",fontWeight:600},}, t.totalSpent)
+          , React.createElement('div', { style: {flex:1,background:"#fff5f5",borderRadius:14,padding:"10px 12px",border:"1px solid #fee2e2",display:"flex",alignItems:"center",gap:8},}
+            , React.createElement('div', { style: {width:24,height:24,borderRadius:8,background:"#ef4444",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"white",flexShrink:0},}, "↑")
+            , React.createElement('div', null
+              , React.createElement('div', { style: {fontSize:10,color:"#6b7280",fontWeight:500},}, t.totalSpent)
+              , React.createElement('div', { style: {fontSize:15,fontWeight:900,color:"#dc2626",letterSpacing:"-0.5px"},}, sumExp(activeTab).toLocaleString(), " ", React.createElement('span', {style:{fontSize:9,color:"#fca5a5"}}, currency))
             )
-            , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:"#dc2626",letterSpacing:"-0.5px"},}, sumExp(activeTab).toLocaleString())
-            , React.createElement('div', { style: {fontSize:11,color:"#fca5a5",fontWeight:500},}, currency)
           )
         )
       )
@@ -3846,6 +3844,11 @@ function App() {
               )
               , React.createElement('select', { className: "inp", value: newExp.account, onChange: e=>setNewExp(p=>({...p,account:e.target.value})),}
                 , React.createElement('option', { value: "cash",}, "💵 " , t.cash), React.createElement('option', { value: "bank",}, "🏦 " , t.bank), React.createElement('option', { value: "wallet",}, "👜 " , t.wallet)
+              )
+              , React.createElement('div', {style:{fontSize:10,color:"#9ca3af",marginTop:-6,marginBottom:4,paddingInlineStart:4}}
+                , newExp.account==="cash" ? (isRTL?"💵 المال الذي في يدك أو منزلك":"💵 Physical cash you carry")
+                : newExp.account==="bank" ? (isRTL?"🏦 رصيد حسابك البنكي (مدى / تحويل)":"🏦 Your bank account balance (card / transfer)")
+                : (isRTL?"👜 محافظ إلكترونية مثل STC Pay و Apple Pay":"👜 Digital wallets like STC Pay & Apple Pay")
               )
 
               /* Payment Method */
