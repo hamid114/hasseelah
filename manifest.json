@@ -9,8 +9,10 @@
   "orientation": "portrait",
   "lang": "ar",
   "dir": "rtl",
-  "categories": ["finance", "productivity"],
-  "screenshots": [],
+  "categories": [
+    "finance",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "icons/icon-192.png",
@@ -31,7 +33,13 @@
       "short_name": "إضافة",
       "description": "إضافة معاملة جديدة",
       "url": "/?action=add",
-      "icons": [{"src": "icons/icon-192.png", "sizes": "192x192"}]
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
-  ]
+  ],
+  "id": "ghallah-pro"
 }
