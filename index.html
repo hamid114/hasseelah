@@ -204,6 +204,7 @@ const LS_VARIANT_ID = "1489499";
 const LS_CHECKOUT_URL = "https://whop.com/ghallah/ghallah-premium/";
 const MOYASAR_PK_LIVE = "pk_live_gUVaAE3LzXDxfPTJcPnM9S5hG3aR3jTURr6p1pNs";
 const MOYASAR_PK_TEST = "pk_test_oKi86ViQmDF43L4unrqj5Qtz3xsqUcFENTbHXwsU";
+const MOYASAR_PK = MOYASAR_PK_TEST; // مؤقت حتى اكتمال التفعيل
 const PADDLE_CLIENT_TOKEN = "REPLACE_WITH_YOUR_CLIENT_TOKEN"; // ضع الـ token هنا
 
 const CAT_COLORS = ["#FF8C69","#4DB6AC","#5C8DD6","#66BB6A","#FFA040","#BA68C8","#FF8A65","#7C7CC4","#4FC3F7"];
@@ -4170,7 +4171,7 @@ function App() {
                 const [mm,yy] = cardExpiry.split("/");
                 const res = await fetch("https://api.moyasar.com/v1/payments", {
                   method:"POST",
-                  headers:{"Content-Type":"application/json","Authorization":"Basic "+btoa(MOYASAR_PK_LIVE+":")},
+                  headers:{"Content-Type":"application/json","Authorization":"Basic "+btoa(MOYASAR_PK+":")},
                   body: JSON.stringify({
                     amount, currency:"SAR",
                     description: "غلة " + (moyasarPlan==="monthly"?"شهري":"سنوي"),
