@@ -4186,22 +4186,27 @@ function App() {
                   })
                 });
                 const data = await res.json();
-                if(data.status==="paid"||data.status==="initiated") {
-                  if(data.source?.transaction_url) {
-                    window.open(data.source.transaction_url,"_blank");
-                  } else {
-                    setIsPremium(true);
-                    localStorage.setItem("hs_premium","1");
-                    if(authUser && typeof db!=="undefined") {
-                      db.collection("users").doc(authUser.uid).collection("data").doc("subscription")
-                        .set({isPremium:true,activatedAt:new Date().toISOString(),plan:moyasarPlan,provider:"moyasar"},{merge:true});
-                    }
-                    setShowMoyasar(false);
-                    setShowPremium(false);
-                    notify("🎉 مرحباً بك في غلة المميز!");
+                console.log("Moyasar response:", JSON.stringify(data));
+                if(data.status==="paid") {
+                  setIsPremium(true);
+                  localStorage.setItem("hs_premium","1");
+                  if(authUser && typeof db!=="undefined") {
+                    db.collection("users").doc(authUser.uid).collection("data").doc("subscription")
+                      .set({isPremium:true,activatedAt:new Date().toISOString(),plan:moyasarPlan,provider:"moyasar"},{merge:true});
                   }
+                  setShowMoyasar(false);
+                  setShowPremium(false);
+                  notify("🎉 مرحباً بك في غلة المميز!");
+                } else if(data.status==="initiated" && data.source?.transaction_url) {
+                  window.open(data.source.transaction_url,"_blank");
+                  notify("🔐 أكمل التحقق في النافذة الجديدة");
+                } else if(data.errors) {
+                  const errMsg = Object.values(data.errors).flat().join(" | ");
+                  notify("❌ " + errMsg);
+                } else if(data.message) {
+                  notify("❌ " + data.message);
                 } else {
-                  notify("❌ " + (data.message||data.errors?JSON.stringify(data.errors):"فشلت عملية الدفع"));
+                  notify("❌ فشلت العملية — تأكد من بيانات البطاقة");
                 }
               } catch(e) {
                 notify("❌ حدث خطأ في الاتصال");
