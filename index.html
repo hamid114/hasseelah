@@ -249,7 +249,7 @@ function AuthScreen({authScreen, setAuthScreen, setAuthUser}) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
-  const isAr = navigator.language.startsWith("ar");
+  const isAr = landingLang === "ar" ? true : landingLang === "en" ? false : navigator.language.startsWith("ar");
 
   const handleLogin = async () => {
     if(!email || !password) { setError(isAr?"يرجى إدخال البريد وكلمة المرور":"Please enter email and password"); return; }
@@ -1033,19 +1033,44 @@ function App() {
     const [postText, setPostText] = React.useState("");
     const [posting, setPosting] = React.useState(false);
     const [loading, setLoading] = React.useState(true);
+    const [postScope, setPostScope] = React.useState("city"); // city | global
+    const [filterCity, setFilterCity] = React.useState(true);
+    const [userCity, setUserCity] = React.useState("");
+
+    // Get user city from location
+    React.useEffect(()=>{
+      if(navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos=>{
+          const {latitude:lat,longitude:lng} = pos.coords;
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10&accept-language=ar`)
+            .then(r=>r.json())
+            .then(d=>{
+              const city = d.address?.city||d.address?.town||d.address?.county||"";
+              setUserCity(city);
+            }).catch(()=>{});
+        }, ()=>{}, {timeout:5000});
+      }
+    },[]);
 
     React.useEffect(()=>{
       if(typeof db === "undefined") { setLoading(false); return; }
       db.collection("community_posts")
         .orderBy("date","desc")
-        .limit(5)
+        .limit(20)
         .get()
         .then(snap=>{
-          setPosts(snap.docs.map(d=>({id:d.id,...d.data()})));
+          const all = snap.docs.map(d=>({id:d.id,...d.data()}));
+          setPosts(all);
           setLoading(false);
         })
         .catch(()=>setLoading(false));
     },[]);
+
+    // Filter posts by city or show all
+    const filteredPosts = React.useMemo(()=>{
+      if(!filterCity || !userCity) return posts;
+      return posts.filter(p=> !p.city || p.city===userCity || p.scope==="global");
+    }, [posts, filterCity, userCity]);
 
     const submitPost = async () => {
       if(!postText.trim()) return;
@@ -1057,9 +1082,11 @@ function App() {
           date: new Date().toISOString(),
           country: langInfo.country || "",
           flag: langInfo.flag || "🌍",
+          city: postScope==="city" ? userCity : "",
+          scope: postScope,
           likes: 0,
         });
-        setPosts(p=>[{id:Date.now(),text:postText.trim(),date:new Date().toISOString(),flag:langInfo.flag||"🌍",likes:0},...p.slice(0,4)]);
+        setPosts(p=>[{id:Date.now(),text:postText.trim(),date:new Date().toISOString(),flag:langInfo.flag||"🌍",city:postScope==="city"?userCity:"",scope:postScope,likes:0},...p.slice(0,19)]);
         setPostText("");
         setShowPost(false);
         notify("✅ "+(isRTL?"تم النشر!":"Posted!"));
@@ -1084,11 +1111,32 @@ function App() {
           }, isRTL?"+ نشر":"+ Post")
       )
 
+      , React.createElement('div', {style:{display:"flex",gap:8,marginBottom:8}}
+        , React.createElement('button', {
+            onClick:()=>setFilterCity(true),
+            style:{flex:1,padding:"6px",borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:11,fontWeight:700,background:filterCity?"#3B82F6":"#f0f4ff",color:filterCity?"white":"#6b7280"}
+          }, "🏙️ ", isRTL?(userCity||"مدينتي"):(userCity||"My City"))
+        , React.createElement('button', {
+            onClick:()=>setFilterCity(false),
+            style:{flex:1,padding:"6px",borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:11,fontWeight:700,background:!filterCity?"#3B82F6":"#f0f4ff",color:!filterCity?"white":"#6b7280"}
+          }, "🌍 ", isRTL?"الكل":"All")
+      )
+
       , showPost && isPremium && React.createElement('div', {style:{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:14,padding:12,marginBottom:8}}
+        , React.createElement('div', {style:{display:"flex",gap:8,marginBottom:8}}
+          , React.createElement('button', {
+              onClick:()=>setPostScope("city"),
+              style:{flex:1,padding:"6px",borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:11,fontWeight:700,background:postScope==="city"?"#10B981":"#f0f4ff",color:postScope==="city"?"white":"#6b7280"}
+            }, "🏙️ ", isRTL?(userCity?"لـ "+userCity:"مدينتي"):"My City")
+          , React.createElement('button', {
+              onClick:()=>setPostScope("global"),
+              style:{flex:1,padding:"6px",borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:11,fontWeight:700,background:postScope==="global"?"#10B981":"#f0f4ff",color:postScope==="global"?"white":"#6b7280"}
+            }, "🌍 ", isRTL?"للجميع":"Everyone")
+        )
         , React.createElement('textarea', {
             value: postText,
             onChange: e=>setPostText(e.target.value),
-            placeholder: isRTL?"مثل: تخفيض 30% على اللحوم في كارفور الرياض اليوم فقط! 🔥":"e.g. 30% off meat at Carrefour Riyadh today only! 🔥",
+            placeholder: isRTL?"مثل: تخفيض 30% على اللحوم في كارفور اليوم فقط! 🔥":"e.g. 30% off meat at Carrefour today only! 🔥",
             style:{width:"100%",border:"1px solid #DBEAFE",borderRadius:10,padding:"8px 10px",fontSize:12,fontFamily:"inherit",resize:"none",height:70,direction:isRTL?"rtl":"ltr",boxSizing:"border-box"}
           })
         , React.createElement('div', {style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}
@@ -1096,7 +1144,7 @@ function App() {
           , React.createElement('button', {
               onClick:submitPost, disabled:posting||!postText.trim(),
               style:{background:posting||!postText.trim()?"#e5e7eb":"linear-gradient(135deg,#10B981,#059669)",border:"none",color:"white",borderRadius:10,padding:"6px 16px",cursor:posting?"not-allowed":"pointer",fontSize:12,fontFamily:"inherit",fontWeight:600}
-            }, posting?(isRTL?"جارٍ...":"..."):( isRTL?"نشر":"Post"))
+            }, posting?(isRTL?"جارٍ...":"..."):(isRTL?"نشر":"Post"))
         )
       )
 
@@ -1107,15 +1155,18 @@ function App() {
 
       , loading
         ? React.createElement('div', {style:{textAlign:"center",padding:"16px",color:"#9ca3af",fontSize:12}}, "...")
-        : posts.length===0
+        : filteredPosts.length===0
           ? React.createElement('div', {style:{background:"#f8fafc",borderRadius:14,padding:"16px",textAlign:"center",color:"#9ca3af",fontSize:12}},
               isRTL?"لا توجد منشورات بعد — كن أول من يشارك تخفيضاً! 🔥":"No posts yet — be the first to share a deal!"
             )
-          : posts.map((post,i)=>React.createElement('div', {key:post.id||i, style:{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:14,padding:"10px 14px",marginBottom:6,display:"flex",gap:10,alignItems:"flex-start"}}
+          : filteredPosts.map((post,i)=>React.createElement('div', {key:post.id||i, style:{background:"#ffffff",border:"1px solid #DBEAFE",borderRadius:14,padding:"10px 14px",marginBottom:6,display:"flex",gap:10,alignItems:"flex-start"}}
               , React.createElement('span', {style:{fontSize:18,flexShrink:0}}, post.flag||"🌍")
               , React.createElement('div', {style:{flex:1}}
                 , React.createElement('div', {style:{fontSize:13,color:"#1e3a5f",lineHeight:1.5}}, post.text)
-                , React.createElement('div', {style:{fontSize:11,color:"#9ca3af",marginTop:4}}, timeAgo(post.date))
+                , React.createElement('div', {style:{display:"flex",gap:8,marginTop:4,alignItems:"center"}}
+                  , post.city && React.createElement('span', {style:{fontSize:10,background:"#EFF6FF",color:"#3B82F6",borderRadius:6,padding:"1px 6px"}}, "🏙️ "+post.city)
+                  , React.createElement('span', {style:{fontSize:11,color:"#9ca3af"}}, timeAgo(post.date))
+                )
               )
             ))
     );
