@@ -249,7 +249,8 @@ function AuthScreen({authScreen, setAuthScreen, setAuthUser}) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
-  const isAr = navigator.language.startsWith("ar");
+  const savedLang = localStorage.getItem("ghallah_landing_lang") || "ar";
+  const isAr = savedLang === "ar";
 
   const handleLogin = async () => {
     if(!email || !password) { setError(isAr?"يرجى إدخال البريد وكلمة المرور":"Please enter email and password"); return; }
@@ -3567,8 +3568,8 @@ function App() {
         )
 
         , React.createElement('div', {style:{display:"flex",gap:8,marginBottom:20,width:"100%",maxWidth:400}}
-          , React.createElement('button', {onClick:()=>setLandingLang("ar"), style:{flex:1,padding:"8px",borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:700,background:landingLang==="ar"?"#D4AF37":"rgba(255,255,255,0.15)",color:landingLang==="ar"?"#1a1a2e":"white"}}, "🇸🇦 العربية")
-          , React.createElement('button', {onClick:()=>setLandingLang("en"), style:{flex:1,padding:"8px",borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:700,background:landingLang==="en"?"#D4AF37":"rgba(255,255,255,0.15)",color:landingLang==="en"?"#1a1a2e":"white"}}, "🇬🇧 English")
+          , React.createElement('button', {onClick:()=>{setLandingLang("ar");localStorage.setItem("ghallah_landing_lang","ar");}, style:{flex:1,padding:"8px",borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:700,background:landingLang==="ar"?"#D4AF37":"rgba(255,255,255,0.15)",color:landingLang==="ar"?"#1a1a2e":"white"}}, "🇸🇦 العربية")
+          , React.createElement('button', {onClick:()=>{setLandingLang("en");localStorage.setItem("ghallah_landing_lang","en");}, style:{flex:1,padding:"8px",borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:700,background:landingLang==="en"?"#D4AF37":"rgba(255,255,255,0.15)",color:landingLang==="en"?"#1a1a2e":"white"}}, "🇬🇧 English")
         )
 
         , landingLang==="en" && React.createElement('div', {style:{background:"rgba(255,255,255,0.1)",borderRadius:16,padding:"16px",marginBottom:16,width:"100%",maxWidth:400,textAlign:"left",direction:"ltr"}}
