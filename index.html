@@ -249,7 +249,7 @@ function AuthScreen({authScreen, setAuthScreen, setAuthUser}) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
-  const isAr = landingLang === "ar" ? true : landingLang === "en" ? false : navigator.language.startsWith("ar");
+  const isAr = navigator.language.startsWith("ar");
 
   const handleLogin = async () => {
     if(!email || !password) { setError(isAr?"يرجى إدخال البريد وكلمة المرور":"Please enter email and password"); return; }
@@ -457,6 +457,7 @@ function App() {
   const [cardCVV, setCardCVV] = useState("");
   const [publicPage, setPublicPage] = useState(null);
   const [landingLang, setLandingLang] = useState("ar"); // ar | en
+  const authIsAr = landingLang === "ar";
   const [communityAlert, setCommunityAlert] = useState(null);
   const [authScreen, setAuthScreen] = useState("landing"); // landing | login | register | forgot
   const [showLimitAlert, setShowLimitAlert] = useState(false);
