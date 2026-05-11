@@ -756,7 +756,7 @@ function App() {
     return new Date(now - offset).toISOString().slice(0,16);
   };
 
-  const scheduleNotifications = () => {
+  const scheduleNotifications = async () => {
     if(!("Notification" in window) || Notification.permission !== "granted") return;
     const messages = isRTL ? [
       {title:"🌾 غلة تسألك!", body:"هل سجّلت مصاريف اليوم؟ ستشكر نفسك لاحقاً 😊"},
@@ -770,20 +770,22 @@ function App() {
       {title:"🎯 Your financial goal needs you!", body:"Small steps every day = big results 💪"},
     ];
     const msg = messages[Math.floor(Math.random() * messages.length)];
-    // Show once now as confirmation
-    new Notification(msg.title, {body: msg.body, icon: "/manifest.json"});
-    // Schedule evening reminder via setTimeout (works while tab is open)
-    const now = new Date();
-    const evening = new Date();
-    evening.setHours(21, 0, 0, 0);
-    if(now > evening) evening.setDate(evening.getDate() + 1);
-    const msUntilEvening = evening - now;
-    setTimeout(()=>{
-      if(Notification.permission==="granted") {
-        const m = messages[Math.floor(Math.random()*messages.length)];
-        new Notification(m.title, {body:m.body, icon:"/manifest.json"});
-      }
-    }, msUntilEvening);
+    // Schedule via service worker (works when app is closed)
+    if("serviceWorker" in navigator) {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const now = new Date();
+        const evening = new Date();
+        evening.setHours(21, 0, 0, 0);
+        if(now >= evening) evening.setDate(evening.getDate() + 1);
+        const delay = evening - now;
+        if(reg.active) reg.active.postMessage({type:"SCHEDULE_REMINDER", delay});
+        // Show confirmation now
+        reg.showNotification(msg.title, {body:msg.body, icon:"/icon-192.png", tag:"confirm"});
+        return;
+      } catch(e) {}
+    }
+    new Notification(msg.title, {body:msg.body, icon:"/icon-192.png"});
   };
 
   const saveExpense = () => {
