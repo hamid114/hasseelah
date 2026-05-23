@@ -387,7 +387,6 @@ function App() {
         eventCallback: (event) => {
           if(event.name === "checkout.completed") {
             setIsPremium(true);
-            localStorage.setItem("hs_premium","1");
             // Save to Firestore
             if(authUser && typeof db !== "undefined") {
               db.collection("users").doc(authUser.uid).collection("data").doc("subscription")
@@ -441,13 +440,7 @@ function App() {
   const [showAdd, setShowAdd] = useState(false);
   const [showPremium, setShowPremium] = useState(false);
   const [showLangPicker, setShowLangPicker] = useState(false);
-  const [isPremium, setIsPremium] = useState(()=>{
-    const v = localStorage.getItem("hs_premium");
-    const h = localStorage.getItem("hs_ph");
-    // Simple verification hash
-    const expected = btoa("ghallah_premium_" + (localStorage.getItem("hs_dark")||"0"));
-    return v==="1" && h===expected;
-  });
+  const [isPremium, setIsPremium] = useState(false); // يُحدَّث فقط من Firestore
   const [darkMode, setDarkMode] = useState(()=>localStorage.getItem("hs_dark")==="1");
   const [authUser, setAuthUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -710,14 +703,17 @@ function App() {
               if(d.goals) setGoals(d.goals);
             }
           }).catch(()=>{});
-        // Load premium status from Firestore
-        db.collection("users").doc(user.uid).collection("data").doc("subscription").get()
-          .then(doc=>{
+        // Realtime listener for Premium — Firestore is the ONLY source of truth
+        db.collection("users").doc(user.uid).collection("data").doc("subscription")
+          .onSnapshot(doc=>{
             if(doc.exists && doc.data().isPremium === true) {
               setIsPremium(true);
-              localStorage.setItem("hs_premium","1");
+            } else {
+              setIsPremium(false);
             }
-          }).catch(()=>{});
+          }, ()=>{ setIsPremium(false); });
+      } else {
+        setIsPremium(false);
       }
     });
     return ()=>unsub();
@@ -734,9 +730,7 @@ function App() {
     return ()=>clearTimeout(t);
   },[expenses, notes, goals, authUser]);
   useEffect(()=>{
-    localStorage.setItem("hs_premium", isPremium?"1":"0");
     if(isPremium) {
-      localStorage.setItem("hs_ph", btoa("ghallah_premium_" + (localStorage.getItem("hs_dark")||"0")));
     } else {
       localStorage.removeItem("hs_ph");
     }
@@ -4170,7 +4164,6 @@ function App() {
                       .then(doc=>{
                         if(doc.exists && doc.data().isPremium===true){
                           setIsPremium(true);
-                          localStorage.setItem("hs_premium","1");
                           setShowPremium(false);
                           notify("✅ "+(isRTL?"تم استعادة اشتراكك!":"Subscription restored!"));
                         } else {
@@ -4226,13 +4219,14 @@ function App() {
               try {
                 const amount = moyasarPlan==="monthly" ? 652 : 5652; // بالهللة
                 const [mm,yy] = cardExpiry.split("/");
-                const res = await fetch("https://api.moyasar.com/v1/payments", {
+                const res = await fetch("https://us-central1-haseelah-app.cloudfunctions.net/createMoyasarPayment", {
                   method:"POST",
-                  headers:{"Content-Type":"application/json","Authorization":"Basic "+btoa(MOYASAR_PK+":")},
+                  headers:{"Content-Type":"application/json"},
                   body: JSON.stringify({
                     amount, currency:"SAR",
                     description: "غلة " + (moyasarPlan==="monthly"?"شهري":"سنوي"),
-                    callback_url: "https://ghallah.pro",
+                    userId: authUser?.uid || "",
+                    plan: moyasarPlan,
                     source:{
                       type:"creditcard",
                       name:cardName,
@@ -4247,7 +4241,6 @@ function App() {
                 console.log("Moyasar response:", JSON.stringify(data));
                 if(data.status==="paid") {
                   setIsPremium(true);
-                  localStorage.setItem("hs_premium","1");
                   if(authUser && typeof db!=="undefined") {
                     db.collection("users").doc(authUser.uid).collection("data").doc("subscription")
                       .set({isPremium:true,activatedAt:new Date().toISOString(),plan:moyasarPlan,provider:"moyasar"},{merge:true});
