@@ -4219,7 +4219,7 @@ function App() {
               try {
                 const amount = moyasarPlan==="monthly" ? 652 : 5652; // بالهللة
                 const [mm,yy] = cardExpiry.split("/");
-                const res = await fetch("https://us-central1-haseelah-app.cloudfunctions.net/createMoyasarPayment", {
+                const res = await fetch("https://ghallah-payments.netlify.app/.netlify/functions/createMoyasarPayment", {
                   method:"POST",
                   headers:{"Content-Type":"application/json"},
                   body: JSON.stringify({
